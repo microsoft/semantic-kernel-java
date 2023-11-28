@@ -90,6 +90,12 @@ public abstract class AbstractSkFunction
     /** @apiNote Breaking change: s/RequestConfiguration settings/Object settings/  */
     @Override
     public Mono<SKContext> invokeAsync(
+            @Nullable String input, @Nullable RequestConfiguration settings) {
+        return invokeAsync(input, null, settings);
+    }
+
+    @Override
+    public Mono<SKContext> invokeAsync(
             @Nullable String input,
             @Nullable SKContext context,
             @Nullable Object settings) {

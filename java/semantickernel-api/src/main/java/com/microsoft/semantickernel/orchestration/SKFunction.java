@@ -14,7 +14,8 @@ import reactor.core.publisher.Mono;
  * Semantic Kernel callable function interface
  * @apiNote Breaking change: s/SKFunction<RequestConfiguration>/SKFunction/
  */
-public interface SKFunction {
+public interface SKFunction<RequestConfiguration> {
+
     /**
      * Returns a description of the function, including parameters.
      *
@@ -80,6 +81,16 @@ public interface SKFunction {
     @CheckReturnValue
     @Deprecated
      Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings);
+
+    /**
+     * Invokes the function with the given context and settings
+     *
+     * @param input input provided to the function
+     * @param settings Configuration of the request
+     * @return an updated context with the result of the request
+     */
+    @CheckReturnValue
+    Mono<SKContext> invokeAsync(String input, @Nullable RequestConfiguration settings);
 
     /**
      * @return The name of the skill that this function is within
