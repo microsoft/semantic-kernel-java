@@ -43,7 +43,7 @@ public interface CompletionSKFunction extends SKFunction, Buildable {
 
         Builder withPromptTemplateConfig(PromptTemplateConfig config);
 
-        Builder withCompletionConfig(PromptTemplateConfig.CompletionConfig completionConfig);
+        Builder withRequestSettings(CompletionRequestSettings completionRequestSettings);
 
         Builder withSemanticFunctionConfig(SemanticFunctionConfig functionConfig);
 
