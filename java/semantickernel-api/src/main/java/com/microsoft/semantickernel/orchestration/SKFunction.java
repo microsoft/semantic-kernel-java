@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+import java.util.Map;
+
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
+import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.memory.SemanticTextMemory;
 import com.microsoft.semantickernel.skilldefinition.FunctionView;
 import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
@@ -83,15 +86,13 @@ public interface SKFunction<RequestConfiguration> {
      Mono<SKContext> invokeAsync(SKContext context, @Nullable Object settings);
 
     /**
-     * Invokes the function with the given context and settings
-     *
-     * @param input input provided to the function
-     * @param settings Configuration of the request
-     * @return an updated context with the result of the request
+     * @return The result of invoking the function. 
+     * @param kernel The kernel to invoke the function on
+     * @param variables The variables to invoke the function with
+     * @since 1.0.0 
      */
-    @CheckReturnValue
-    Mono<SKContext> invokeAsync(String input, @Nullable RequestConfiguration settings);
-
+    Mono<FunctionResult> invokeAsync(Kernel kernel, Map<String,Object> variables);
+    
     /**
      * @return The name of the skill that this function is within
      */
