@@ -7,7 +7,8 @@ import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.connectors.ai.openai.textcompletion.OpenAITextCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
+import com.microsoft.semantickernel.semanticfunctions.PromptConfig;
+import com.microsoft.semantickernel.textcompletion.CompletionKernelFunction;
 import com.microsoft.semantickernel.textcompletion.TextCompletion;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -21,21 +22,15 @@ public class KernelTest extends AbstractKernelTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(KernelTest.class);
 
     private static void executeCompletion(Kernel kernel) {
-        CompletionSKFunction summarize =
+        CompletionKernelFunction summarize =
                 kernel.getSemanticFunctionBuilder()
                         .withPromptTemplate(
                                 """
                     {{$input}}
 
-                    One line TLDR with the fewest words.""")
-                        .withRequestSettings(
-                                SKBuilders.completionRequestSettings()
-                                        .temperature(0)
-                                        .topP(0)
-                                        .maxTokens(256)
-                                        .frequencyPenalty(0)
-                                        .presencePenalty(0)
-                                        .build())
+                                        One line TLDR with the fewest words.""")
+                        .withCompletionConfig(
+                                new PromptConfig.CompletionConfig(0, 0, 0, 0, 256))
                         .build();
 
         String text1 =

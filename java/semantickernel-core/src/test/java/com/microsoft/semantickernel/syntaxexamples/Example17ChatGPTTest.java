@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.SKBuilders;
 import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
 import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory.AuthorRoles;
+import com.microsoft.semantickernel.chatcompletion.ChatHistory.ChatMessageContent;
 import com.microsoft.semantickernel.connectors.ai.openai.chatcompletion.OpenAIChatHistory;
 import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
@@ -40,7 +40,7 @@ public class Example17ChatGPTTest {
                 SKBuilders.kernel()
                         .withDefaultAIService(
                                 SKBuilders.chatCompletion()
-                                        .withOpenAIClient(client)
+                                        .withOpenAIAsyncClient(client)
                                         .withModelId("gpt-3.5-turbo-0301")
                                         .build())
                         .build();
@@ -56,9 +56,10 @@ public class Example17ChatGPTTest {
 
         // First user message
         chatHistory.addUserMessage(message);
-        createdMessage = chatHistory.getMessages().get(chatHistory.getMessages().size() - 1);
-        Assertions.assertEquals(ChatHistory.AuthorRoles.User, createdMessage.getAuthorRoles());
-        Assertions.assertEquals(message, createdMessage.getContent());
+        ChatMessageContent createdChatMessageContent =
+                chatHistory.getMessages().get(chatHistory.getMessages().size() - 1);
+        Assertions.assertEquals(ChatHistory.AuthorRoles.User, createdChatMessageContent.getAuthorRoles());
+        Assertions.assertEquals(message, createdChatMessageContent.getContent());
 
         // First bot assistant message
         String reply = chatGPT.generateMessageAsync(chatHistory, null).block();

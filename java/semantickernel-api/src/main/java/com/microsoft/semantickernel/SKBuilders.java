@@ -1,26 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
-import com.microsoft.semantickernel.ai.embeddings.TextEmbeddingGeneration;
 import com.microsoft.semantickernel.builders.BuildersSingleton;
-import com.microsoft.semantickernel.chatcompletion.ChatCompletion;
-import com.microsoft.semantickernel.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.memory.MemoryStore;
-import com.microsoft.semantickernel.memory.SemanticTextMemory;
-import com.microsoft.semantickernel.orchestration.ContextVariables;
-import com.microsoft.semantickernel.orchestration.SKContext;
-import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
-import com.microsoft.semantickernel.skilldefinition.ReadOnlySkillCollection;
-import com.microsoft.semantickernel.templateengine.PromptTemplateEngine;
-import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings.Builder;
-import com.microsoft.semantickernel.textcompletion.CompletionSKFunction;
-import com.microsoft.semantickernel.textcompletion.TextCompletion;
 
 public class SKBuilders {
 
     // Prevent creating object
-    private SKBuilders() {}
+    private SKBuilders() {
+    }
 
+    /*
     public static TextCompletion.Builder textCompletion() {
         return BuildersSingleton.INST.getInstance(TextCompletion.Builder.class);
     }
@@ -28,11 +17,12 @@ public class SKBuilders {
     public static TextEmbeddingGeneration.Builder textEmbeddingGeneration() {
         return BuildersSingleton.INST.getInstance(TextEmbeddingGeneration.Builder.class);
     }
+    */
 
     public static Kernel.Builder kernel() {
         return BuildersSingleton.INST.getInstance(Kernel.Builder.class);
     }
-
+/*
     public static KernelConfig.Builder kernelConfig() {
         return BuildersSingleton.INST.getInstance(KernelConfig.Builder.class);
     }
@@ -61,9 +51,9 @@ public class SKBuilders {
         return BuildersSingleton.INST.getInstance(SKContext.Builder.class);
     }
 
-    public static Builder completionRequestSettings() {
-        // No need to look up as this is in the API
-        return new Builder();
+    public static PromptConfig.CompletionConfigBuilder completionConfig() {
+        return BuildersSingleton.INST.getInstance(
+                PromptConfig.CompletionConfigBuilder.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,7 +67,9 @@ public class SKBuilders {
         return BuildersSingleton.INST.getInstance(MemoryStore.Builder.class);
     }
 
-    public static CompletionSKFunction.Builder completionFunctions() {
-        return BuildersSingleton.INST.getInstance(CompletionSKFunction.Builder.class);
+    public static CompletionKernelFunction.Builder completionFunctions() {
+        return BuildersSingleton.INST.getInstance(CompletionKernelFunction.Builder.class);
     }
+
+     */
 }
