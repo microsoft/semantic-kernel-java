@@ -2,85 +2,234 @@
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
-import java.util.ArrayList;
-import javax.annotation.Nullable;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.plugin.KernelParameterMetadata;
+import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/** Prompt template configuration */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class PromptTemplateConfig {
 
-    private final CompletionRequestSettings completionRequestSettings;
-    private final InputConfig input;
-    private final int schema;
-    private final String type; // { get; set; } = "completion";
-    private final String description;
+    private String name;
 
-    public PromptTemplateConfig() {
-        this("", "", null);
-    }
+    private String template;
 
-    public PromptTemplateConfig(CompletionRequestSettings completionRequestSettings) {
-        this(1, "", "", completionRequestSettings, new InputConfig(new ArrayList<>()));
-    }
+    private String templateFormat;
+
+    private String description;
+
+    private List<InputVariable> inputVariables;
+
+    private OutputVariable outputVariable;
+
+    private Map<String, PromptExecutionSettings> executionSettings;
 
     public PromptTemplateConfig(
-            String description,
-            String type,
-            @Nullable CompletionRequestSettings completionRequestSettings) {
-        this(1, description, type, completionRequestSettings, new InputConfig(new ArrayList<>()));
+        String name,
+        String template,
+        String templateFormat,
+        String description,
+        List<InputVariable> inputVariables,
+        OutputVariable outputVariable,
+        Map<String, PromptExecutionSettings> executionSettings) {
+        this.name = name;
+        this.template = template;
+        this.templateFormat = templateFormat;
+        this.description = description;
+        this.inputVariables = inputVariables;
+        this.outputVariable = outputVariable;
+        this.executionSettings = executionSettings;
     }
 
     @JsonCreator
     public PromptTemplateConfig(
-            @JsonProperty("schema") int schema,
-            @JsonProperty("description") String description,
-            @JsonProperty("type") String type,
-            @Nullable @JsonProperty("completion")
-                    CompletionRequestSettings completionRequestSettings,
-            @Nullable @JsonProperty("input") InputConfig input) {
-        if (completionRequestSettings == null) {
-            completionRequestSettings = new CompletionRequestSettings();
-        }
-        this.schema = schema;
+        @JsonProperty("name")
+        String name,
+        @JsonProperty("template")
+        String template,
+        @JsonProperty("template_format")
+        String templateFormat,
+        @JsonProperty("description")
+        String description,
+        @JsonProperty("input_variables")
+        List<InputVariable> inputVariables,
+        @JsonProperty("output_variable")
+        OutputVariable outputVariable,
+        @JsonProperty("execution_settings")
+        List<PromptExecutionSettings> executionSettings) {
+        this.name = name;
+        this.template = template;
+        this.templateFormat = templateFormat;
         this.description = description;
-        this.type = type;
-        this.completionRequestSettings = completionRequestSettings;
-        if (input == null) {
-            input = new InputConfig(new ArrayList<>());
-        }
-        this.input = input;
+        this.inputVariables = inputVariables;
+        this.outputVariable = outputVariable;
+        this.executionSettings = executionSettings
+            .stream()
+            .collect(Collectors.toMap(PromptExecutionSettings::getModelId, e -> e));
     }
 
-    /**
-     * Description
-     *
-     * @return Description
-     */
+    public List<KernelParameterMetadata> getKernelParametersMetadata() {
+        if (inputVariables == null) {
+            return Collections.emptyList();
+        }
+        return inputVariables
+            .stream()
+            .map(inputVariable -> new KernelParameterMetadata(
+                inputVariable.getName(),
+                inputVariable.getDescription(),
+                inputVariable.getDefaultValue(),
+                inputVariable.isRequired()
+            ))
+            .collect(Collectors.toList());
+    }
+
+    public KernelReturnParameterMetadata getKernelReturnParameterMetadata() {
+        if (outputVariable == null) {
+            return new KernelReturnParameterMetadata("");
+        }
+
+        return new KernelReturnParameterMetadata(
+            outputVariable.getDescription()
+        );
+    }
+
+
+    public static class ExecutionSettingsModel {
+
+        @JsonProperty("model_id")
+        private String modelId;
+
+        @JsonProperty("model_id_pattern")
+        private String modelIdPattern;
+
+        @JsonProperty("service_id")
+        private String serviceId;
+
+        @JsonProperty("temperature")
+        private String temperature;
+
+        @JsonProperty("additional_properties")
+        private final Map<String, Object> additionalProperties;
+
+        public Object get(String propertyName) {
+            return additionalProperties.get(propertyName);
+        }
+
+        public void set(String propertyName, Object value) {
+            additionalProperties.put(propertyName, value);
+        }
+
+        public ExecutionSettingsModel() {
+            this.additionalProperties = new HashMap<>();
+        }
+
+        public ExecutionSettingsModel(
+            String modelId,
+            String modelIdPattern,
+            String serviceId,
+            String temperature,
+            Map<String, Object> additionalProperties) {
+            this.modelId = modelId;
+            this.modelIdPattern = modelIdPattern;
+            this.serviceId = serviceId;
+            this.temperature = temperature;
+            this.additionalProperties = additionalProperties;
+        }
+
+        public String getModelId() {
+            return modelId;
+        }
+
+        public void setModelId(String modelId) {
+            this.modelId = modelId;
+        }
+
+        public String getModelIdPattern() {
+            return modelIdPattern;
+        }
+
+        public void setModelIdPattern(String modelIdPattern) {
+            this.modelIdPattern = modelIdPattern;
+        }
+
+        public String getServiceId() {
+            return serviceId;
+        }
+
+        public void setServiceId(String serviceId) {
+            this.serviceId = serviceId;
+        }
+
+        public String getTemperature() {
+            return temperature;
+        }
+
+        public void setTemperature(String temperature) {
+            this.temperature = temperature;
+        }
+
+        public Map<String, Object> getAdditionalProperties() {
+            return additionalProperties;
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
+    }
+
+    public String getTemplateFormat() {
+        return templateFormat;
+    }
+
+    public void setTemplateFormat(String templateFormat) {
+        this.templateFormat = templateFormat;
+    }
+
     public String getDescription() {
         return description;
     }
 
-    /**
-     * A returns the configuration for the text completion
-     *
-     * @return CompletionRequestSettings
-     */
-    public CompletionRequestSettings getCompletionRequestSettings() {
-        return completionRequestSettings;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public int getSchema() {
-        return schema;
+    public List<InputVariable> getInputVariables() {
+        return inputVariables;
     }
 
-    public String getType() {
-        return type;
+    public void setInputVariables(List<InputVariable> inputVariables) {
+        this.inputVariables = inputVariables;
     }
 
-    public InputConfig getInput() {
-        return input;
+    public OutputVariable getOutputVariable() {
+        return outputVariable;
+    }
+
+    public void setOutputVariable(OutputVariable outputVariable) {
+        this.outputVariable = outputVariable;
+    }
+
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
+        return executionSettings;
+    }
+
+    public void setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
+        this.executionSettings = executionSettings;
     }
 }
