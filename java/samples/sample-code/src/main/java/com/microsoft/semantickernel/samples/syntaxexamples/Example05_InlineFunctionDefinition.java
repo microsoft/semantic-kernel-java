@@ -20,8 +20,10 @@ import java.time.format.DateTimeFormatter;
 
 public class Example05_InlineFunctionDefinition {
 
-    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
+    TextCompletion textCompletion = SKBuilders.textCompletion()
+        .withModelId("davinci-002")
+        .withOpenAIClient(client)
+        .build();
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
