@@ -36,9 +36,9 @@ public class AiServiceRegistryTest {
 
         Assertions.assertSame(kernel.getService("a-service", TextCompletion.class), service);
 
-        CompletionKernelFunction function =
-                kernel.importSkillFromDirectory("FunSkill", "../../samples/skills")
-                        .getFunction("joke", CompletionKernelFunction.class);
+        CompletionSKFunction function =
+                kernel.importSkillFromDirectory("FunPlugin", "../../samples/plugins")
+                        .getFunction("joke", CompletionSKFunction.class);
 
         function.invokeAsync("time travel to dinosaur age").block();
 

@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.plugin.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.textcompletion.TextGenerationService;
+import com.microsoft.semantickernel.textcompletion.CompletionRequestSettings;
 
 /**
  * Show how to invoke a Native Function written in Java
@@ -32,11 +32,11 @@ public class Example06_TemplateLanguage {
         OpenAIAsyncClient client = SamplesConfig.getClient();
 
         Kernel kernel = SKBuilders.kernel()
-            .withDefaultAIService(SKBuilders.textCompletion()
-                .withModelId("davinci-002")
-                .withOpenAIClient(client)
-                .build())
-            .build();
+                .withDefaultAIService(SKBuilders.textCompletion()
+                        .withModelId("davinci-002")
+                        .withOpenAIClient(client)
+                        .build())
+                .build();
 
         // Load native skill into the kernel skill collection, sharing its functions
         // with prompt templates
@@ -76,11 +76,11 @@ public class Example06_TemplateLanguage {
             .withPromptTemplate(functionDefinition)
             .withRequestSettings(
                 SKBuilders.completionRequestSettings()
+                    .maxTokens(256)
                     .temperature(0)
                     .topP(0)
-                    .maxTokens(256)
-                    .frequencyPenalty(0)
                     .presencePenalty(0)
+                    .frequencyPenalty(0)
                     .build())
             .build();
 
