@@ -39,7 +39,10 @@ public class Example08_RetryHandler {
             .withAIService(TextGenerationService.class, textGenerationService)
             .build();
 
-        String question = "How popular is the Polly library?";
+        TextCompletion textCompletion = SKBuilders.textCompletion()
+                .withModelId("davinci-002")
+                .withOpenAIClient(client)
+                .build();
 
         KernelFunction<String> fuction = KernelFunctionFromPrompt.create(question);
 

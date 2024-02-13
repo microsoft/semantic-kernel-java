@@ -16,68 +16,39 @@ import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactor
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.textcompletion.TextGenerationService;
 
+/**
+ * Show how to invoke a Native Function written in Java
+ * from a Semantic Function written in natural language
+ * <p>
+ * Refer to the <a href=
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * README</a> for configuring your environment to run the examples.
+ */
 public class Example06_TemplateLanguage {
 
-    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
-    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
-
-    // Only required if AZURE_CLIENT_KEY is set
-    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "text-davinci-003");
-
-    public static class Time {
-
-        @DefineKernelFunction(name = "date")
-        public String date() {
-            return "2021-09-01";
-        }
-
-        @DefineKernelFunction(name = "time")
-        public String time() {
-            return "12:00:00";
-        }
-    }
-
     public static void main(String[] args) throws ConfigurationException {
-
         System.out.println("======== TemplateLanguage ========");
 
-        OpenAIAsyncClient client;
+        OpenAIAsyncClient client = SamplesConfig.getClient();
 
-        if (AZURE_CLIENT_KEY != null) {
-            client = new OpenAIClientBuilder()
-                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                .endpoint(CLIENT_ENDPOINT)
-                .buildAsyncClient();
-        } else {
-            client = new OpenAIClientBuilder()
-                .credential(new KeyCredential(CLIENT_KEY))
-                .buildAsyncClient();
-        }
-
-        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
-            .withOpenAIAsyncClient(client)
-            .withModelId(MODEL_ID)
+        Kernel kernel = SKBuilders.kernel()
+            .withDefaultAIService(SKBuilders.textCompletion()
+                .withModelId("davinci-002")
+                .withOpenAIClient(client)
+                .build())
             .build();
 
-        Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
-            .build();
-
-        // Load native plugin into the kernel function collection, sharing its functions with prompt templates
+        // Load native skill into the kernel skill collection, sharing its functions
+        // with prompt templates
         // Functions loaded here are available as "time.*"
-        KernelPlugin time = KernelPluginFactory.createFromObject(
-            new Time(), "time");
+        kernel.importSkill(new TimeSkill(), "time");
 
-        kernel.getPlugins().add(time);
-
-        // Prompt Function invoking time.Date and time.Time method functions
+        // Semantic Function invoking time.Date and time.Time native functions
         String functionDefinition = """
-            Today is: {{time.date}}
-            Current time is: {{time.time}}
+                Today is: {{time.Date}}
+                Current time is: {{time.Time}}
 
-            Answer to the following questions using JSON syntax, including the data used.
+                Answer to the following questions using JSON syntax, including the data used.
                 Is it morning, afternoon, evening, or night (morning/afternoon/evening/night)?
                 Is it weekend time (weekend/not weekend)?
                 """;
@@ -85,26 +56,59 @@ public class Example06_TemplateLanguage {
         // This allows to see the prompt before it's sent to OpenAI
         System.out.println("--- Rendered Prompt");
 
-        var promptTemplate = new KernelPromptTemplateFactory()
-            .tryCreate(new PromptTemplateConfig(functionDefinition));
+        var promptRenderer = SKBuilders.promptTemplate()
+            .withPromptTemplateConfig(new PromptTemplateConfig())
+            .withPromptTemplate(functionDefinition)
+            .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
+            .build();
 
-        var renderedPrompt = promptTemplate.renderAsync(kernel, null, null).block();
-        System.out.println(renderedPrompt);
+        SKContext skContext = SKBuilders
+            .context()
+            .withSkills(kernel.getSkills())
+            .build();
 
-        var kindOfDay = KernelFunctionFactory
-            .<String>createFromPrompt(
-                functionDefinition,
-                new Builder()
-                    .withMaxTokens(100)
-                    .build(),
-                null,
-                null,
-                "semantic-kernel",
-                null);
+        var renderedPrompt = promptRenderer.renderAsync(skContext);
+        System.out.println(renderedPrompt.block());
+
+        // Run the prompt / semantic function
+        var kindOfDay = kernel
+            .getSemanticFunctionBuilder()
+            .withPromptTemplate(functionDefinition)
+            .withRequestSettings(
+                SKBuilders.completionRequestSettings()
+                    .temperature(0)
+                    .topP(0)
+                    .maxTokens(256)
+                    .frequencyPenalty(0)
+                    .presencePenalty(0)
+                    .build())
+            .build();
 
         // Show the result
-        System.out.println("--- Prompt Function result");
-        var result = kernel.invokeAsync(kindOfDay).block();
-        System.out.println(result.getResult());
+        System.out.println("--- Semantic Function result");
+        var result = kindOfDay.invokeAsync("").block().getResult();
+        System.out.println(result);
+        /*
+         * OUTPUT:
+         *
+         * --- Rendered Prompt
+         *
+         * Today is: Friday, April 28, 2023
+         * Current time is: 11:04:30 PM
+         *
+         * Answer to the following questions using JSON syntax, including the data used.
+         * Is it morning, afternoon, evening, or night
+         * (morning/afternoon/evening/night)?
+         * Is it weekend time (weekend/not weekend)?
+         *
+         * --- Semantic Function result
+         *
+         * {
+         * "date": "Friday, April 28, 2023",
+         * "time": "11:04:30 PM",
+         * "period": "night",
+         * "weekend": "weekend"
+         * }
+         */
     }
 }
