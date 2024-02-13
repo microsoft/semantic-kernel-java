@@ -87,9 +87,9 @@ public class DefaultKernelTest {
         String model = "a-model-name";
         Kernel kernel = buildKernel(model, client);
 
-        CompletionKernelFunction function =
-                kernel.importSkillFromDirectory("FunSkill", "../../samples/skills")
-                        .getFunction("joke", CompletionKernelFunction.class);
+        CompletionSKFunction function =
+                kernel.importSkillFromDirectory("FunPlugin", "../../samples/plugins")
+                        .getFunction("joke", CompletionSKFunction.class);
 
         Mono<SKContext> mono = function.invokeAsync("time travel to dinosaur age");
         SKContext result = mono.block();
