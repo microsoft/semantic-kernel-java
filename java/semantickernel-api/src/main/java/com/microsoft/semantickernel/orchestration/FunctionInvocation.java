@@ -184,28 +184,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         return this;
     }
 
-    /**
-     * Use an invocation context variable to supply the types, tool call behavior,
-     * prompt execution settings, and kernel hooks to the function invocation.
-     * @param invocationContext The invocation context to supply to the function invocation.
-     * @return this {@code FunctionInvocation} for fluent chaining.
-     */
-    public FunctionInvocation<T> withInvocationContext(
-        @Nullable InvocationContext invocationContext) {
-        if (invocationContext == null) {
-            return this;
-        }
-        withTypes(invocationContext.getContextVariableTypes());
-        withToolCallBehavior(invocationContext.getToolCallBehavior());
-        withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
-        addKernelHooks(invocationContext.getKernelHooks());
-        return this;
-    }
-
-    /**
-     * This method hanldes the reactive stream when the KernelFunciton is invoked. 
-     * @param coreSubscriber The subscriber to subscribe to the function invocation.
-     */
     @Override
     public void subscribe(CoreSubscriber<? super FunctionResult<T>> coreSubscriber) {
         performSubscribe(

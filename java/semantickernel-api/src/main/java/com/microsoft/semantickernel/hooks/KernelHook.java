@@ -7,13 +7,19 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/**
- * Represents a hook that can be used to intercept and modify arguments to {@code KernelFunction}s.
- * A {@code KernelHook} implements a {@code Predicate} that determines if the hook is interested 
- * in a particular event, and a {@code Function} that can be used to modify the event. The 
- * @param <T> The type of the event that the hook is interested in
- */
-public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelHookEvent>, Function<T, T> {
+public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelHookEvent>,
+    Function<T, T> {
+
+    /**
+     * The priority of the hook. The default priority is 50. The priority is used to determine the
+     * order in which hooks that accept the same event type are executed, lower priorities are executed first. No ordering is
+     * guaranteed for hooks with the same priority.
+     *
+     * @return the priority of the hook
+     */
+    default int getPriority() {
+        return 50;
+    }
 
     /**
      * A hook that accepts {@link FunctionInvokingEvent} 
