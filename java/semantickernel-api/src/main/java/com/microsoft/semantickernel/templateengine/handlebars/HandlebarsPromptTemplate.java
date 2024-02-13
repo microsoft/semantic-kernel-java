@@ -31,6 +31,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
+/**
+ * A prompt template that uses the Handlebars template engine to render prompts.
+ */
 public class HandlebarsPromptTemplate implements PromptTemplate {
 
     private final PromptTemplateConfig promptTemplate;
@@ -160,7 +163,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         }
     }
 
-    public static class HandleBarsPromptTemplateHandler {
+    private static class HandleBarsPromptTemplateHandler {
 
         private final String template;
         private final Handlebars handlebars;
