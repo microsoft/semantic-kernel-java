@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
-
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
@@ -60,13 +59,13 @@ public class Example05_InlineFunctionDefinition {
         String promptTemplate = """
                 Generate a creative reason or excuse for the given event.
                 Be creative and be funny. Let your imagination run wild.
-                
+
                 Event: I am running late.
                 Excuse: I was being held ransom by giraffe gangsters.
-                
+
                 Event: I haven't been to the gym for a year
                 Excuse: I've been too busy training my pet dragon.
-                
+
                 Event: {{$input}}
             """.stripIndent();
 
@@ -77,8 +76,7 @@ public class Example05_InlineFunctionDefinition {
                     .withTemperature(0.4)
                     .withTopP(1)
                     .withMaxTokens(100)
-                    .build()
-            )
+                    .build())
             .build();
 
         var result = kernel
@@ -99,8 +97,7 @@ public class Example05_InlineFunctionDefinition {
         System.out.println(result.getResult());
 
         var fixedFunction = KernelFunctionFactory.createFromPrompt(
-            "Translate this date " + DateTimeFormatter
-                .ISO_LOCAL_DATE
+            "Translate this date " + DateTimeFormatter.ISO_LOCAL_DATE
                 .withZone(ZoneOffset.UTC)
                 .format(Instant.ofEpochSecond(1))
                 + " to French format",

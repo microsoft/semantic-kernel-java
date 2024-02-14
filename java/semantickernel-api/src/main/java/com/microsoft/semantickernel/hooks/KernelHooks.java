@@ -117,7 +117,8 @@ public class KernelHooks {
      */
     @SuppressWarnings("unchecked")
     public <T extends KernelHookEvent> T executeHooks(T event) {
-        SortedSet<KernelHook<?>> hooks = new TreeSet<>(Comparator.comparingInt(KernelHook::getPriority));
+        SortedSet<KernelHook<?>> hooks = new TreeSet<>(
+            Comparator.comparingInt(KernelHook::getPriority));
 
         hooks.addAll(this.hooks.values());
 
@@ -240,6 +241,5 @@ public class KernelHooks {
             throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
         }
     }
-
 
 }
