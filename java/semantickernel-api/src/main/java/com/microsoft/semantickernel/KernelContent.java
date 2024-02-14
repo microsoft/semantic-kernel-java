@@ -12,12 +12,12 @@ public abstract class KernelContent<T extends KernelContent<T>> {
 
     /*
      * The inner content representation. Use this to bypass the current
-     * abstraction. The usage of this property is considered "unsafe".
+     * abstraction. The usage of this property is considered "unsafe". 
      * Use it only if strictly necessary.
      */
     @Nullable
     private final Object innerContent;
-
+    
     /** 
      * The model ID used to generate the content.
      */

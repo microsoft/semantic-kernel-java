@@ -32,7 +32,8 @@ public class ServiceLoadUtil {
      *                            is not found.
      * @return A {@code java.util.function.Supplier} for the service loader.
      */
-    public static <T> Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
+    public static <T>
+    Supplier<T> findServiceLoader(Class<T> clazz, String alternativeClassName) {
         List<T> services = findAllServiceLoaders(clazz);
 
         T impl = null;

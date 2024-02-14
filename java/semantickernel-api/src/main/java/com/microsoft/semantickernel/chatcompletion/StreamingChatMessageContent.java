@@ -15,8 +15,7 @@ import javax.annotation.Nullable;
  * Represents the content of a chat message that is streamed.
  * @param <T> the type of the inner content
  */
-public class StreamingChatMessageContent<T extends KernelContent<T>>
-    extends StreamingKernelContent<T> {
+public class StreamingChatMessageContent<T extends KernelContent<T>> extends StreamingKernelContent<T> {
 
     private final String content;
     private final AuthorRole role;

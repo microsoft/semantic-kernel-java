@@ -71,6 +71,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
         }
     }
 
+
     /**
      * A hook that accepts {@link PreChatCompletionEvent} 
      */

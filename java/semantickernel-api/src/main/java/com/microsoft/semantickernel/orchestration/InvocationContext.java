@@ -208,6 +208,7 @@ public class InvocationContext implements Buildable {
             return this;
         }
 
+        
         @Override
         public InvocationContext build() {
             return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
