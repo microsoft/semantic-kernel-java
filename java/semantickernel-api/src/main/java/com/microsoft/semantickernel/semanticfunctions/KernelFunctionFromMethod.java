@@ -104,6 +104,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             @Nullable InvocationContext invocationContext);
     }
 
+
     /**
      * Creates a new instance of {@link KernelFunctionFromMethod} from a method.
      *

@@ -110,7 +110,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
      */
     public static <T> KernelFunction<T> create(
         PromptTemplateConfig promptConfig,
-        @Nullable PromptTemplateFactory promptTemplateFactory) {
+        @Nullable
+        PromptTemplateFactory promptTemplateFactory) {
         if (promptTemplateFactory == null) {
             promptTemplateFactory = new KernelPromptTemplateFactory();
         }
@@ -491,6 +492,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable
         private PromptTemplateConfig functionModel;
 
+
         @Override
         public FromPromptBuilder<T> withName(@Nullable String name) {
             this.name = name;
@@ -585,7 +587,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public FromPromptBuilder<T> withPromptTemplateConfig(
-            @Nullable PromptTemplateConfig functionModel) {
+            @Nullable
+            PromptTemplateConfig functionModel) {
             this.functionModel = functionModel;
             return this;
         }
@@ -595,12 +598,11 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
             if (functionModel != null) {
                 if (promptTemplate == null) {
-                    throw new IllegalStateException(
-                        "A PromptTemplate must be provided when building with a PromptTemplateConfig");
+                    throw new IllegalStateException("A PromptTemplate must be provided when building with a PromptTemplateConfig");
                 }
                 return new KernelFunctionFromPrompt<>(
-                    promptTemplate,
-                    functionModel,
+                    promptTemplate, 
+                    functionModel, 
                     executionSettings);
             }
 

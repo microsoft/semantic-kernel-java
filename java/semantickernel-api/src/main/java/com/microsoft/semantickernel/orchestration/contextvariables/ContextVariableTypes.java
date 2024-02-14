@@ -151,6 +151,7 @@ public class ContextVariableTypes {
         }
     }
 
+
     /**
      * Get the context variable type for the given class.
      * @param aClass The class to get the context variable type for.

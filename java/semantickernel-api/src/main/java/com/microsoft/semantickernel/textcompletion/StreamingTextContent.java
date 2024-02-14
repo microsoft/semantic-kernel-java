@@ -16,9 +16,10 @@ public class StreamingTextContent extends StreamingKernelContent<TextContent> {
         super(content, 0, null, null);
     }
 
+
     @Override
     public String getContent() {
-        return ((TextContent) getInnerContent()).getContent();
+        return ((TextContent)getInnerContent()).getContent();
     }
 
 }

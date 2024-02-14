@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PreChatCompletionHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.PromptRenderingHook;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,8 +14,12 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Function;
+
 import javax.annotation.Nullable;
 
+/**
+ * Represents a collection of hooks that can be used to intercept and modify events in the kernel.
+ */
 public class KernelHooks {
 
     private final Map<String, KernelHook<?>> hooks;
@@ -54,7 +59,12 @@ public class KernelHooks {
     public UnmodifiableKernelHooks unmodifiableClone() {
         return new UnmodifiableKernelHooks(this);
     }
+    
 
+    /**
+     * Gets the hooks in this collection.
+     * @return an unmodifiable map of the hooks
+     */
     private Map<String, KernelHook<?>> getHooks() {
         return Collections.unmodifiableMap(hooks);
     }

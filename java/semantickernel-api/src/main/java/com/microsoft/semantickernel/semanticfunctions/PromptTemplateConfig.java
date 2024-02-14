@@ -325,13 +325,13 @@ public class PromptTemplateConfig {
         return null;
     }
 
+
     /**
      * Set the prompt execution settings of the prompt template config.
      * @param executionSettings The prompt execution settings of the prompt template config.
      * @return {@code this} prompt template config.
      */
-    public PromptTemplateConfig setExecutionSettings(
-        Map<String, PromptExecutionSettings> executionSettings) {
+    public PromptTemplateConfig setExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
         this.executionSettings = new HashMap<>(executionSettings);
         return this;
     }

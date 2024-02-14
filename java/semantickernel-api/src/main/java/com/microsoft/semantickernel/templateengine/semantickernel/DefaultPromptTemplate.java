@@ -46,9 +46,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
     /*
      * Given a prompt template string, extract all the blocks (text, variables, function calls)
-     * 
-     * @return A list of all the blocks, ie the template tokenized in text, variables and function
-     * calls
+     * @return A list of all the blocks, ie the template tokenized in text, variables and function calls
      */
     private List<Block> extractBlocks() {
         String templateText = promptTemplate.getTemplate();
@@ -67,6 +65,7 @@ public class DefaultPromptTemplate implements PromptTemplate {
 
         return blocks;
     }
+
 
     /**
      * Augments the prompt template with any variables

@@ -64,7 +64,7 @@ public class Kernel implements Buildable {
      * @see KernelFunction#invokeAsync(Kernel)
      * @see KernelPluginCollection#getFunction(String, String)
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> FunctionInvocation<T> invokeAsync(
         String pluginName,
         String functionName) {
@@ -98,7 +98,7 @@ public class Kernel implements Buildable {
      * Gets the plugin with the specified name.
      * @param pluginName The name of the plugin to get.
      * @return The plugin with the specified name, or {@code null} if no such plugin exists.
-     */
+     */    
     @Nullable
     public KernelPlugin getPlugin(String pluginName) {
         return plugins.getPlugin(pluginName);
@@ -147,7 +147,7 @@ public class Kernel implements Buildable {
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public KernelHooks getGlobalKernelHooks() {
-        return globalKernelHooks;
+         return globalKernelHooks;
     }
 
     /**
@@ -187,6 +187,7 @@ public class Kernel implements Buildable {
     public static Kernel.Builder builder() {
         return new Kernel.Builder();
     }
+
 
     /**
      * A fluent builder for creating a new instance of {@code Kernel}.
