@@ -7,7 +7,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.orchestration.PromptExecutionSettings.Builder;
+import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelFunctionFactory;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -43,7 +43,9 @@ public class Example06_TemplateLanguage {
         // Functions loaded here are available as "time.*"
         kernel.importSkill(new TimeSkill(), "time");
 
-        // Semantic Function invoking time.Date and time.Time native functions
+        kernel.addPlugin(time);
+
+        // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """
                 Today is: {{time.Date}}
                 Current time is: {{time.Time}}
@@ -67,21 +69,12 @@ public class Example06_TemplateLanguage {
             .withSkills(kernel.getSkills())
             .build();
 
-        var renderedPrompt = promptRenderer.renderAsync(skContext);
-        System.out.println(renderedPrompt.block());
-
-        // Run the prompt / semantic function
-        var kindOfDay = kernel
-            .getSemanticFunctionBuilder()
-            .withPromptTemplate(functionDefinition)
-            .withRequestSettings(
-                SKBuilders.completionRequestSettings()
-                    .maxTokens(256)
-                    .temperature(0)
-                    .topP(0)
-                    .presencePenalty(0)
-                    .frequencyPenalty(0)
+        var kindOfDay = KernelFunctionFactory.createFromPrompt(functionDefinition)
+            .withDefaultExecutionSettings(
+                PromptExecutionSettings.builder()
+                    .withMaxTokens(100)
                     .build())
+            .withTemplateFormat(PromptTemplateConfig.SEMANTIC_KERNEL_TEMPLATE_FORMAT)
             .build();
 
         // Show the result
