@@ -66,13 +66,7 @@
     </properties>
 
     <modules>
-        <module>connectors/semantickernel-connectors-ai-openai</module>
-        <module>connectors/semantickernel-connectors-memory-sqlite</module>
-        <module>connectors/semantickernel-connectors-memory-azurecognitivesearch</module>
-        <module>connectors/semantickernel-connectors-memory-jdbc</module>
-        <module>connectors/semantickernel-connectors-memory-postgresql</module>
-        <module>connectors/semantickernel-connectors-memory-mysql</module>
-        <module>connectors/semantickernel-connectors-memory-redis</module>
+        <module>semantickernel-bom</module>
 
         <module>connectors/semantickernel-connectors-web-bing</module>
 

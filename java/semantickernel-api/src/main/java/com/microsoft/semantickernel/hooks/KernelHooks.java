@@ -192,7 +192,7 @@ public class KernelHooks {
 
         @Override
         public String addFunctionInvokingHook(
-            Function<FunctionInvokingEvent, FunctionInvokingEvent> function) {
+            Function<FunctionInvokingEvent<?>, FunctionInvokingEvent<?>> function) {
             throw new UnsupportedOperationException("unmodifiable instance of KernelHooks");
         }
 

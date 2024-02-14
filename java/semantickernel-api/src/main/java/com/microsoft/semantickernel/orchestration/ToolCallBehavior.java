@@ -29,7 +29,7 @@ public class ToolCallBehavior {
         }
 
         static String getKey(KernelFunction<?> function) {
-            return getKey(function.getSkillName(), function.getName());
+            return getKey(function.getPluginName(), function.getName());
         }
 
         static String getKey(String skillName, String functionName) {
