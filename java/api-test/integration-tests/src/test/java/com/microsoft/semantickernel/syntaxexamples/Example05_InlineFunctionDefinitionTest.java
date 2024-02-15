@@ -90,7 +90,7 @@ public class Example05_InlineFunctionDefinitionTest {
         var date = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneOffset.UTC)
             .format(Instant.ofEpochSecond(1));
         var message = "Translate this date " + date + " to French format";
-        var fixedFunction = KernelFunctionFactory.<String>createFromPrompt(message)
+        var fixedFunction = KernelFunction.<String>createFromPrompt(message)
             .withDefaultExecutionSettings(
                 PromptExecutionSettings.builder()
                     .withMaxTokens(100)
