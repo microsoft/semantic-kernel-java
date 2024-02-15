@@ -159,8 +159,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             : context.getContextVariableTypes().getVariableTypeForClass(
                 (Class<T>) this.getMetadata().getReturnParameter().getParameterType());
 
-        return this
-            .template
+        return this.template
             .renderAsync(kernel, arguments, context)
             .flatMapMany(prompt -> {
                 PromptRenderedEvent promptHookResult = kernelHooks
@@ -497,7 +496,6 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable
         private PromptTemplateConfig promptTemplateConfig;
 
-
         @Override
         public FromPromptBuilder<T> withName(@Nullable String name) {
             this.name = name;
@@ -592,8 +590,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
         @Override
         public FromPromptBuilder<T> withPromptTemplateConfig(
-            @Nullable
-            PromptTemplateConfig promptTemplateConfig) {
+            @Nullable PromptTemplateConfig promptTemplateConfig) {
             this.promptTemplateConfig = promptTemplateConfig;
             return this;
         }
