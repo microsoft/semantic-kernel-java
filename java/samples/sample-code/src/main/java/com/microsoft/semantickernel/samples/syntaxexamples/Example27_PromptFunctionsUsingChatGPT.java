@@ -46,7 +46,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
             .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
-        var func = KernelFunction.<String>createFromPrompt(
+        var func = KernelFunctionFactory.<String>createFromPrompt(
             "List the two planets closest to '{{$input}}', excluding moons, using bullet points.")
             .build();
 

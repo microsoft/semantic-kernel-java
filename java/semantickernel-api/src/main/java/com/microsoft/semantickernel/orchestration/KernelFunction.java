@@ -14,7 +14,6 @@ import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +59,7 @@ public abstract class KernelFunction<T> implements Buildable {
      * @return The name of the plugin that this function is within
      */
     public String getPluginName() {
-        return metadata.getName();
+        return metadata.getPluginName();
     }
 
     /**

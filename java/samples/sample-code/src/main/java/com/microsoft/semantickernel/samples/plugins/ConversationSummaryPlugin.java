@@ -36,7 +36,7 @@ public class ConversationSummaryPlugin {
             .withTopP(0.5)
             .build();
 
-        this.summarizeConversationFunction = KernelFunction
+        this.summarizeConversationFunction = KernelFunctionFactory
             .<String>createFromPrompt(PromptFunctionConstants.SummarizeConversationDefinition)
             .withDefaultExecutionSettings(settings)
             .withName("summarizeConversation")
@@ -44,14 +44,14 @@ public class ConversationSummaryPlugin {
                 "Given a section of a conversation transcript, summarize the part of the conversation.")
             .build();
 
-        this.conversationActionItemsFunction = KernelFunction
+        this.conversationActionItemsFunction = KernelFunctionFactory
             .<String>createFromPrompt(PromptFunctionConstants.GetConversationActionItemsDefinition)
             .withDefaultExecutionSettings(settings)
             .withName("conversationActionItems")
             .withDescription("Given a section of a conversation transcript, identify action items.")
             .build();
 
-        this.conversationTopicsFunction = KernelFunction
+        this.conversationTopicsFunction = KernelFunctionFactory
             .<String>createFromPrompt(PromptFunctionConstants.GetConversationTopicsDefinition)
             .withDefaultExecutionSettings(settings)
             .withName("conversationTopics")
