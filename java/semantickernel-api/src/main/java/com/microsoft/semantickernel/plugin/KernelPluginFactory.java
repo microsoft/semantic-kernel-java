@@ -60,7 +60,7 @@ public class KernelPluginFactory {
                     annotation.returnDescription(),
                     returnType);
 
-                return KernelFunctionFactory
+                return KernelFunction
                     .createFromMethod(method, target)
                     .withPluginName(pluginName)
                     .withFunctionName(annotation.name())

@@ -12,7 +12,6 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
-import com.microsoft.semantickernel.templateengine.semantickernel.DefaultPromptTemplate;
 
 public class Example58_ConfigureExecutionSettings {
 
@@ -91,7 +90,7 @@ public class Example58_ConfigureExecutionSettings {
             .parseFromJson(configPayload)
             .setTemplate(prompt);
 
-        var func = KernelFunctionFactory
+        var func = KernelFunction
             .createFromPrompt(promptConfig)
             .build();
 
