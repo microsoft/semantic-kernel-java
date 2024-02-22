@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -7,13 +8,13 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 
 /**
@@ -25,6 +26,14 @@ import com.microsoft.semantickernel.services.textcompletion.TextGenerationServic
  * README</a> for configuring your environment to run the examples.
  */
 public class Example06_TemplateLanguage {
+
+    private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
+    private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
+
+    // Only required if AZURE_CLIENT_KEY is set
+    private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+    private static final String MODEL_ID = System.getenv()
+        .getOrDefault("MODEL_ID", "text-davinci-003");
 
     public static void main(String[] args) throws ConfigurationException {
         System.out.println("======== TemplateLanguage ========");
@@ -103,5 +112,18 @@ public class Example06_TemplateLanguage {
          * "weekend": "weekend"
          * }
          */
+    }
+
+    public static class Time {
+
+        @DefineKernelFunction(name = "date")
+        public String date() {
+            return "2021-09-01";
+        }
+
+        @DefineKernelFunction(name = "time")
+        public String time() {
+            return "12:00:00";
+        }
     }
 }

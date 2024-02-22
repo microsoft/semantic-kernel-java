@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -15,7 +16,8 @@ public class PromptRenderingEvent implements KernelHookEvent {
 
     /**
      * Creates a new instance of the {@link PromptRenderingEvent} class.
-     * @param function the function
+     *
+     * @param function  the function
      * @param arguments the arguments
      */
     public PromptRenderingEvent(KernelFunction<?>function, @Nullable KernelFunctionArguments arguments) {
@@ -26,6 +28,7 @@ public class PromptRenderingEvent implements KernelHookEvent {
 
     /**
      * Gets the function that was invoked.
+     *
      * @return the function
      */
     public KernelFunction<?>getFunction() {
@@ -34,6 +37,7 @@ public class PromptRenderingEvent implements KernelHookEvent {
 
     /**
      * Gets the arguments that were passed to the function.
+     *
      * @return the arguments
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
