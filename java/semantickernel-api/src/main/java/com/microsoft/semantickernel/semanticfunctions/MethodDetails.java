@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
 import com.microsoft.semantickernel.plugin.KernelReturnParameterMetadata;
@@ -44,6 +45,7 @@ public class MethodDetails {
 
     /**
      * Get the name of the method.
+     *
      * @return The name of the method.
      */
     public String getName() {
@@ -52,6 +54,7 @@ public class MethodDetails {
 
     /**
      * Get the description of the method.
+     *
      * @return The description of the method.
      */
     @Nullable
@@ -61,6 +64,7 @@ public class MethodDetails {
 
     /**
      * Get the function that implements the method. This is an internal detail.
+     *
      * @return The function that implements the method.
      */
     public ImplementationFunc<?> getFunction() {
@@ -69,6 +73,7 @@ public class MethodDetails {
 
     /**
      * Get the parameters of the method.
+     *
      * @return The parameters of the method.
      */
     public List<KernelParameterMetadata<?>> getParameters() {
@@ -77,6 +82,7 @@ public class MethodDetails {
 
     /**
      * Get the return parameter of the method.
+     *
      * @return The return parameter of the method.
      */
     public KernelReturnParameterMetadata<?> getReturnParameter() {
