@@ -52,7 +52,9 @@ public class Example06_TemplateLanguage {
         // Functions loaded here are available as "time.*"
         kernel.importSkill(new TimeSkill(), "time");
 
-        kernel.addPlugin(time);
+        kernel = kernel.toBuilder()
+            .withPlugin(time)
+            .build();
 
         // Prompt Function invoking time.Date and time.Time method functions
         String functionDefinition = """
@@ -67,11 +69,11 @@ public class Example06_TemplateLanguage {
         // This allows to see the prompt before it's sent to OpenAI
         System.out.println("--- Rendered Prompt");
 
-        var promptRenderer = SKBuilders.promptTemplate()
-            .withPromptTemplateConfig(new PromptTemplateConfig())
-            .withPromptTemplate(functionDefinition)
-            .withPromptTemplateEngine(kernel.getPromptTemplateEngine())
-            .build();
+        var promptTemplate = new KernelPromptTemplateFactory()
+            .tryCreate(PromptTemplateConfig
+                .builder()
+                .withTemplate(functionDefinition)
+                .build());
 
         SKContext skContext = SKBuilders
             .context()
