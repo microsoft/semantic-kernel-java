@@ -34,10 +34,14 @@ They can then be run by:
 
 # Configuration
 
-You can define the provider of Open AI by setting the `OPENAI_CLIENT_TYPE`
-property or environment variable to either [`OPENAI`](https://platform.openai.com)
-or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/).
-By default, the samples will use the Open AI client.
+By default, the samples will use the Open AI client, but you can also use the Azure Open AI client.
+
+## Open AI client type
+
+You can define the provider of Open AI (openai.com or Azure), this can be done by setting the `OPENAI_CLIENT_TYPE`
+property or environment variable to either [`OPENAI`](https://platform.openai.com/)
+or [`AZURE_OPEN_AI`](https://learn.microsoft.com/azure/cognitive-services/openai/). By default, the samples will use the
+Open AI client.
 
 ```shell
 OPENAI_CLIENT_TYPE=OPEN_AI ../../mvnw exec:java -Dsample=Example04_CombineLLMPromptsAndNativeCode
