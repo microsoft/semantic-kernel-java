@@ -282,7 +282,6 @@ public class PromptTemplateConfig {
         return null;
     }
 
-
     /**
      * Get the template format of the prompt template config.
      *

@@ -111,7 +111,6 @@ public class ContextVariableTypeConverter<T> {
         this.toObjects = new ArrayList<>(toObjects);
     }
 
-
     /**
      * Use this converter to convert the object to the type of the context variable.
      *

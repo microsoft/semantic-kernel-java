@@ -167,7 +167,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * Add an assistant message to the chat history
      *
      * @param content The content of the assistant message
-     */    
+     */
     public void addAssistantMessage(String content) {
         addMessage(AuthorRole.ASSISTANT, content);
     }
@@ -176,7 +176,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * Add an system message to the chat history
      *
      * @param content The content of the system message
-     */    
+     */
     public void addSystemMessage(String content) {
         addMessage(AuthorRole.SYSTEM, content);
     }

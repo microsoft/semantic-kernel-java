@@ -152,7 +152,6 @@ public class ContextVariableTypes {
         }
     }
 
-
     /**
      * Add a converter to this {@code ContextVariableTypes} instance.
      *

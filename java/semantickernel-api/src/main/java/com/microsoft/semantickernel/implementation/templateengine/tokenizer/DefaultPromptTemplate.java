@@ -93,7 +93,6 @@ public class DefaultPromptTemplate implements PromptTemplate {
         return blocks;
     }
 
-
     /**
      * Augments the prompt template with any variables not already contained there but that are
      * referenced in the prompt template.

@@ -121,6 +121,7 @@ public class InputVariable {
     public String getDefaultValue() {
         return defaultValue;
     }
+
     /**
      * Gets whether the input variable is required.
      *

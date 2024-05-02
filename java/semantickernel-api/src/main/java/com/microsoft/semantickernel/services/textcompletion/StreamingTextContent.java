@@ -19,7 +19,6 @@ public class StreamingTextContent extends StreamingKernelContent<TextContent> {
         super(content, 0, null, null);
     }
 
-
     @Override
     @Nullable
     public String getContent() {

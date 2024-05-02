@@ -172,7 +172,7 @@ public class ContextVariable<T> {
      * @param types the types
      * @return the new instance
      */
-    @SuppressWarnings({"rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public static ContextVariable<?> untypedOf(
         @Nullable Object value,
         Class<?> clazz,
