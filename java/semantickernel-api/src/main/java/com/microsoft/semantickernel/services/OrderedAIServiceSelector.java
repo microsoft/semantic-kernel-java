@@ -69,10 +69,8 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
-        @Nullable
-        KernelFunction<?> function,
-        @Nullable
-        KernelFunctionArguments arguments,
+        @Nullable KernelFunction<?> function,
+        @Nullable KernelFunctionArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
 
         // Allow the execution settings from the kernel arguments to take precedence
@@ -169,7 +167,6 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             .findFirst()
             .orElseGet(() -> null);
     }
-
 
     /**
      * Gets the service with the specified service id.

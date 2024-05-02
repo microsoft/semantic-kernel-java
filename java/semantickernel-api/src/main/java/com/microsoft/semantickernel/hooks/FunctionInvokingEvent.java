@@ -24,7 +24,7 @@ public class FunctionInvokingEvent<T> implements KernelHookEvent {
      * @param function  The function that is being invoked
      * @param arguments The arguments that are being passed to the function
      */
-    public FunctionInvokingEvent(KernelFunction<T> function, 
+    public FunctionInvokingEvent(KernelFunction<T> function,
         @Nullable KernelFunctionArguments arguments) {
         this.function = function;
         this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();

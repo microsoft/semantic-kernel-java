@@ -65,7 +65,7 @@ public class KernelFunctionYaml {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static <T> KernelFunction<T> fromYaml(
         InputStream inputStream,
         @Nullable PromptTemplateFactory promptTemplateFactory) throws IOException {
