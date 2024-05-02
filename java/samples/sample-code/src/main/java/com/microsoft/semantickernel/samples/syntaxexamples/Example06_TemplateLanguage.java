@@ -110,17 +110,4 @@ public class Example06_TemplateLanguage {
             return "12:00:00";
         }
     }
-
-    public static class Time {
-
-        @DefineKernelFunction(name = "date")
-        public String date() {
-            return "2021-09-01";
-        }
-
-        @DefineKernelFunction(name = "time")
-        public String time() {
-            return "12:00:00";
-        }
-    }
 }
