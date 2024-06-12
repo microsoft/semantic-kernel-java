@@ -85,7 +85,7 @@ jobs:
         working-directory: java
 
       # Uploads test artifacts for each JDK version
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u
