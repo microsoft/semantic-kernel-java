@@ -1,9 +1,8 @@
-# Semantic Kernel
+# Semantic Kernel for Java
 
-[![Python package](https://img.shields.io/pypi/v/semantic-kernel)](https://pypi.org/project/semantic-kernel/)
-[![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
-[![dotnet Docker](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-docker.yml)
-[![dotnet Windows](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel/actions/workflows/dotnet-ci-windows.yml)
+The Semantic Kernel for Java, please see the [main Semantic Kernel repository here for .NET, Python, and other language support](https://github.com/microsoft/semantic-kernel). The remainder of this README is a summary focused on Java, please see the main repo for the full text for the Semantic Kernel.
+
+[Maven Package](https://mvnrepository.com/artifact/com.microsoft.semantic-kernel)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
@@ -27,56 +26,12 @@ Semantic Kernel will execute the plan for the user.
 
 ![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
 
+## Getting started with Semantic Kernel for Java
 
-
-## Getting started with Semantic Kernel
-
-The Semantic Kernel SDK is available in C#, Python, and Java. To get started, choose your preferred language below. See the [Feature Matrix](https://learn.microsoft.com/en-us/semantic-kernel/get-started/supported-languages) to see a breakdown of
-feature parity between our currently supported languages.
-
-<table width=100%>
-  <tbody>
-    <tr>
-      <td>
-        <img align="left" width=52px src="https://user-images.githubusercontent.com/371009/230673036-fad1e8e6-5d48-49b1-a9c1-6f9834e0d165.png">
-        <div>
-          <a href="dotnet/README.md">Using Semantic Kernel in C#</a> &nbsp<br/>
-        </div>
-      </td>
-      <td>
-        <img align="left" width=52px src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg">
-        <div>
-          <a href="python/README.md">Using Semantic Kernel in Python</a>
-        </div>
-      </td>
-      <td>
-        <img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/Java_programming_language_logo.svg" alt="Java logo">
-        <div>
-          <a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
-        </div>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/java_programming_language_logo.svg" alt="Java logo"/><a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
 
 The quickest way to get started with the basics is to get an API key
 from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
-
-### For C#:
-
-1. Create a new console app.
-2. Add the semantic kernel nuget [Microsoft.SemanticKernel](https://www.nuget.org/packages/Microsoft.SemanticKernel/).
-3. Copy the code from [here](dotnet/README.md) into the app `Program.cs` file.
-4. Replace the configuration placeholders for API key and other params with your key and settings.
-5. Run with `F5` or `dotnet run`
-
-### For Python:
-
-1. Install the pip package: `python -m pip install semantic-kernel`.
-2. Create a new script e.g. `hello-world.py`.
-3. Store your API key and settings in an `.env` file as described [here](python/README.md).
-4. Copy the code from [here](python/README.md) into the `hello-world.py` script.
-5. Run the python script.
 
 ### For Java:
 
@@ -102,11 +57,6 @@ on our Learn site. Each sample comes with a completed C# and Python project that
 1. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions)
 1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner)
 1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins)
-
-Finally, refer to our API references for more details on the C# and Python APIs:
-
-- [C# API reference](https://learn.microsoft.com/en-us/dotnet/api/microsoft.semantickernel?view=semantic-kernel-dotnet)
-- Python API reference (coming soon)
 
 ## Join the community
 
