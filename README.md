@@ -1,6 +1,6 @@
 # Semantic Kernel for Java
 
-The Semantic Kernel for Java, please see the [main Semantic Kernel repository here for .NET, Python, and other language support](https://github.com/microsoft/semantic-kernel). The remainder of this README is a summary focused on Java, please see the main repo for the full text for the Semantic Kernel.
+The [Semantic Kernel for Java](https://learn.microsoft.com/en-us/semantic-kernel/overview/?tabs=Java). For .NET, Python and other language support, see [https://github.com/semantic-kernel.](https://github.com/semantic-kernel). The remainder of this README is a summary focused on Java, please see the main repo for the full text for the Semantic Kernel.
 
 [Maven Package](https://mvnrepository.com/artifact/com.microsoft.semantic-kernel)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
@@ -28,16 +28,16 @@ Semantic Kernel will execute the plan for the user.
 
 ## Getting started with Semantic Kernel for Java
 
-<img align="left" width=52px height=52px src="https://upload.wikimedia.org/wikipedia/en/3/30/java_programming_language_logo.svg" alt="Java logo"/><a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
+<img align="left" width=52px height=52px src="https://hg.openjdk.org/duke/duke/raw-file/e71b60779736/vector/ThumbsUp.svg" alt="Java logo"/><a href="https://github.com/microsoft/semantic-kernel/blob/main/java/README.md">Using Semantic Kernel in Java</a>
 
 The quickest way to get started with the basics is to get an API key
 from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java console applications/scripts below.
 
 ### For Java:
 
-1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel.git`
-    1. To access the latest Java code, clone and checkout the Java development branch: `git clone -b java-development https://github.com/microsoft/semantic-kernel.git`
-2. Follow the instructions [here](https://github.com/microsoft/semantic-kernel/blob/main/java/samples/sample-code/README.md)
+1. Clone the repository: `git clone https://github.com/microsoft/semantic-kernel-java.git`
+    1. To access the latest Java code, clone and checkout the Java development branch: `git clone https://github.com/microsoft/semantic-kernel-java.git`
+2. Follow the instructions [Start learning how to use Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?tabs=Java).
 
 ## Learning how to use Semantic Kernel
 
