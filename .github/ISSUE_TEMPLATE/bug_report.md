@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: 'Bug: '
-labels: ["bug"]
+labels: ["bug", "triage"]
 projects: ["semantic-kernel"]
 assignees: ''
 
@@ -24,11 +24,13 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
+**Maven**
+ - Version: [e.g. 1.1.5]
+ - Dependencies: list of semantic-kernel related dependencies in your `pom.xml`
+
 **Platform**
- - OS: [e.g. Windows, Mac]
- - IDE: [e.g. Visual Studio, VS Code]
- - Language: [e.g. C#, Python]
- - Source: [e.g. NuGet package version 0.1.0, pip package version 0.1.0, main branch of repository]
+ - IDE: [e.g. IntelliJ, Eclipse, VS Code]
+ - JDK version: [e.g. JDK 11.0.17]
 
 **Additional context**
 Add any other context about the problem here.
