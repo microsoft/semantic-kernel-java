@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           java-version: 8
-          distribution: microsoft
+          distribution: temurin
           cache: maven
 
       # Builds the project with Maven using the matrix JDK version
