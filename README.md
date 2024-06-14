@@ -41,14 +41,8 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 
 ## Learning how to use Semantic Kernel
 
-The fastest way to learn how to use Semantic Kernel is with our C# and Python Jupyter notebooks. These notebooks
-demonstrate how to use Semantic Kernel with code snippets that you can run with a push of a button.
-
-- [Getting Started with C# notebook](dotnet/notebooks/00-getting-started.ipynb)
-- [Getting Started with Python notebook](python/samples/getting_started/00-getting-started.ipynb)
-
-Once you've finished the getting started notebooks, you can then check out the main walkthroughs
-on our Learn site. Each sample comes with a completed C# and Python project that you can run locally.
+The fastest way to learn how to use Semantic Kernel is with our walkthroughs
+on our Learn site.
 
 1. 📖 [Overview of the kernel](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/)
 1. 🔌 [Understanding AI plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins)
