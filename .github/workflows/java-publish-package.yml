@@ -1,4 +1,4 @@
-name: Build Java Semantic Kernel
+name: Deploy Java Semantic Kernel Package
 
 # Triggers the workflow on merging a PR
 on:
