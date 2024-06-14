@@ -2,7 +2,7 @@
 
 The [Semantic Kernel for Java](https://learn.microsoft.com/en-us/semantic-kernel/overview/?tabs=Java). For .NET, Python and other language support, see [https://github.com/semantic-kernel.](https://github.com/semantic-kernel). The remainder of this README is a summary focused on Java, please see the main repo for the full text for the Semantic Kernel.
 
-[Maven Package](https://mvnrepository.com/artifact/com.microsoft.semantic-kernel)
+[Maven Package](https://repo1.maven.org/maven2/com/microsoft/semantic-kernel/semantickernel-api/)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
