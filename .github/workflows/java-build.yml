@@ -5,11 +5,11 @@ name: Build Java Semantic Kernel
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "java-development" ]
+    branches: [ "main" ]
     paths:
       - 'java/**'
   pull_request:
-    branches: [ "main", "java-development" ]
+    branches: [ "main" ]
     paths:
       - 'java/**'
 
