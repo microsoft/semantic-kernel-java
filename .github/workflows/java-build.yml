@@ -5,11 +5,11 @@ name: Build Java Semantic Kernel
 on:
   workflow_dispatch:
   push:
-    branches: [ "main", "java-development" ]
+    branches: [ "main" ]
     paths:
       - 'java/**'
   pull_request:
-    branches: [ "main", "java-development" ]
+    branches: [ "main" ]
     paths:
       - 'java/**'
 
@@ -17,32 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  # Determines if Java files have changed
-  paths-filter:
-    runs-on: ubuntu-latest
-    outputs:
-      javaChanges: ${{ steps.filter.outputs.java }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            java:
-              - 'java/**'
-              - '**/java/**'
-      - name: java tests
-        if: steps.filter.outputs.java == 'true'
-        run: echo "Java file"
-      - name: not java tests
-        if: steps.filter.outputs.java != 'true'
-        run: echo "NOT java file"
-
   # Builds and tests the Java project
   java-build:
     runs-on: ubuntu-latest
-    needs: paths-filter
-    if: needs.paths-filter.outputs.javaChanges == 'true'
     strategy:
       fail-fast: false
       matrix:
