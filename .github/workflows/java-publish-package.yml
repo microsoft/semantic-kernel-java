@@ -1,0 +1,34 @@
+name: Build Java Semantic Kernel
+
+# Triggers the workflow on merging a PR
+on:
+  pull_request:
+    types:
+      - closed
+    branches: [ "main" ]
+    paths:
+      - 'java/**'
+
+permissions:
+  contents: read
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Sets up the specified JDK version from the matrix
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 8
+          distribution: microsoft
+          cache: maven
+
+      # Builds the project with Maven using the matrix JDK version
+      - name: Build with Maven
+        run: ./mvnw -B -DskipTests -Pcompile-jdk8 -P-compile-jdk17 -Pgithub-packages clean deploy --file pom.xml
+        working-directory: java
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
