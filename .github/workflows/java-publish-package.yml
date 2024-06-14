@@ -23,7 +23,7 @@ jobs:
       # Sets up the specified JDK version from the matrix
       - uses: actions/setup-java@v4
         with:
-          java-version: 8
+          java-version: 11
           distribution: microsoft
           cache: maven
 
