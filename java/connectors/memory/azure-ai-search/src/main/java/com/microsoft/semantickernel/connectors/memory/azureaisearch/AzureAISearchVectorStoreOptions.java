@@ -1,9 +1,15 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.azureaisearch;
 
 import com.azure.search.documents.SearchDocument;
 import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
 
+/**
+ * Options for an Azure AI Search vector store.
+ *
+ * @param <Record> the record type
+ */
 public class AzureAISearchVectorStoreOptions<Record> {
     private String defaultCollectionName;
     private Class<Record> recordClass;
@@ -45,12 +51,19 @@ public class AzureAISearchVectorStoreOptions<Record> {
             return this;
         }
 
+        /**
+         * Sets the default collection name.
+         *
+         * @param defaultCollectionName the default collection name
+         * @return the builder
+         */
         public Builder<Record> withDefaultCollectionName(String defaultCollectionName) {
             this.defaultCollectionName = defaultCollectionName;
             return this;
         }
 
-        public Builder<Record> withVectorStoreRecordMapper(VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper) {
+        public Builder<Record> withVectorStoreRecordMapper(
+            VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper) {
             this.vectorStoreRecordMapper = vectorStoreRecordMapper;
             return this;
         }

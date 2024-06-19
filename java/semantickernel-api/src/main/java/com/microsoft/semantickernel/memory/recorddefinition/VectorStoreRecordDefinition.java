@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.memory.recorddefinition;
 
 import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordDataAttribute;
@@ -7,6 +8,7 @@ import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordVec
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,31 +25,32 @@ public class VectorStoreRecordDefinition {
     }
 
     public Collection<VectorStoreRecordDataField> getDataFields() {
-        return dataFields;
+        return Collections.unmodifiableCollection(dataFields);
     }
 
     public Collection<VectorStoreRecordVectorField> getVectorFields() {
-        return vectorFields;
+        return Collections.unmodifiableCollection(vectorFields);
     }
 
     private VectorStoreRecordDefinition(
-            VectorStoreRecordKeyField keyField,
-            Collection<VectorStoreRecordDataField> dataFields,
-            Collection<VectorStoreRecordVectorField> vectorFields) {
+        VectorStoreRecordKeyField keyField,
+        Collection<VectorStoreRecordDataField> dataFields,
+        Collection<VectorStoreRecordVectorField> vectorFields) {
         this.keyField = keyField;
         this.dataFields = dataFields;
         this.vectorFields = vectorFields;
     }
 
     private static VectorStoreRecordDefinition checkFields(
-            Collection<VectorStoreRecordKeyField> keyFields,
-            Collection<VectorStoreRecordDataField> dataFields,
-            Collection<VectorStoreRecordVectorField> vectorFields) {
+        Collection<VectorStoreRecordKeyField> keyFields,
+        Collection<VectorStoreRecordDataField> dataFields,
+        Collection<VectorStoreRecordVectorField> vectorFields) {
         if (keyFields.size() != 1) {
             throw new IllegalArgumentException("Exactly one key field is required");
         }
 
-        return new VectorStoreRecordDefinition(keyFields.iterator().next(), dataFields, vectorFields);
+        return new VectorStoreRecordDefinition(keyFields.iterator().next(), dataFields,
+            vectorFields);
     }
 
     /**
@@ -57,19 +60,19 @@ public class VectorStoreRecordDefinition {
      */
     public static VectorStoreRecordDefinition create(Collection<VectorStoreRecordField> fields) {
         List<VectorStoreRecordKeyField> keyFields = fields.stream()
-                .filter(p -> p instanceof VectorStoreRecordKeyField)
-                .map(p -> (VectorStoreRecordKeyField) p)
-                .collect(Collectors.toList());
+            .filter(p -> p instanceof VectorStoreRecordKeyField)
+            .map(p -> (VectorStoreRecordKeyField) p)
+            .collect(Collectors.toList());
 
         List<VectorStoreRecordDataField> dataFields = fields.stream()
-                .filter(p -> p instanceof VectorStoreRecordDataField)
-                .map(p -> (VectorStoreRecordDataField) p)
-                .collect(Collectors.toList());
+            .filter(p -> p instanceof VectorStoreRecordDataField)
+            .map(p -> (VectorStoreRecordDataField) p)
+            .collect(Collectors.toList());
 
         List<VectorStoreRecordVectorField> vectorFields = fields.stream()
-                .filter(p -> p instanceof VectorStoreRecordVectorField)
-                .map(p -> (VectorStoreRecordVectorField) p)
-                .collect(Collectors.toList());
+            .filter(p -> p instanceof VectorStoreRecordVectorField)
+            .map(p -> (VectorStoreRecordVectorField) p)
+            .collect(Collectors.toList());
 
         return checkFields(keyFields, dataFields, vectorFields);
     }
@@ -90,8 +93,10 @@ public class VectorStoreRecordDefinition {
             }
 
             if (field.isAnnotationPresent(VectorStoreRecordDataAttribute.class)) {
-                VectorStoreRecordDataAttribute dataAttribute = field.getAnnotation(VectorStoreRecordDataAttribute.class);
-                dataFields.add(new VectorStoreRecordDataField(field.getName(), dataAttribute.hasEmbedding(), dataAttribute.embeddingFieldName()));
+                VectorStoreRecordDataAttribute dataAttribute = field
+                    .getAnnotation(VectorStoreRecordDataAttribute.class);
+                dataFields.add(new VectorStoreRecordDataField(field.getName(),
+                    dataAttribute.hasEmbedding(), dataAttribute.embeddingFieldName()));
             }
 
             if (field.isAnnotationPresent(VectorStoreRecordVectorAttribute.class)) {

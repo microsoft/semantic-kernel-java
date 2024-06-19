@@ -40,7 +40,7 @@ public class Embedding {
      * @return The embedding vector as a read-only list.
      */
     public List<Float> getVector() {
-        return vector;
+        return Collections.unmodifiableList(this.vector);
     }
 
     /**
