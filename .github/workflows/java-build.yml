@@ -6,12 +6,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths:
-      - 'java/**'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'java/**'
 
 permissions:
   contents: read
@@ -54,16 +50,14 @@ jobs:
       # Builds the project with Maven using the matrix JDK version
       - name: Build with Maven
         run: ./mvnw -B -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
-        working-directory: java
 
       # Runs tests with Maven using the matrix JDK version
       - name: Run tests
         run: ./mvnw -B -Pbug-check -Pcompile-jdk${{ matrix.java-versions }} test --file pom.xml
-        working-directory: java
 
       # Uploads test artifacts for each JDK version
       - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u
-          path: java/**/target/surefire-reports/*Test.txt
+          path: ./**/target/surefire-reports/*Test.txt
