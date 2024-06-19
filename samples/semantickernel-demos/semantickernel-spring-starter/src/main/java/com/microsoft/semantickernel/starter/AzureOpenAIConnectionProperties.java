@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.starter;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,12 +30,12 @@ public class AzureOpenAIConnectionProperties {
         return endpoint;
     }
 
-    public String getKey() {
-        return key;
-    }
-
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public void setKey(String key) {
