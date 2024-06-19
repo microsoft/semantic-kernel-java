@@ -60,4 +60,4 @@ jobs:
         if: always()
         with:
           name: test_output_sk_jdk${{ matrix.java-versions }}u
-          path: /**/target/surefire-reports/*Test.txt
+          path: ./**/target/surefire-reports/*Test.txt
