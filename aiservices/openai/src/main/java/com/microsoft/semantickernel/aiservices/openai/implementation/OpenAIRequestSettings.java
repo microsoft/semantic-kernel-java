@@ -26,8 +26,8 @@ public final class OpenAIRequestSettings {
 
     static {
         String version = loadVersion();
-        useragent = "Semantic-Kernel-Java-" + version;
-        header = "Java-" + version;
+        useragent = "semantic-kernel-java/" + version;
+        header = "java/" + version;
     }
 
     private static String loadVersion() {
