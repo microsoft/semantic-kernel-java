@@ -4,12 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
-    paths:
-      - 'java/**'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'java/**'
 
 permissions:
   contents: read
@@ -48,13 +44,12 @@ jobs:
 
       - name: Build with Maven
         run: ./mvnw -B -Pwith-samples -Pbug-check -DskipTests -Pcompile-jdk${{ matrix.java-versions }} clean install --file pom.xml
-        working-directory: java
         if: ${{ matrix.java-versions >= 17 }}
 
       # API tests run on JDK 17+
       - name: Run integration tests
         run: ../mvnw -B -Pbug-check clean install --file pom.xml
-        working-directory: java/api-test
+        working-directory: api-test
         env:
           OPENAI_API_KEY: ""
           AZURE_OPENAI_ENDPOINT: ""
@@ -65,5 +60,5 @@ jobs:
       # Samples build on JDK 17+
       - name: Build semantic-kernel samples
         run: ../mvnw -B clean install --file pom.xml
-        working-directory: java/samples
+        working-directory: samples
         if: ${{ matrix.java-versions >= 17 }}

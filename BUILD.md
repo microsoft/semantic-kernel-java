@@ -111,8 +111,8 @@ Make sure your pull request has an objective title and a clear description expla
 
 ## License
 
-This project is licensed under the [MIT License](../LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
 ## Code of Conduct
 
-This project has adopted the [Microsoft Open Source Code of Conduct](../CODE_OF_CONDUCT.md).
+This project has adopted the [Microsoft Open Source Code of Conduct](CODE_OF_CONDUCT.md).

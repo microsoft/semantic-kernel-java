@@ -6,8 +6,6 @@ on:
     types:
       - closed
     branches: [ "main" ]
-    paths:
-      - 'java/**'
 
 permissions:
   contents: read
@@ -30,6 +28,5 @@ jobs:
       # Builds the project with Maven using the matrix JDK version
       - name: Build with Maven
         run: ./mvnw -B -DskipTests -Pcompile-jdk8 -P-compile-jdk17 -Pgithub-packages clean deploy --file pom.xml
-        working-directory: java
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
