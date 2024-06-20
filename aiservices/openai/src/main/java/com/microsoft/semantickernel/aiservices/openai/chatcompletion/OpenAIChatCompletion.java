@@ -39,6 +39,7 @@ import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreToolCallEvent;
 import com.microsoft.semantickernel.implementation.CollectionUtil;
+import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -51,6 +52,8 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
+import io.opentelemetry.api.trace.Span;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,8 +64,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
-
-import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -264,17 +265,28 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                     invocationContext)))
             .getOptions();
 
+        Span span = SemanticKernelTelemetry.startChatCompletionSpan(
+            getModelId(),
+            SemanticKernelTelemetry.OPEN_AI_PROVIDER,
+            options.getMaxTokens(),
+            options.getTemperature(),
+            options.getTopP());
         return getClient()
             .getChatCompletionsWithResponse(getDeploymentName(), options,
                 OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
                 if (completionsResult.getStatusCode() >= 400) {
+                    SemanticKernelTelemetry.endSpanWithError(span);
                     return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
                         "Request failed: " + completionsResult.getStatusCode()));
                 }
+                SemanticKernelTelemetry.endSpanWithUsage(span,
+                    completionsResult.getValue().getUsage());
+
                 return Mono.just(completionsResult.getValue());
             })
             .flatMap(completions -> {
+
                 List<ChatResponseMessage> responseMessages = completions
                     .getChoices()
                     .stream()
