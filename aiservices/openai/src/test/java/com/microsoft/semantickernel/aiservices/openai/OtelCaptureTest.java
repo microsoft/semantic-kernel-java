@@ -11,6 +11,7 @@ import com.azure.core.http.rest.Response;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -61,6 +62,8 @@ public class OtelCaptureTest {
             })
                 .build())
             .build();
+
+        GlobalOpenTelemetry.resetForTest();
 
         otel = OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
