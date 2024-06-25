@@ -9,7 +9,8 @@ import com.azure.ai.openai.models.ChatRequestAssistantMessage;
 import com.azure.core.http.HttpHeaders;
 import com.azure.core.http.HttpRequest;
 import com.azure.core.http.rest.Response;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.azure.json.JsonOptions;
+import com.azure.json.implementation.DefaultJsonReader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -104,10 +105,8 @@ public class OpenAiChatCompletionTest {
                             String message = EmbeddedResourceLoader.readFile("chatCompletion.txt",
                                 OpenAiChatCompletionTest.class);
 
-                            return new ObjectMapper()
-                                .readValue(String.format(message, "Snuggles"),
-                                    ChatCompletions.class);
-
+                            return ChatCompletions
+                                .fromJson(DefaultJsonReader.fromString(message, new JsonOptions()));
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
