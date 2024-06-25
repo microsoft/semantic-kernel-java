@@ -285,7 +285,7 @@ public class ToolCallBehaviourTest {
 
     public static MappingBuilder buildTextResponse(String bodyMatcher, String responseBody) {
         return post(urlEqualTo(
-            "//openai/deployments/gpt-35-turbo-2/completions?api-version=2024-03-01-preview"))
+            "//openai/deployments/gpt-35-turbo-2/completions?api-version=2024-05-01-preview"))
             .withRequestBody(new ContainsPattern(bodyMatcher))
             .willReturn(
                 aResponse()
@@ -296,7 +296,7 @@ public class ToolCallBehaviourTest {
 
     public static MappingBuilder buildResponse(String bodyMatcher, String responseBody) {
         return post(urlEqualTo(
-            "//openai/deployments/gpt-35-turbo-2/chat/completions?api-version=2024-03-01-preview"))
+            "//openai/deployments/gpt-35-turbo-2/chat/completions?api-version=2024-05-01-preview"))
             .withRequestBody(new ContainsPattern(bodyMatcher))
             .willReturn(
                 aResponse()
