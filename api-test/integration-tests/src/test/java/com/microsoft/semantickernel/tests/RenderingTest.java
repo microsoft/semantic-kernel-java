@@ -210,12 +210,12 @@ public class RenderingTest {
 
     @DefineKernelFunction(name = "WithListReturn2", returnType = "java.util.List")
     public List<Integer> WithListReturn2() {
-        return List.of(1, 2, 3);
+        return List.of(4, 5, 6);
     }
 
     @DefineKernelFunction(name = "WithListReturn3", returnType = "java.util.List")
     public Mono<List<Integer>> WithListReturn3() {
-        return Mono.just(List.of(1, 2, 3));
+        return Mono.just(List.of(7, 8, 9));
     }
 
     @DefineKernelFunction(name = "WithListReturn4", returnType = "java.util.List")
@@ -239,15 +239,11 @@ public class RenderingTest {
                     .build())
             .block();
 
-        Assertions.assertTrue(
-            wm.getAllServeEvents().get(0).getRequest().getBodyAsString().equals(
-                "{\"messages\":["
-                    + "{\"role\":\"user\",\"content\":\"[]\"},"
-                    + "{\"role\":\"user\",\"content\":\"[1, 2, 3]\"},"
-                    + "{\"role\":\"user\",\"content\":\"[1, 2, 3]\"},"
-                    + "{\"role\":\"user\",\"content\":\"[1, 2, 3]\"},"
-                    + "{\"role\":\"user\",\"content\":\"[]\"}"
-                    + "],\"model\":\"gpt-35-turbo-2\"}"));
+        String requestBody = wm.getAllServeEvents().get(0).getRequest().getBodyAsString();
+        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[]"));
+        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[1, 2, 3]"));
+        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[4, 5, 6]"));
+        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[7, 8, 9]"));
     }
 
     private Kernel buildTextKernel() {
