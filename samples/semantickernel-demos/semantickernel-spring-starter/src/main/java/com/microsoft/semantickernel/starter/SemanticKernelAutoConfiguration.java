@@ -1,10 +1,12 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.starter;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
-import com.microsoft.semantickernel.SKBuilders;
+import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -20,7 +22,21 @@ import org.springframework.util.Assert;
 @EnableConfigurationProperties(AzureOpenAIConnectionProperties.class)
 public class SemanticKernelAutoConfiguration {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SemanticKernelAutoConfiguration.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        SemanticKernelAutoConfiguration.class);
+
+    private static String setModelID(AzureOpenAIConnectionProperties connectionProperties) {
+        String modelId;
+        if (connectionProperties.getDeploymentName() == null) {
+            modelId = "text-davinci-003";
+            LOGGER.warn(
+                "No deployment name specified, using default model id: " + modelId);
+        } else {
+            modelId = connectionProperties.getDeploymentName();
+            LOGGER.info("Using model id: " + modelId);
+        }
+        return modelId;
+    }
 
     /**
      * Creates a {@link OpenAIAsyncClient} with the endpoint and key specified in the
@@ -54,25 +70,12 @@ public class SemanticKernelAutoConfiguration {
     @Bean
     public Kernel semanticKernel(OpenAIAsyncClient client,
         AzureOpenAIConnectionProperties connectionProperties) {
-        return SKBuilders.kernel()
-            .withDefaultAIService(
-                SKBuilders.textCompletion()
+        return Kernel.builder()
+            .withAIService(TextGenerationService.class,
+                OpenAITextGenerationService.builder()
                     .withModelId(setModelID(connectionProperties))
-                    .withOpenAIClient(client)
+                    .withOpenAIAsyncClient(client)
                     .build())
             .build();
-    }
-
-    private static String setModelID(AzureOpenAIConnectionProperties connectionProperties) {
-        String modelId;
-        if (connectionProperties.getDeploymentName() == null) {
-            modelId = "text-davinci-003";
-            LOGGER.warn(
-                "No deployment name specified, using default model id: " + modelId);
-        } else {
-            modelId = connectionProperties.getDeploymentName();
-            LOGGER.info("Using model id: " + modelId);
-        }
-        return modelId;
     }
 }
