@@ -2,6 +2,8 @@
 package com.microsoft.semantickernel.services.textembedding;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -32,6 +34,21 @@ public class Embedding {
     public Embedding(@Nonnull List<Float> vector) {
         Objects.requireNonNull(vector);
         this.vector = Collections.unmodifiableList(vector);
+    }
+
+    /**
+     * Initializes a new instance of the Embedding class that contains numeric elements copied from
+     * the specified array
+     *
+     * @param vector The array whose elements are copied to the new Embedding
+     */
+    public Embedding(@Nonnull float[] vector) {
+        Objects.requireNonNull(vector);
+        List<Float> list = new ArrayList<>(vector.length);
+        for (float f : vector) {
+            list.add(f);
+        }
+        this.vector = Collections.unmodifiableList(list);
     }
 
     /**

@@ -4,8 +4,17 @@ package com.microsoft.semantickernel.memory.recordoptions;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
 public class UpsertRecordOptions {
-    private String collectionName;
+    private final String collectionName;
 
+    private UpsertRecordOptions(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -31,12 +40,15 @@ public class UpsertRecordOptions {
          * @return UpsertRecordOptions
          */
         public UpsertRecordOptions build() {
-            UpsertRecordOptions options = new UpsertRecordOptions();
-            options.collectionName = collectionName;
-            return options;
+            return new UpsertRecordOptions(collectionName);
         }
     }
 
+    /**
+     * Gets the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }

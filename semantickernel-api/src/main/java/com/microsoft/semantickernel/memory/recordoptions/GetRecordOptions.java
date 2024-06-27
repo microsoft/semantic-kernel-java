@@ -4,9 +4,19 @@ package com.microsoft.semantickernel.memory.recordoptions;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
 public class GetRecordOptions {
-    private String collectionName;
-    private boolean includeVectors;
+    private final String collectionName;
+    private final boolean includeVectors;
 
+    private GetRecordOptions(String collectionName, boolean includeVectors) {
+        this.collectionName = collectionName;
+        this.includeVectors = includeVectors;
+    }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -45,17 +55,24 @@ public class GetRecordOptions {
          */
         @Override
         public GetRecordOptions build() {
-            GetRecordOptions options = new GetRecordOptions();
-            options.collectionName = collectionName;
-            options.includeVectors = includeVectors;
-            return options;
+            return new GetRecordOptions(collectionName, includeVectors);
         }
     }
 
+    /**
+     * Gets the collection name.
+     *
+     * @return the collection name
+     */
     public String getCollectionName() {
         return collectionName;
     }
 
+    /**
+     * Gets whether to include vectors.
+     *
+     * @return whether to include vectors
+     */
     public boolean includeVectors() {
         return includeVectors;
     }

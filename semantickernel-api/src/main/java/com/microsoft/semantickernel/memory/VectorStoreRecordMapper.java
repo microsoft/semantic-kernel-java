@@ -44,7 +44,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      * @return the storage model
      */
     public StorageModel toStorageModel(Record record) {
-        return toStorageModelMapper.apply(record);
+        return getToStorageModelMapper().apply(record);
     }
 
     /**
@@ -54,13 +54,13 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      * @return the record
      */
     public Record toRecord(StorageModel storageModel) {
-        return toRecordMapper.apply(storageModel);
+        return getToRecordMapper().apply(storageModel);
     }
 
     public static class Builder<RecordDataModel, StorageModel>
         implements SemanticKernelBuilder<VectorStoreRecordMapper<RecordDataModel, StorageModel>> {
         private Function<RecordDataModel, StorageModel> toStorageModelMapper;
-        private Function<StorageModel, RecordDataModel> toDataModelMapper;
+        private Function<StorageModel, RecordDataModel> toRecordMapper;
 
         /**
          * Sets the function to convert a record to a storage model.
@@ -77,12 +77,12 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
         /**
          * Sets the function to convert a storage model to a record.
          *
-         * @param toDataModelMapper the function to convert a storage model to a record
+         * @param toRecordMapper the function to convert a storage model to a record
          * @return the builder
          */
         public Builder<RecordDataModel, StorageModel> toRecordMapper(
-            Function<StorageModel, RecordDataModel> toDataModelMapper) {
-            this.toDataModelMapper = toDataModelMapper;
+            Function<StorageModel, RecordDataModel> toRecordMapper) {
+            this.toRecordMapper = toRecordMapper;
             return this;
         }
 
@@ -95,7 +95,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
         public VectorStoreRecordMapper<RecordDataModel, StorageModel> build() {
             VectorStoreRecordMapper<RecordDataModel, StorageModel> vectorStoreRecordMapper = new VectorStoreRecordMapper<>();
             vectorStoreRecordMapper.toStorageModelMapper = toStorageModelMapper;
-            vectorStoreRecordMapper.toRecordMapper = toDataModelMapper;
+            vectorStoreRecordMapper.toRecordMapper = toRecordMapper;
             return vectorStoreRecordMapper;
         }
     }

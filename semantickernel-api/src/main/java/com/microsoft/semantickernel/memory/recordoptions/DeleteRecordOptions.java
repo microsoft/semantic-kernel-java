@@ -4,7 +4,20 @@ package com.microsoft.semantickernel.memory.recordoptions;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
 public class DeleteRecordOptions {
-    private String collectionName;
+    private final String collectionName;
+
+    private DeleteRecordOptions(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    /**
+     * Creates a new builder.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
 
     /**
      * Gets the collection name.
@@ -37,9 +50,7 @@ public class DeleteRecordOptions {
          */
         @Override
         public DeleteRecordOptions build() {
-            DeleteRecordOptions options = new DeleteRecordOptions();
-            options.collectionName = collectionName;
-            return options;
+            return new DeleteRecordOptions(collectionName);
         }
     }
 }

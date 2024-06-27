@@ -40,12 +40,16 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
         @Nonnull SearchIndexAsyncClient client,
         @Nonnull AzureAISearchVectorStoreOptions<Record> options) {
         this.client = client;
-        this.options = options;
 
         // If record definition is not provided, create one from the record class
-        if (this.options.getRecordDefinition() == null) {
-            this.options
-                .setRecordDefinition(VectorStoreRecordDefinition.create(options.getRecordClass()));
+        if (options.getRecordDefinition() == null) {
+            this.options = AzureAISearchVectorStoreOptions.<Record>builder()
+                .withRecordClass(options.getRecordClass())
+                .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
+                .withRecordDefinition(VectorStoreRecordDefinition.create(options.getRecordClass()))
+                .build();
+        } else {
+            this.options = options;
         }
 
         // Add non-vector fields to the list

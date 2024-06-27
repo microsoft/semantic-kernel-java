@@ -11,10 +11,10 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDef
  * @param <Record> the record type
  */
 public class AzureAISearchVectorStoreOptions<Record> {
-    private String defaultCollectionName;
-    private Class<Record> recordClass;
-    private VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
-    private VectorStoreRecordDefinition recordDefinition;
+    private final String defaultCollectionName;
+    private final Class<Record> recordClass;
+    private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
+    private final VectorStoreRecordDefinition recordDefinition;
 
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
@@ -32,12 +32,19 @@ public class AzureAISearchVectorStoreOptions<Record> {
         return recordDefinition;
     }
 
-    public void setRecordDefinition(VectorStoreRecordDefinition recordDefinition) {
-        this.recordDefinition = recordDefinition;
-    }
-
     public VectorStoreRecordMapper<Record, SearchDocument> getVectorStoreRecordMapper() {
         return vectorStoreRecordMapper;
+    }
+
+    private AzureAISearchVectorStoreOptions(
+        String defaultCollectionName,
+        Class<Record> recordClass,
+        VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper,
+        VectorStoreRecordDefinition recordDefinition) {
+        this.defaultCollectionName = defaultCollectionName;
+        this.recordClass = recordClass;
+        this.vectorStoreRecordMapper = vectorStoreRecordMapper;
+        this.recordDefinition = recordDefinition;
     }
 
     public static class Builder<Record> {
@@ -78,12 +85,10 @@ public class AzureAISearchVectorStoreOptions<Record> {
                 throw new IllegalArgumentException("recordClass must be provided");
             }
 
-            AzureAISearchVectorStoreOptions<Record> options = new AzureAISearchVectorStoreOptions<>();
-            options.defaultCollectionName = defaultCollectionName;
-            options.recordClass = recordClass;
-            options.vectorStoreRecordMapper = vectorStoreRecordMapper;
-            options.recordDefinition = recordDefinition;
-            return options;
+            return new AzureAISearchVectorStoreOptions<>(defaultCollectionName,
+                recordClass,
+                vectorStoreRecordMapper,
+                recordDefinition);
         }
     }
 }

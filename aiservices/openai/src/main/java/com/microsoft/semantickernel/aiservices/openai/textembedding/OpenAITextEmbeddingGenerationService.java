@@ -6,9 +6,9 @@ import com.azure.ai.openai.models.EmbeddingItem;
 import com.azure.ai.openai.models.Embeddings;
 import com.azure.ai.openai.models.EmbeddingsOptions;
 import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
-import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
+import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import com.microsoft.semantickernel.services.textembedding.Embedding;
 import com.microsoft.semantickernel.services.textembedding.TextEmbeddingGenerationService;
 import org.slf4j.Logger;
@@ -19,11 +19,23 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An OpenAI implementation of a {@link TextEmbeddingGenerationService}.
+ *
+ */
 public class OpenAITextEmbeddingGenerationService extends OpenAiService
     implements TextEmbeddingGenerationService {
     private static final Logger LOGGER = LoggerFactory
         .getLogger(OpenAITextEmbeddingGenerationService.class);
 
+    /**
+     * Creates a new {@link OpenAITextEmbeddingGenerationService}.
+     *
+     * @param client OpenAI client
+     * @param deploymentName deployment name
+     * @param modelId OpenAI model id
+     * @param serviceId Service id
+     */
     public OpenAITextEmbeddingGenerationService(
         OpenAIAsyncClient client,
         String deploymentName,
@@ -32,10 +44,21 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
         super(client, serviceId, modelId, deploymentName);
     }
 
+    /**
+     * Creates a builder for creating a {@link OpenAITextEmbeddingGenerationService}.
+     *
+     * @return A new {@link OpenAITextEmbeddingGenerationService} builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Generates embeddings for the given data.
+     *
+     * @param data The data to generate embeddings for.
+     * @return A Mono that completes with the embeddings.
+     */
     @Override
     public Mono<List<Embedding>> generateEmbeddingsAsync(List<String> data) {
         return this.internalGenerateTextEmbeddingsAsync(data);
@@ -55,6 +78,9 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
             .collectList();
     }
 
+    /**
+     * A builder for creating a {@link OpenAITextEmbeddingGenerationService}.
+     */
     public static class Builder extends
         OpenAiServiceBuilder<OpenAITextEmbeddingGenerationService, OpenAITextEmbeddingGenerationService.Builder> {
         @Override
