@@ -10,7 +10,6 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft</groupId>
     <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
 
     <dependencies>
