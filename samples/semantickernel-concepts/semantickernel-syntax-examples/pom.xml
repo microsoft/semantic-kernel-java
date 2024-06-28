@@ -65,6 +65,10 @@
             <artifactId>azure-identity</artifactId>
         </dependency>
         <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-aiservices-openai</artifactId>
         </dependency>
@@ -81,7 +85,11 @@
         <dependency>
             <groupId>com.microsoft</groupId>
             <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
-            <version>1.1.6-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantickernel</groupId>
+            <artifactId>semantickernel-connectors-memory-redis</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>

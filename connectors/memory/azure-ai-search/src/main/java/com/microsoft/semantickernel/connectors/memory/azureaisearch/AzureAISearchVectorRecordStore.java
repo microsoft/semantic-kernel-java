@@ -86,9 +86,9 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
             .getVectorStoreRecordMapper();
 
         // Use custom mapper if available
-        if (mapper != null && mapper.getToRecordMapper() != null) {
+        if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
             return client.getDocument(key, SearchDocument.class)
-                .map(this.options.getVectorStoreRecordMapper()::toRecord);
+                .map(this.options.getVectorStoreRecordMapper()::mapStorageModeltoRecord);
         }
 
         return client.getDocumentWithResponse(key, this.options.getRecordClass(), selectedFields)
@@ -133,9 +133,9 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
         Iterable<?> documents;
 
         // Use custom mapper if available
-        if (mapper != null && mapper.getToStorageModelMapper() != null) {
+        if (mapper != null && mapper.getRecordToStorageModelMapper() != null) {
             documents = records.stream()
-                .map(this.options.getVectorStoreRecordMapper()::toStorageModel)
+                .map(this.options.getVectorStoreRecordMapper()::mapRecordToStorageModel)
                 .collect(Collectors.toList());
         } else {
             documents = records;
