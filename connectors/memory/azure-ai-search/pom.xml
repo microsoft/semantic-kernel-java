@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
+    <name>Semantic Kernel Azure AI Search Memory Connector</name>
+    <description>Defines connector for Azure AI Search to be used with the Semantic Kernel</description>
 
     <dependencies>
         <dependency>

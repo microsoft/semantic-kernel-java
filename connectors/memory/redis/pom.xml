@@ -11,6 +11,8 @@
     </parent>
 
     <artifactId>semantickernel-connectors-memory-redis</artifactId>
+    <name>Semantic Kernel Redis Memory Connector</name>
+    <description>Defines connector for Redis to be used with the Semantic Kernel</description>
 
     <dependencies>
         <dependency>
