@@ -1,8 +1,8 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
@@ -13,10 +13,11 @@ import java.util.AbstractMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-public class RedisVectorStoreRecordMapper<Record> extends VectorStoreRecordMapper<Record, Entry<String, Object>> {
+public class RedisVectorStoreRecordMapper<Record>
+    extends VectorStoreRecordMapper<Record, Entry<String, Object>> {
     private RedisVectorStoreRecordMapper(
-            Function<Record, Entry<String, Object>> toStorageModelMapper,
-            Function<Entry<String, Object>, Record> toRecordMapper) {
+        Function<Record, Entry<String, Object>> toStorageModelMapper,
+        Function<Entry<String, Object>, Record> toRecordMapper) {
         super(toStorageModelMapper, toRecordMapper);
     }
 
@@ -26,7 +27,8 @@ public class RedisVectorStoreRecordMapper<Record> extends VectorStoreRecordMappe
      * @param <Record> the record type
      * @return the builder
      */
-    public static class Builder<Record> implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
+    public static class Builder<Record>
+        implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
         private String keyField;
         private Class<Record> recordClass;
 
@@ -80,7 +82,8 @@ public class RedisVectorStoreRecordMapper<Record> extends VectorStoreRecordMappe
                 }
             }, storageModel -> {
                 ObjectMapper mapper = new ObjectMapper();
-                mapper.setVisibility(VisibilityChecker.Std.defaultInstance().withFieldVisibility(JsonAutoDetect.Visibility.ANY));
+                mapper.setVisibility(VisibilityChecker.Std.defaultInstance()
+                    .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
 
                 ObjectNode jsonNode = mapper.valueToTree(storageModel.getValue());
 

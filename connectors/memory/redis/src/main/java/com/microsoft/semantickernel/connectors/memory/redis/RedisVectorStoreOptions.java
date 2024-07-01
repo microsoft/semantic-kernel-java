@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
 import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
@@ -14,10 +15,10 @@ public class RedisVectorStoreOptions<Record> {
     private final boolean prefixCollectionName;
 
     private RedisVectorStoreOptions(String defaultCollectionName,
-                                    Class<Record> recordClass,
-                                    VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
-                                    VectorStoreRecordDefinition recordDefinition,
-                                    boolean prefixCollectionName) {
+        Class<Record> recordClass,
+        VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
+        VectorStoreRecordDefinition recordDefinition,
+        boolean prefixCollectionName) {
         this.defaultCollectionName = defaultCollectionName;
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
@@ -121,7 +122,7 @@ public class RedisVectorStoreOptions<Record> {
          * @return the builder
          */
         public Builder<Record> withVectorStoreRecordMapper(
-                VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper) {
+            VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper) {
             this.vectorStoreRecordMapper = vectorStoreRecordMapper;
             return this;
         }
@@ -159,10 +160,10 @@ public class RedisVectorStoreOptions<Record> {
             }
 
             return new RedisVectorStoreOptions<>(defaultCollectionName,
-                    recordClass,
-                    vectorStoreRecordMapper,
-                    recordDefinition,
-                    prefixCollectionName);
+                recordClass,
+                vectorStoreRecordMapper,
+                recordDefinition,
+                prefixCollectionName);
         }
     }
 }

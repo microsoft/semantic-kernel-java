@@ -22,6 +22,7 @@ public class Hotel {
 
     public Hotel() {
     }
+
     public Hotel(String id, String name, int code, String description, List<Float> descriptionEmbedding, double rating) {
         this.id = id;
         this.name = name;

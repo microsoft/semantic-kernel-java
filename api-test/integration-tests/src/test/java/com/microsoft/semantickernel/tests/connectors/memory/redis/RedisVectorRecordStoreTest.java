@@ -18,6 +18,7 @@ import redis.clients.jedis.JedisPooled;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +32,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class RedisVectorRecordStoreTest {
 
     @Container private static final RedisContainer redisContainer = new RedisContainer("redis/redis-stack:latest");
+
     private static final Map<Options, RedisVectorStoreOptions<Hotel>> optionsMap = new HashMap<>();
+
     public enum Options {
         DEFAULT, WITH_CUSTOM_DEFINITION
     }
+
     @BeforeAll
     static void setup() {
         optionsMap.put(Options.DEFAULT, RedisVectorStoreOptions.<Hotel>builder()
@@ -74,11 +78,11 @@ public class RedisVectorRecordStoreTest {
 
     private List<Hotel> getHotels() {
         return List.of(
-                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", List.of(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", List.of(2.0f, 3.0f, 4.0f), 5.0),
-                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", List.of(3.0f, 4.0f, 5.0f), 3.0),
-                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", List.of(4.0f, 5.0f, 6.0f), 2.0),
-                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", List.of(5.0f, 6.0f, 7.0f), 3.5)
+                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
+                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), 3.0),
+                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0),
+                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
+                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0)
         );
     }
 
@@ -102,7 +106,7 @@ public class RedisVectorRecordStoreTest {
     @ParameterizedTest
     @EnumSource(Options.class)
     public void getBatchAsync(Options options) {
-        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "getBatchAsync" + options.toString());
+        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "getBatchAsync");
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -128,6 +132,7 @@ public class RedisVectorRecordStoreTest {
 
         List<Hotel> hotels = getHotels();
         Collection<String> keys = recordStore.upsertBatchAsync(hotels, null).block();
+        assertNotNull(keys);
 
         List<Hotel> retrievedHotels = (List<Hotel>) recordStore.getBatchAsync(keys, null).block();
 

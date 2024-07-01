@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,6 +10,7 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDef
 import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
@@ -17,7 +19,6 @@ import redis.clients.jedis.Response;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,6 +29,13 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
     private final JedisPooled client;
     private final RedisVectorStoreOptions<Record> options;
 
+    /**
+     * Creates a new instance of the RedisVectorRecordStore.
+     *
+     * @param client  The Redis client.
+     * @param options The options for the store.
+     */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public RedisVectorRecordStore(JedisPooled client, RedisVectorStoreOptions<Record> options) {
         this.client = client;
 
@@ -38,21 +46,22 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
         }
 
         // If mapper is not provided, add a default one
-        VectorStoreRecordMapper<Record, Map.Entry<String, Object>> mapper = options.getVectorStoreRecordMapper();
+        VectorStoreRecordMapper<Record, Map.Entry<String, Object>> mapper = options
+            .getVectorStoreRecordMapper();
         if (mapper == null) {
             mapper = new RedisVectorStoreRecordMapper.Builder<Record>()
-                    .keyField(definition.getKeyField().getName())
-                    .recordClass(options.getRecordClass())
-                    .build();
+                .keyField(definition.getKeyField().getName())
+                .recordClass(options.getRecordClass())
+                .build();
         }
 
         this.options = RedisVectorStoreOptions.<Record>builder()
-                .withRecordClass(options.getRecordClass())
-                .withDefaultCollectionName(options.getDefaultCollectionName())
-                .withPrefixCollectionName(options.prefixCollectionName())
-                .withRecordDefinition(definition)
-                .withVectorStoreRecordMapper(mapper)
-                .build();
+            .withRecordClass(options.getRecordClass())
+            .withDefaultCollectionName(options.getDefaultCollectionName())
+            .withPrefixCollectionName(options.prefixCollectionName())
+            .withRecordDefinition(definition)
+            .withVectorStoreRecordMapper(mapper)
+            .build();
     }
 
     private String getRedisKey(String key, String collectionName) {
@@ -79,7 +88,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
     @Override
     public Mono<Record> getAsync(String key, GetRecordOptions options) {
         String collectionName = resolveCollectionName(
-                options != null ? options.getCollectionName() : null);
+            options != null ? options.getCollectionName() : null);
 
         String redisKey = getRedisKey(key, collectionName);
         Object result = client.jsonGet(redisKey);
@@ -90,7 +99,8 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
 
         JsonNode jsonNode = new ObjectMapper().valueToTree(result);
 
-        return Mono.just(this.options.getVectorStoreRecordMapper().mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
+        return Mono.just(this.options.getVectorStoreRecordMapper()
+            .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
     }
 
     /**
@@ -101,9 +111,10 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
      * @return A Mono emitting a collection of records.
      */
     @Override
-    public Mono<Collection<Record>> getBatchAsync(Collection<String> keys, GetRecordOptions options) {
+    public Mono<Collection<Record>> getBatchAsync(Collection<String> keys,
+        GetRecordOptions options) {
         String collectionName = resolveCollectionName(
-                options != null ? options.getCollectionName() : null);
+            options != null ? options.getCollectionName() : null);
 
         Pipeline pipeline = client.pipelined();
         List<Entry<String, Response<Object>>> responses = new ArrayList<>(keys.size());
@@ -115,15 +126,16 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
         pipeline.sync();
 
         return Mono.just(responses.stream()
-                .map(entry -> {
-                    if (entry.getValue().get() == null) {
-                        return null;
-                    }
+            .map(entry -> {
+                if (entry.getValue().get() == null) {
+                    return null;
+                }
 
-                    JsonNode jsonNode = new ObjectMapper().valueToTree(entry.getValue().get());
-                    return this.options.getVectorStoreRecordMapper().mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
-                })
-                .collect(Collectors.toList()));
+                JsonNode jsonNode = new ObjectMapper().valueToTree(entry.getValue().get());
+                return this.options.getVectorStoreRecordMapper()
+                    .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
+            })
+            .collect(Collectors.toList()));
     }
 
     /**
@@ -136,9 +148,10 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
         String collectionName = resolveCollectionName(
-                options != null ? options.getCollectionName() : null);
+            options != null ? options.getCollectionName() : null);
 
-        Entry<String, Object> redisObject = this.options.getVectorStoreRecordMapper().mapRecordToStorageModel(data);
+        Entry<String, Object> redisObject = this.options.getVectorStoreRecordMapper()
+            .mapRecordToStorageModel(data);
         String redisKey = getRedisKey(redisObject.getKey(), collectionName);
 
         client.jsonSet(redisKey, redisObject.getValue());
@@ -153,15 +166,17 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
      * @return A Mono emitting a collection of keys of the upserted records.
      */
     @Override
-    public Mono<Collection<String>> upsertBatchAsync(Collection<Record> data, UpsertRecordOptions options) {
+    public Mono<Collection<String>> upsertBatchAsync(Collection<Record> data,
+        UpsertRecordOptions options) {
         String collectionName = resolveCollectionName(
-                options != null ? options.getCollectionName() : null);
+            options != null ? options.getCollectionName() : null);
 
         Pipeline pipeline = client.pipelined();
         List<String> keys = new ArrayList<>(data.size());
 
         data.forEach(record -> {
-            Entry<String, Object> redisObject = this.options.getVectorStoreRecordMapper().mapRecordToStorageModel(record);
+            Entry<String, Object> redisObject = this.options.getVectorStoreRecordMapper()
+                .mapRecordToStorageModel(record);
             String redisKey = getRedisKey(redisObject.getKey(), collectionName);
 
             keys.add(redisObject.getKey());
@@ -183,7 +198,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
     @Override
     public Mono<Void> deleteAsync(String key, DeleteRecordOptions options) {
         String collectionName = resolveCollectionName(
-                options != null ? options.getCollectionName() : null);
+            options != null ? options.getCollectionName() : null);
 
         String redisKey = getRedisKey(key, collectionName);
         client.del(redisKey);
@@ -201,7 +216,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
     @Override
     public Mono<Void> deleteBatchAsync(Collection<String> strings, DeleteRecordOptions options) {
         String collectionName = resolveCollectionName(
-                options != null ? options.getCollectionName() : null);
+            options != null ? options.getCollectionName() : null);
 
         Pipeline pipeline = client.pipelined();
         strings.forEach(key -> {
