@@ -82,7 +82,13 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
                 options != null ? options.getCollectionName() : null);
 
         String redisKey = getRedisKey(key, collectionName);
-        JsonNode jsonNode = new ObjectMapper().valueToTree(client.jsonGet(redisKey));
+        Object result = client.jsonGet(redisKey);
+
+        if (result == null) {
+            return Mono.empty();
+        }
+
+        JsonNode jsonNode = new ObjectMapper().valueToTree(result);
 
         return Mono.just(this.options.getVectorStoreRecordMapper().mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
     }
@@ -100,18 +106,21 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
                 options != null ? options.getCollectionName() : null);
 
         Pipeline pipeline = client.pipelined();
-        Map<String, Response<Object>> responses = new HashMap<>();
+        List<Entry<String, Response<Object>>> responses = new ArrayList<>(keys.size());
         keys.forEach(key -> {
             String redisKey = getRedisKey(key, collectionName);
-            // Store the response in a map to be processed later
-            responses.put(key, pipeline.jsonGet(redisKey));
+            responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey)));
         });
 
         pipeline.sync();
 
-        return Mono.just(responses.entrySet().stream()
+        return Mono.just(responses.stream()
                 .map(entry -> {
-                    JsonNode jsonNode = (JsonNode) entry.getValue().get();
+                    if (entry.getValue().get() == null) {
+                        return null;
+                    }
+
+                    JsonNode jsonNode = new ObjectMapper().valueToTree(entry.getValue().get());
                     return this.options.getVectorStoreRecordMapper().mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
                 })
                 .collect(Collectors.toList()));
