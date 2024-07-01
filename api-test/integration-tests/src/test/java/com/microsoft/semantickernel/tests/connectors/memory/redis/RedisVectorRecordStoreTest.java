@@ -2,16 +2,26 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.microsoft.semantickernel.connectors.memory.redis.RedisVectorRecordStore;
 import com.microsoft.semantickernel.connectors.memory.redis.RedisVectorStoreOptions;
+import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordField;
+import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import redis.clients.jedis.JedisPooled;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,27 +31,45 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class RedisVectorRecordStoreTest {
 
     @Container private static final RedisContainer redisContainer = new RedisContainer("redis/redis-stack:latest");
-
-    private static JedisPooled client;
+    private static final Map<Options, RedisVectorStoreOptions<Hotel>> optionsMap = new HashMap<>();
+    public enum Options {
+        DEFAULT, WITH_CUSTOM_DEFINITION
+    }
     @BeforeAll
     static void setup() {
-        String uri = redisContainer.getRedisURI();
-        client = new JedisPooled(uri);
+        optionsMap.put(Options.DEFAULT, RedisVectorStoreOptions.<Hotel>builder()
+                .withRecordClass(Hotel.class)
+                .build());
+
+        List<VectorStoreRecordField> fields = new ArrayList<>();
+        fields.add(new VectorStoreRecordKeyField("id"));
+        fields.add(new VectorStoreRecordDataField("name"));
+        fields.add(new VectorStoreRecordDataField("code"));
+        fields.add(new VectorStoreRecordDataField("description", true, "descriptionEmbedding"));
+        fields.add(new VectorStoreRecordVectorField("descriptionEmbedding"));
+        fields.add(new VectorStoreRecordDataField("rating"));
+        VectorStoreRecordDefinition recordDefinition = VectorStoreRecordDefinition.create(fields);
+
+        optionsMap.put(Options.WITH_CUSTOM_DEFINITION, RedisVectorStoreOptions.<Hotel>builder()
+                .withRecordClass(Hotel.class)
+                .withRecordDefinition(recordDefinition)
+                .build());
     }
 
-    private RedisVectorRecordStore<Hotel> buildRecordStore(String collectionName, RedisVectorStoreOptions<Hotel> options) {
-        if (options == null) {
-            options = RedisVectorStoreOptions.<Hotel>builder()
-                    .withRecordClass(Hotel.class)
-                    .withDefaultCollectionName(collectionName)
-                    .build();
-        }
-        return new RedisVectorRecordStore<>(client, options);
+    private RedisVectorRecordStore<Hotel> buildRecordStore(@Nonnull RedisVectorStoreOptions<Hotel> options, @Nonnull String collectionName) {
+        return new RedisVectorRecordStore<>(new JedisPooled(redisContainer.getRedisURI()), RedisVectorStoreOptions.<Hotel>builder()
+                .withDefaultCollectionName(collectionName)
+                .withRecordClass(options.getRecordClass())
+                .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
+                .withRecordDefinition(options.getRecordDefinition())
+                .withPrefixCollectionName(options.prefixCollectionName())
+                .build());
     }
 
-    @Test
-    public void buildRecordStore() {
-        assertNotNull(buildRecordStore("buildTest", null));
+    @ParameterizedTest
+    @EnumSource(Options.class)
+    public void buildRecordStore(Options options) {
+        assertNotNull(buildRecordStore(optionsMap.get(options), "buildTest"));
     }
 
     private List<Hotel> getHotels() {
@@ -54,9 +82,10 @@ public class RedisVectorRecordStoreTest {
         );
     }
 
-    @Test
-    public void upsertAndGetRecordAsync() {
-        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore("upsertAndGetRecordAsync", null);
+    @ParameterizedTest
+    @EnumSource(Options.class)
+    public void upsertAndGetRecordAsync(Options options) {
+        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "upsertAndGetRecordAsync");
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -70,26 +99,15 @@ public class RedisVectorRecordStoreTest {
         }
     }
 
-    @Test
-    public void upsertBatchAsync() {
-        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore("upsertBatchAsync", null);
+    @ParameterizedTest
+    @EnumSource(Options.class)
+    public void getBatchAsync(Options options) {
+        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "getBatchAsync" + options.toString());
 
         List<Hotel> hotels = getHotels();
-        recordStore.upsertBatchAsync(hotels, null).block();
-
         for (Hotel hotel : hotels) {
-            Hotel retrievedHotel = recordStore.getAsync(hotel.getId(), null).block();
-            assertNotNull(retrievedHotel);
-            assertEquals(hotel.getId(), retrievedHotel.getId());
+            recordStore.upsertAsync(hotel, null).block();
         }
-    }
-
-    @Test
-    public void getBatchAsync() {
-        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore("getBatchAsync", null);
-
-        List<Hotel> hotels = getHotels();
-        recordStore.upsertBatchAsync(hotels, null).block();
 
         List<String> ids = new ArrayList<>();
         hotels.forEach(hotel -> ids.add(hotel.getId()));
@@ -103,9 +121,27 @@ public class RedisVectorRecordStoreTest {
         }
     }
 
-    @Test
-    public void deleteAsync() {
-        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore("removeAsync", null);
+    @ParameterizedTest
+    @EnumSource(Options.class)
+    public void upsertBatchAsync(Options options) {
+        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "upsertBatchAsync");
+
+        List<Hotel> hotels = getHotels();
+        Collection<String> keys = recordStore.upsertBatchAsync(hotels, null).block();
+
+        List<Hotel> retrievedHotels = (List<Hotel>) recordStore.getBatchAsync(keys, null).block();
+
+        assertNotNull(retrievedHotels);
+        assertEquals(hotels.size(), retrievedHotels.size());
+        for (int i = 0; i < hotels.size(); i++) {
+            assertEquals(hotels.get(i).getId(), retrievedHotels.get(i).getId());
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(Options.class)
+    public void deleteAsync(Options options) {
+        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "deleteAsync");
 
         List<Hotel> hotels = getHotels();
         recordStore.upsertBatchAsync(hotels, null).block();
@@ -117,9 +153,10 @@ public class RedisVectorRecordStoreTest {
         }
     }
 
-    @Test
-    public void deleteBatchAsync() {
-        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore("deleteBatchAsync", null);
+    @ParameterizedTest
+    @EnumSource(Options.class)
+    public void deleteBatchAsync(Options options) {
+        RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "deleteBatchAsync");
 
         List<Hotel> hotels = getHotels();
         recordStore.upsertBatchAsync(hotels, null).block();
