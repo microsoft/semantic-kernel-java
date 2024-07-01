@@ -67,6 +67,10 @@ public abstract class OpenAiServiceBuilder<T, U extends OpenAiServiceBuilder<T, 
         return (U) this;
     }
 
+    /**
+     * Builds the service.
+     * @return The service
+     */
     @Override
     public abstract T build();
 

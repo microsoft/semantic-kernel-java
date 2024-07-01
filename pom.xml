@@ -74,6 +74,7 @@
         <module>aiservices/huggingface</module>
 
         <module>semantickernel-api</module>
+        <module>connectors/memory/azure-ai-search</module>
     </modules>
 
     <dependencyManagement>

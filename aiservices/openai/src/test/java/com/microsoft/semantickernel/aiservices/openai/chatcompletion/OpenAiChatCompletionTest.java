@@ -107,7 +107,6 @@ public class OpenAiChatCompletionTest {
                             return new ObjectMapper()
                                 .readValue(String.format(message, "Snuggles"),
                                     ChatCompletions.class);
-
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
