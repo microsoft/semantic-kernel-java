@@ -4,11 +4,12 @@ package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 import com.azure.core.util.BinaryData;
 import com.google.cloud.vertexai.api.FunctionDeclaration;
 import com.google.cloud.vertexai.api.Schema;
+import com.microsoft.semantickernel.implementation.chatcompletion.ChatPromptParseVisitor;
+import com.microsoft.semantickernel.implementation.chatcompletion.ChatXMLPromptParser;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.services.chatcompletion.ChatPromptParseVisitor;
-import com.microsoft.semantickernel.services.chatcompletion.ChatXMLPromptParser;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageTextContent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,9 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GeminiXMLPromptParser {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiXMLPromptParser.class);
 
     public static class GeminiParsedPrompt {
+
         private final ChatHistory chatHistory;
         private final List<FunctionDeclaration> functions;
 
@@ -60,6 +63,7 @@ public class GeminiXMLPromptParser {
 
     private static class GeminiChatPromptParseVisitor
         implements ChatPromptParseVisitor<GeminiParsedPrompt> {
+
         @Nullable
         private GeminiParsedPrompt parsedRaw = null;
         private final List<FunctionDeclaration> functionDefinitions = new ArrayList<>();
@@ -69,7 +73,11 @@ public class GeminiXMLPromptParser {
         public ChatPromptParseVisitor<GeminiParsedPrompt> addMessage(
             String role,
             String content) {
-            chatHistory.addMessage(new ChatMessageContent<>(getAuthorRole(role), content));
+            chatHistory.addMessage(
+                ChatMessageTextContent.builder()
+                    .withContent(content)
+                    .withAuthorRole(getAuthorRole(role))
+                    .build());
             return this;
         }
 
@@ -100,7 +108,7 @@ public class GeminiXMLPromptParser {
         public ChatPromptParseVisitor<GeminiParsedPrompt> fromRawPrompt(
             String rawPrompt) {
 
-            ChatMessageContent<?> message = new ChatMessageContent<>(AuthorRole.USER, rawPrompt);
+            ChatMessageContent<?> message = ChatMessageTextContent.userMessage(rawPrompt);
 
             this.parsedRaw = new GeminiParsedPrompt(
                 new ChatHistory(Collections.singletonList(message)), null);

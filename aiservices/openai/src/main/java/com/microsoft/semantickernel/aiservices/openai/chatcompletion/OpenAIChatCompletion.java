@@ -11,6 +11,9 @@ import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatCompletionsTextResponseFormat;
 import com.azure.ai.openai.models.ChatCompletionsToolCall;
 import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
+import com.azure.ai.openai.models.ChatMessageImageContentItem;
+import com.azure.ai.openai.models.ChatMessageImageDetailLevel;
+import com.azure.ai.openai.models.ChatMessageImageUrl;
 import com.azure.ai.openai.models.ChatRequestAssistantMessage;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
@@ -52,6 +55,8 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageContentType;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageImageContent;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import io.opentelemetry.api.trace.Span;
 import java.util.ArrayList;
@@ -881,6 +886,10 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         AuthorRole authorRole = message.getAuthorRole();
         String content = message.getContent();
 
+        if (message.getContentType() == ChatMessageContentType.IMAGE_URL && content != null) {
+            return formImageMessage(message, content);
+        }
+
         switch (authorRole) {
             case ASSISTANT:
                 return formAssistantMessage(message, content);
@@ -904,7 +913,19 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 LOGGER.debug("Unexpected author role: {}", authorRole);
                 throw new SKException("Unexpected author role: " + authorRole);
         }
+    }
 
+    private static ChatRequestUserMessage formImageMessage(ChatMessageContent<?> message,
+        String content) {
+        ChatMessageImageUrl imageUrl = new ChatMessageImageUrl(content);
+        if (message instanceof ChatMessageImageContent) {
+            ChatMessageImageDetailLevel detail = ChatMessageImageDetailLevel.fromString(
+                ((ChatMessageImageContent<?>) message).getDetail().toString());
+            imageUrl.setDetail(detail);
+        }
+
+        return new ChatRequestUserMessage(
+            Collections.singletonList(new ChatMessageImageContentItem(imageUrl)));
     }
 
     private static ChatRequestAssistantMessage formAssistantMessage(

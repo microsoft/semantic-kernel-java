@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.services.chatcompletion;
 
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageTextContent;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,9 +36,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
         this.chatMessageContents = new ArrayList<>();
         if (instructions != null) {
             this.chatMessageContents.add(
-                new ChatMessageContent<>(
-                    AuthorRole.SYSTEM,
-                    instructions));
+                ChatMessageTextContent.systemMessage(instructions));
         }
     }
 
@@ -117,7 +116,12 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
     public void addMessage(AuthorRole authorRole, String content, Charset encoding,
         FunctionResultMetadata metadata) {
         chatMessageContents.add(
-            new ChatMessageContent<>(authorRole, content, null, null, encoding, metadata));
+            ChatMessageTextContent.builder()
+                .withAuthorRole(authorRole)
+                .withContent(content)
+                .withEncoding(encoding)
+                .withMetadata(metadata)
+                .build());
     }
 
     /**
@@ -128,7 +132,10 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      */
     public void addMessage(AuthorRole authorRole, String content) {
         chatMessageContents.add(
-            new ChatMessageContent<>(authorRole, content, null, null, null, null));
+            ChatMessageTextContent.builder()
+                .withAuthorRole(authorRole)
+                .withContent(content)
+                .build());
     }
 
     /**

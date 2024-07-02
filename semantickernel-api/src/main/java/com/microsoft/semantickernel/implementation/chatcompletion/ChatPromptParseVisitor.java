@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.services.chatcompletion;
+package com.microsoft.semantickernel.implementation.chatcompletion;
 
 import com.azure.core.util.BinaryData;
 import javax.annotation.Nullable;

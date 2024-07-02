@@ -14,7 +14,7 @@ public class SemanticKernelTelemetry {
     public static final String OPEN_AI_PROVIDER = "openai";
 
     public static Span startChatCompletionSpan(
-        String modelName,
+        @Nullable String modelName,
         String modelProvider,
         @Nullable Integer maxTokens,
         @Nullable Double temperature,
@@ -24,7 +24,7 @@ public class SemanticKernelTelemetry {
     }
 
     public static Span startTextCompletionSpan(
-        String modelName,
+        @Nullable String modelName,
         String modelProvider,
         @Nullable Integer maxTokens,
         @Nullable Double temperature,
@@ -35,13 +35,16 @@ public class SemanticKernelTelemetry {
 
     private static Span startCompletionSpan(
         String operationName,
-        String modelName,
+        @Nullable String modelName,
         String modelProvider,
         @Nullable Integer maxTokens,
         @Nullable Double temperature,
         @Nullable Double topP) {
         OpenTelemetry otel = GlobalOpenTelemetry.get();
 
+        if (modelName == null) {
+            modelName = "unknown";
+        }
         SpanBuilder builder = otel
             .getTracer("SemanticKernel")
             .spanBuilder(operationName + " " + modelName)

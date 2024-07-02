@@ -653,7 +653,7 @@
                             <java>
                                 <eclipse>
                                     <version>4.30</version>
-                                    <file>eclipse-formatter.xml</file>
+                                    <file>./eclipse-formatter.xml</file>
                                 </eclipse>
                                 <!--
                                 <googleJavaFormat>

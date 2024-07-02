@@ -12,9 +12,8 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
-import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageTextContent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -60,12 +59,12 @@ public class HandlebarsPromptTemplateTest {
         List<ChatHistory> history = Arrays.asList(
             new ChatHistory(
                 Arrays.asList(
-                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "a"),
-                    new ChatMessageContent<String>(AuthorRole.USER, "b"))),
+                    ChatMessageTextContent.systemMessage("a"),
+                    ChatMessageTextContent.userMessage("b"))),
             new ChatHistory(
                 Arrays.asList(
-                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "c"),
-                    new ChatMessageContent<String>(AuthorRole.USER, "d"))));
+                    ChatMessageTextContent.systemMessage("c"),
+                    ChatMessageTextContent.userMessage("d"))));
 
         KernelPlugin kernelPlugin = KernelPluginFactory.createFromObject(
             new StringFunctions(),
