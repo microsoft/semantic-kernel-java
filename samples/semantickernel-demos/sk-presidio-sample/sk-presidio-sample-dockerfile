@@ -1,0 +1,15 @@
+######################################################
+## Build Deployment
+FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu as presidio-sk-sample-app
+
+COPY --chown=app:app scripts/run.sh /home/app/
+
+RUN chmod +x /home/app/run.sh
+
+WORKDIR /home/app
+USER app
+
+COPY target/sk-presidio-sample-*-jar-with-dependencies.jar /home/app/sk-presidio-sample.jar
+
+CMD /home/app/run.sh
+

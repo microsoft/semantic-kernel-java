@@ -15,5 +15,6 @@
 
     <modules>
         <module>semantickernel-openapi-plugin</module>
+        <module>semantickernel-presidio-plugin</module>
     </modules>
 </project>
