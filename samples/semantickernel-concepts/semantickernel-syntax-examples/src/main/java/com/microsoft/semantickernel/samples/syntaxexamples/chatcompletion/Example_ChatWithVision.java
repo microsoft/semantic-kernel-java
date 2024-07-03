@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-// In .net this is streaming, this is a non-streaming example
 public class Example_ChatWithVision {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");

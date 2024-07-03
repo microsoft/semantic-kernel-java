@@ -10,7 +10,6 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft</groupId>
     <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
 
     <dependencies>
@@ -21,6 +20,12 @@
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-search-documents</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.azure</groupId>
+                    <artifactId>azure-core-serializer-json-jackson</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
