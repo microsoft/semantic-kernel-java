@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -51,8 +52,7 @@ public class Main {
             .withArguments(
                 KernelFunctionArguments.builder()
                     .withVariable("input", text)
-                    .build()
-            )
+                    .build())
             .block()
             .getResult();
 
@@ -85,8 +85,7 @@ public class Main {
                             PromptExecutionSettings.builder()
                                 .withMaxTokens(2048)
                                 .withTemperature(0.5)
-                                .build()
-                        )
+                                .build())
                         .build())
                 .map(chatHistory -> {
                     String message = chatHistory.get(0).getContent();
@@ -153,10 +152,8 @@ public class Main {
                 KernelPluginFactory.createFromObject(
                     new RedactorPlugin(
                         "http://presidio-analyzer:3000",
-                        "http://presidio-anonymizer:3000"
-                    ),
-                    "redactor"
-                ))
+                        "http://presidio-anonymizer:3000"),
+                    "redactor"))
             .build();
 
     }
