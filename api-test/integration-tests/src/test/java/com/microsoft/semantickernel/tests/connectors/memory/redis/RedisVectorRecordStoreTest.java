@@ -116,7 +116,7 @@ public class RedisVectorRecordStoreTest {
         List<String> ids = new ArrayList<>();
         hotels.forEach(hotel -> ids.add(hotel.getId()));
 
-        List<Hotel> retrievedHotels = (List<Hotel>) recordStore.getBatchAsync(ids, null).block();
+        List<Hotel> retrievedHotels = recordStore.getBatchAsync(ids, null).block();
 
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
@@ -131,7 +131,7 @@ public class RedisVectorRecordStoreTest {
         RedisVectorRecordStore<Hotel> recordStore = buildRecordStore(optionsMap.get(options), "upsertBatchAsync");
 
         List<Hotel> hotels = getHotels();
-        Collection<String> keys = recordStore.upsertBatchAsync(hotels, null).block();
+        List<String> keys = recordStore.upsertBatchAsync(hotels, null).block();
         assertNotNull(keys);
 
         List<Hotel> retrievedHotels = (List<Hotel>) recordStore.getBatchAsync(keys, null).block();

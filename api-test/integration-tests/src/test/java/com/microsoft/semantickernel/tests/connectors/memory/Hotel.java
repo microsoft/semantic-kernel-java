@@ -8,19 +8,20 @@ import java.util.List;
 
 public class Hotel {
     @VectorStoreRecordKeyAttribute
-    private String id;
+    private final String id;
     @VectorStoreRecordDataAttribute
-    private String name;
+    private final String name;
     @VectorStoreRecordDataAttribute
-    private int code;
+    private final int code;
     @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
-    private String description;
+    private final String description;
     @VectorStoreRecordVectorAttribute
-    private List<Float> descriptionEmbedding;
+    private final List<Float> descriptionEmbedding;
     @VectorStoreRecordDataAttribute
-    private double rating;
+    private final double rating;
 
     public Hotel() {
+        this(null, null, 0, null, null, 0.0);
     }
 
     public Hotel(String id, String name, int code, String description, List<Float> descriptionEmbedding, double rating) {
