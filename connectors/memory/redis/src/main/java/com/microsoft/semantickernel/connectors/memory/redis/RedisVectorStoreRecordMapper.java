@@ -25,21 +25,20 @@ public class RedisVectorStoreRecordMapper<Record>
      * Creates a new builder.
      *
      * @param <Record> the record type
-     * @return the builder
      */
     public static class Builder<Record>
         implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
-        private String keyField;
+        private String keyFieldName;
         private Class<Record> recordClass;
 
         /**
          * Sets the key field name in the record.
          *
-         * @param keyField the key field
+         * @param keyFieldName the key field
          * @return the builder
          */
-        public Builder<Record> keyField(String keyField) {
-            this.keyField = keyField;
+        public Builder<Record> withKeyFieldName(String keyFieldName) {
+            this.keyFieldName = keyFieldName;
             return this;
         }
 
@@ -49,7 +48,7 @@ public class RedisVectorStoreRecordMapper<Record>
          * @param recordClass the record class
          * @return the builder
          */
-        public Builder<Record> recordClass(Class<Record> recordClass) {
+        public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
             return this;
         }
@@ -61,8 +60,8 @@ public class RedisVectorStoreRecordMapper<Record>
          */
         @Override
         public RedisVectorStoreRecordMapper<Record> build() {
-            if (keyField == null) {
-                throw new IllegalArgumentException("keyField is required");
+            if (keyFieldName == null) {
+                throw new IllegalArgumentException("keyFieldName is required");
             }
             if (recordClass == null) {
                 throw new IllegalArgumentException("recordClass is required");
@@ -73,8 +72,8 @@ public class RedisVectorStoreRecordMapper<Record>
                 try {
                     String json = mapper.writeValueAsString(record);
                     ObjectNode jsonNode = (ObjectNode) mapper.readTree(json);
-                    String key = jsonNode.get(keyField).asText();
-                    jsonNode.remove(keyField);
+                    String key = jsonNode.get(keyFieldName).asText();
+                    jsonNode.remove(keyFieldName);
 
                     return new AbstractMap.SimpleEntry<>(key, jsonNode);
                 } catch (JsonProcessingException e) {
@@ -88,7 +87,7 @@ public class RedisVectorStoreRecordMapper<Record>
                 ObjectNode jsonNode = mapper.valueToTree(storageModel.getValue());
 
                 // Add the key back to the record
-                jsonNode.put(keyField, storageModel.getKey());
+                jsonNode.put(keyFieldName, storageModel.getKey());
                 return mapper.convertValue(jsonNode, recordClass);
             });
         }

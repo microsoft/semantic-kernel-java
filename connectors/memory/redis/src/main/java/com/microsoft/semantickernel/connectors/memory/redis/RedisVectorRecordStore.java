@@ -12,7 +12,6 @@ import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
@@ -20,7 +19,6 @@ import redis.clients.jedis.Response;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,8 +50,8 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
             .getVectorStoreRecordMapper();
         if (mapper == null) {
             mapper = new RedisVectorStoreRecordMapper.Builder<Record>()
-                .keyField(definition.getKeyField().getName())
-                .recordClass(options.getRecordClass())
+                .withKeyFieldName(definition.getKeyField().getName())
+                .withRecordClass(options.getRecordClass())
                 .build();
         }
 
