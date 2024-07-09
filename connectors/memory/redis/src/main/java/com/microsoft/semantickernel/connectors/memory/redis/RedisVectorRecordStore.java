@@ -103,7 +103,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
 
                 JsonNode jsonNode = new ObjectMapper().valueToTree(value);
                 return Mono.just(this.options.getVectorStoreRecordMapper()
-                        .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
+                    .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
             } catch (Exception e) {
                 return Mono.error(e);
             }
@@ -143,7 +143,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
 
                         JsonNode jsonNode = new ObjectMapper().valueToTree(value);
                         return this.options.getVectorStoreRecordMapper()
-                                .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
+                            .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
                     })
                     .collect(Collectors.toList()));
             } catch (Exception e) {
@@ -169,8 +169,8 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
         String redisKey = getRedisKey(redisObject.getKey(), collectionName);
 
         return Mono.fromRunnable(() -> client.jsonSet(redisKey, redisObject.getValue()))
-                .subscribeOn(Schedulers.boundedElastic())
-                .thenReturn(redisObject.getKey());
+            .subscribeOn(Schedulers.boundedElastic())
+            .thenReturn(redisObject.getKey());
     }
 
     /**
@@ -199,8 +199,8 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
         });
 
         return Mono.fromRunnable(pipeline::sync)
-                .subscribeOn(Schedulers.boundedElastic())
-                .thenReturn(keys);
+            .subscribeOn(Schedulers.boundedElastic())
+            .thenReturn(keys);
     }
 
     /**
@@ -218,8 +218,8 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
         String redisKey = getRedisKey(key, collectionName);
 
         return Mono.fromRunnable(() -> client.del(redisKey))
-                .subscribeOn(Schedulers.boundedElastic())
-                .then();
+            .subscribeOn(Schedulers.boundedElastic())
+            .then();
     }
 
     /**
@@ -241,7 +241,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
         });
 
         return Mono.fromRunnable(pipeline::sync)
-                .subscribeOn(Schedulers.boundedElastic())
-                .then();
+            .subscribeOn(Schedulers.boundedElastic())
+            .then();
     }
 }
