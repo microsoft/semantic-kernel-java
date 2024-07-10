@@ -77,6 +77,7 @@
 
         <module>connectors/memory/azure-ai-search</module>
         <module>connectors/memory/redis</module>
+        <module>connectors/memory/jdbc</module>
     </modules>
 
     <dependencyManagement>

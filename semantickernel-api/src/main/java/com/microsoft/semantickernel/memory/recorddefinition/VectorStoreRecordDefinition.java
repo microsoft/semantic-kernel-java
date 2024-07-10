@@ -7,8 +7,8 @@ import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordVec
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,34 +17,42 @@ import java.util.stream.Collectors;
  */
 public class VectorStoreRecordDefinition {
     private final VectorStoreRecordKeyField keyField;
-    private final Collection<VectorStoreRecordDataField> dataFields;
-    private final Collection<VectorStoreRecordVectorField> vectorFields;
+    private final List<VectorStoreRecordDataField> dataFields;
+    private final List<VectorStoreRecordVectorField> vectorFields;
 
     public VectorStoreRecordKeyField getKeyField() {
         return keyField;
     }
 
-    public Collection<VectorStoreRecordDataField> getDataFields() {
-        return Collections.unmodifiableCollection(dataFields);
+    public List<VectorStoreRecordDataField> getDataFields() {
+        return Collections.unmodifiableList(dataFields);
     }
 
-    public Collection<VectorStoreRecordVectorField> getVectorFields() {
-        return Collections.unmodifiableCollection(vectorFields);
+    public List<VectorStoreRecordVectorField> getVectorFields() {
+        return Collections.unmodifiableList(vectorFields);
+    }
+
+    public List<VectorStoreRecordField> getAllFields() {
+        List<VectorStoreRecordField> allFields = new ArrayList<>();
+        allFields.add(keyField);
+        allFields.addAll(dataFields);
+        allFields.addAll(vectorFields);
+        return allFields;
     }
 
     private VectorStoreRecordDefinition(
         VectorStoreRecordKeyField keyField,
-        Collection<VectorStoreRecordDataField> dataFields,
-        Collection<VectorStoreRecordVectorField> vectorFields) {
+        List<VectorStoreRecordDataField> dataFields,
+        List<VectorStoreRecordVectorField> vectorFields) {
         this.keyField = keyField;
         this.dataFields = dataFields;
         this.vectorFields = vectorFields;
     }
 
     private static VectorStoreRecordDefinition checkFields(
-        Collection<VectorStoreRecordKeyField> keyFields,
-        Collection<VectorStoreRecordDataField> dataFields,
-        Collection<VectorStoreRecordVectorField> vectorFields) {
+        List<VectorStoreRecordKeyField> keyFields,
+        List<VectorStoreRecordDataField> dataFields,
+        List<VectorStoreRecordVectorField> vectorFields) {
         if (keyFields.size() != 1) {
             throw new IllegalArgumentException("Exactly one key field is required");
         }
@@ -53,12 +61,29 @@ public class VectorStoreRecordDefinition {
             vectorFields);
     }
 
+    public static void checkFieldsType(HashSet<Class<?>> types, Class<?> recordClass,
+        List<VectorStoreRecordField> fields) {
+        StringBuilder sb = new StringBuilder();
+        types.forEach(t -> sb.append(t.getName()).append(" "));
+
+        for (VectorStoreRecordField field : fields) {
+            try {
+                if (!types.contains(recordClass.getDeclaredField(field.getName()).getType())) {
+                    throw new IllegalArgumentException(
+                        "Field " + field.getName() + " must be one of: " + sb);
+                }
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     /**
      * Create a VectorStoreRecordDefinition from a collection of fields.
      * @param fields The fields to create the definition from.
      * @return VectorStoreRecordDefinition
      */
-    public static VectorStoreRecordDefinition create(Collection<VectorStoreRecordField> fields) {
+    public static VectorStoreRecordDefinition create(List<VectorStoreRecordField> fields) {
         List<VectorStoreRecordKeyField> keyFields = fields.stream()
             .filter(p -> p instanceof VectorStoreRecordKeyField)
             .map(p -> (VectorStoreRecordKeyField) p)
