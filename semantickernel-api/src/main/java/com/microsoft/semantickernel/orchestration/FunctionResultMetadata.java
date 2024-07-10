@@ -106,6 +106,7 @@ public class FunctionResultMetadata<UsageType> {
      *
      * @return The id of the result of the function invocation.
      */
+    @Nullable
     public String getId() {
         ContextVariable<?> id = metadata.get(ID);
         if (id == null) {

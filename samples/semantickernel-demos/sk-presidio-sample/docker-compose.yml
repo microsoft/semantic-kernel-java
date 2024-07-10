@@ -1,0 +1,28 @@
+version: '3.6'
+services:
+  presidio-analyzer:
+    image: "mcr.microsoft.com/presidio-analyzer"
+    ports:
+      - 3001:3000
+    logging:
+      driver: none
+  presidio-anonymizer:
+    image: "mcr.microsoft.com/presidio-anonymizer"
+    ports:
+      - 3000:3000
+    logging:
+      driver: none
+  sk-presidio-sample:
+    image: "sk-presidio-sample"
+    depends_on:
+      - presidio-anonymizer
+      - presidio-analyzer
+    build:
+      context: .
+      dockerfile: ./sk-presidio-sample-dockerfile
+    secrets:
+      - ai-config
+secrets:
+  ai-config:
+    file: ./.env
+

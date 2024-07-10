@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.aiservices.google.chatcompletion;
 
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
-import com.google.cloud.vertexai.api.FunctionCall;
 import com.google.cloud.vertexai.api.FunctionDeclaration;
 import com.google.cloud.vertexai.api.FunctionResponse;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
@@ -22,11 +21,13 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKCheckedException;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
+import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -35,18 +36,17 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionServic
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import com.microsoft.semantickernel.services.gemini.GeminiServiceBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
 
@@ -168,12 +168,17 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
                     GeminiChatMessageContent<?> message = (GeminiChatMessageContent<?>) chatMessageContent;
 
                     message.getGeminiFunctionCalls().forEach(geminiFunction -> {
+                        FunctionResult<?> functionResult = geminiFunction.getFunctionResult();
+                        if (functionResult == null || functionResult.getResult() == null) {
+                            throw new SKException("Gemini failed to return a result");
+                        }
+
                         FunctionResponse functionResponse = FunctionResponse.newBuilder()
                             .setName(geminiFunction.getFunctionCall().getName())
                             .setResponse(Struct.newBuilder().putFields("result",
                                 Value.newBuilder()
                                     .setStringValue(
-                                        (String) geminiFunction.getFunctionResult().getResult())
+                                        (String) functionResult.getResult())
                                     .build()))
                             .build();
 
@@ -348,7 +353,12 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         String pluginName = name[0];
         String functionName = name[1];
 
-        KernelFunction<?> function = kernel.getPlugin(pluginName).get(functionName);
+        KernelPlugin plugin = kernel.getPlugin(pluginName);
+        if (plugin == null) {
+            throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
+                String.format("Plugin %s not found in kernel", pluginName));
+        }
+        KernelFunction<?> function = plugin.get(functionName);
 
         if (function == null) {
             throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
@@ -373,6 +383,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {
+
         @Override
         public GeminiChatCompletion build() {
             if (this.client == null) {
