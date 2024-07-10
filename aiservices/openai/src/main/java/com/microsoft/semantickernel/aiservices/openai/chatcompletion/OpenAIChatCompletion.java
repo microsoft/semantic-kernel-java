@@ -133,7 +133,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                             .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
                         chatHistoryResult = new ChatHistory(
                             Collections.singletonList(
-                                CollectionUtil.getLastOrNull(chatHistory.getMessages())));
+                                CollectionUtil.getLastOrNull(chatHistoryResult.getMessages())));
                     }
 
                     return Mono.just(chatHistoryResult.getMessages());
@@ -226,6 +226,24 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 allMessages,
                 newMessages,
                 tmpChatMessageContent);
+        }
+
+        /**
+         * Merges 2 chat histories
+         *
+         * @param messages The messages to merge in
+         * @return The merged chat messages
+         */
+        public ChatMessages mergeIn(List<ChatRequestMessage> messages) {
+            int index = 0;
+            while (index < messages.size() && index < this.allMessages.size()) {
+                if (!messages.get(index).equals(this.allMessages.get(index))) {
+                    LOGGER.warn("Messages do not match at index: " + index
+                        + " you might be merging unrelated message histories");
+                }
+                index++;
+            }
+            return this.addAll(messages.subList(index, messages.size()));
         }
     }
 
@@ -354,7 +372,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                         if (autoInvokeAttempts > 0) {
                             ChatMessages currentMessages = messages;
                             if (e instanceof FunctionInvocationError) {
-                                currentMessages = currentMessages.addAll(
+                                currentMessages = currentMessages.mergeIn(
                                     ((FunctionInvocationError) e).getMessages());
                             }
                             return internalChatMessageContentsAsync(

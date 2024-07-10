@@ -147,7 +147,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
+    public static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
         return (kernel, function, arguments, variableType, invocationContext) -> {
             InvocationContext context;
             if (invocationContext == null) {
@@ -354,22 +354,190 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         Parameter parameter,
         Kernel kernel,
         InvocationContext invocationContext) {
+        // The actual type of the method argument
+        Class<?> targetArgType = parameter.getType();
+
+        if (Kernel.class.isAssignableFrom(targetArgType)) {
+            return kernel;
+        }
+
         String variableName = getGetVariableName(parameter);
+        ContextVariable<?> variable = getVariableFromContext(method, context, variableName);
 
-        ContextVariable<?> arg = context == null ? null : context.get(variableName);
+        // The Value of what has been provided
+        Object sourceValue = null;
+        ContextVariableType<?> sourceType = null;
 
-        // If there is 1 argument use "input" or the only argument
-        if (arg == null && method.getParameters().length == 1) {
-            if (context != null) {
-                if (context.containsKey(KernelFunctionArguments.MAIN_KEY)) {
-                    arg = context.get(KernelFunctionArguments.MAIN_KEY);
-                } else if (context.size() == 1) {
-                    arg = context.values().iterator().next();
-                }
+        // if needed extract the default value from annotation and substitute it for the missing variable
+        variable = extractDefaultTypeFromAnnotation(
+            method,
+            parameter,
+            invocationContext,
+            variable,
+            sourceValue,
+            variableName);
+
+        if (variable != null) {
+            sourceValue = variable.getValue();
+            sourceType = variable.getType();
+        }
+
+        Class<?> requestedType = targetArgType;
+
+        KernelFunctionParameter annotation = parameter.getAnnotation(KernelFunctionParameter.class);
+        if (annotation != null && annotation.type() != null) {
+            requestedType = annotation.type();
+        }
+
+        // Ignore string as there is a good chance the developer user left it to default
+        if (requestedType != String.class && !targetArgType.isAssignableFrom(requestedType)) {
+            throw new AIException(
+                AIException.ErrorCodes.INVALID_CONFIGURATION,
+                "Annotation on method: " + method.getName() + " requested conversion to type: "
+                    + requestedType.getName()
+                    + ", however this cannot be assigned to parameter of type: "
+                    + targetArgType);
+        }
+
+        if (requestedType == String.class && !targetArgType.isAssignableFrom(requestedType)) {
+            LOGGER.warn(
+                "Annotation on method: {} is requesting a String which is not assignable to method type {}, possibly as the type argument has not been provided on the annotation.",
+                method.getName(),
+                targetArgType.getName());
+        }
+
+        // First try to convert to the type requested from the annotation
+        Object converted = toObjectType(
+            parameter.getName(),
+            sourceType,
+            sourceValue,
+            requestedType,
+            invocationContext);
+
+        if (targetArgType.isInstance(converted)) {
+            return converted;
+        }
+
+        if (converted != null) {
+            // Could not convert to requested type, try to target type
+            ContextVariable<Object> convertedCv = invocationContext
+                .getContextVariableTypes()
+                .contextVariableOf(converted);
+
+            converted = toObjectType(
+                parameter.getName(),
+                convertedCv.getType(),
+                convertedCv,
+                targetArgType,
+                invocationContext);
+        }
+
+        if (targetArgType.isInstance(converted)) {
+            return converted;
+        }
+
+        // Could not convert to requested type, try to target type
+        return toObjectType(
+            parameter.getName(),
+            sourceType,
+            sourceValue,
+            targetArgType,
+            invocationContext);
+    }
+
+    @Nullable
+    private static Object toObjectType(
+        String parameterName,
+
+        @Nullable ContextVariableType<?> sourceType,
+        @Nullable Object sourceValue,
+
+        Class<?> targetArgType,
+        InvocationContext invocationContext) {
+
+        if (sourceType != null) {
+
+            if (targetArgType.isAssignableFrom(sourceType.getClazz())) {
+                return sourceValue;
+            }
+
+            if (isPrimitive(sourceType.getClazz(), targetArgType)) {
+                return sourceValue;
+            }
+
+            ContextVariableTypeConverter<?> c = sourceType.getConverter();
+
+            Object converted = c.toObject(invocationContext.getContextVariableTypes(), sourceValue,
+                targetArgType);
+            if (converted != null) {
+                return converted;
             }
         }
 
-        if (arg == null) {
+        // Well-known types only
+        ContextVariableType<?> converter = invocationContext.getContextVariableTypes()
+            .getVariableTypeForClass(targetArgType);
+        if (converter != null) {
+            try {
+                Object converted = converter.getConverter().fromObject(sourceValue);
+                if (converted != null) {
+                    return converted;
+                }
+            } catch (NumberFormatException nfe) {
+                throw new AIException(
+                    ErrorCodes.INVALID_CONFIGURATION,
+                    "Invalid value for "
+                        + parameterName
+                        + " expected "
+                        + targetArgType.getSimpleName()
+                        + " but got "
+                        + sourceValue);
+            }
+        }
+
+        // If doing a type conversion fails, and we are going to a string, try using toPromptString
+        if (sourceType != null && targetArgType.equals(String.class)) {
+            ContextVariableTypeConverter c = sourceType.getConverter();
+
+            Object converted = c.toPromptString(invocationContext.getContextVariableTypes(),
+                sourceValue);
+            if (converted != null) {
+                return converted;
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static ContextVariable<?> getVariableFromContext(
+        Method method,
+        @Nullable KernelFunctionArguments context,
+        String variableName) {
+        ContextVariable<?> variable = context == null ? null : context.get(variableName);
+
+        // If there is 1 argument use "input" or the only argument
+        if (variable == null && method.getParameters().length == 1) {
+            if (context != null) {
+                if (context.containsKey(KernelFunctionArguments.MAIN_KEY)) {
+                    variable = context.get(KernelFunctionArguments.MAIN_KEY);
+                } else if (context.size() == 1) {
+                    variable = context.values().iterator().next();
+                }
+            }
+        }
+        return variable;
+    }
+
+    @Nullable
+    private static ContextVariable<?> extractDefaultTypeFromAnnotation(
+        Method method,
+        Parameter parameter,
+        InvocationContext invocationContext,
+        @Nullable ContextVariable<?> variable,
+        @Nullable Object sourceValue,
+        String variableName) {
+        if (variable == null) {
             KernelFunctionParameter annotation = parameter
                 .getAnnotation(KernelFunctionParameter.class);
             if (annotation != null) {
@@ -385,17 +553,17 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                     String defaultValue = annotation.defaultValue();
                     Object value = cvType.getConverter().fromPromptString(defaultValue);
 
-                    arg = ContextVariable.convert(value, type,
+                    variable = ContextVariable.convert(value, type,
                         invocationContext.getContextVariableTypes());
                 }
 
-                if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
+                if (variable != null && NO_DEFAULT_VALUE.equals(sourceValue)) {
                     if (!annotation.required()) {
                         return null;
                     }
 
                     throw new AIException(
-                        AIException.ErrorCodes.INVALID_CONFIGURATION,
+                        ErrorCodes.INVALID_CONFIGURATION,
                         "Attempted to invoke function "
                             + method.getDeclaringClass().getName()
                             + "."
@@ -408,11 +576,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             }
         }
 
-        if (arg == null && variableName.matches("arg\\d")) {
+        if (variable == null && variableName.matches("arg\\d")) {
             LOGGER.warn(formErrorMessage(method, parameter));
         }
 
-        if (arg != null && NO_DEFAULT_VALUE.equals(arg.getValue())) {
+        if (variable != null && NO_DEFAULT_VALUE.equals(sourceValue)) {
             if (parameter.getName().matches("arg\\d")) {
                 throw new AIException(
                     AIException.ErrorCodes.INVALID_CONFIGURATION,
@@ -420,75 +588,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             } else {
                 throw new AIException(
                     AIException.ErrorCodes.INVALID_CONFIGURATION,
-                    "Unknown arg " + parameter.getName());
+                    "Unknown variable " + parameter.getName());
             }
         }
 
-        if (Kernel.class.isAssignableFrom(parameter.getType())) {
-            return kernel;
-        }
-
-        KernelFunctionParameter annotation = parameter.getAnnotation(KernelFunctionParameter.class);
-        if (annotation == null || annotation.type() == null) {
-            return arg;
-        }
-
-        Class<?> type = annotation.type();
-
-        if (!parameter.getType().isAssignableFrom(type)) {
-            throw new AIException(
-                AIException.ErrorCodes.INVALID_CONFIGURATION,
-                "Annotation on method: " + method.getName() + " requested conversion to type: "
-                    + type.getName() + ", however this cannot be assigned to parameter of type: "
-                    + parameter.getType());
-        }
-
-        Object value = arg;
-
-        if (arg != null) {
-
-            if (parameter.getType().isAssignableFrom(arg.getType().getClazz())) {
-                return arg.getValue();
-            }
-
-            if (isPrimitive(arg.getType().getClazz(), parameter.getType())) {
-                return arg.getValue();
-            }
-
-            ContextVariableTypeConverter<?> c = arg.getType().getConverter();
-
-            Object converted = c.toObject(invocationContext.getContextVariableTypes(),
-                arg.getValue(), parameter.getType());
-            if (converted != null) {
-                return converted;
-            }
-        }
-
-        // Well-known types only
-        ContextVariableType<?> converter = invocationContext.getContextVariableTypes()
-            .getVariableTypeForClass(type);
-        if (converter != null) {
-            try {
-                value = converter.getConverter().fromObject(arg);
-            } catch (NumberFormatException nfe) {
-                throw new AIException(
-                    AIException.ErrorCodes.INVALID_CONFIGURATION,
-                    "Invalid value for "
-                        + parameter.getName()
-                        + " expected "
-                        + type.getSimpleName()
-                        + " but got "
-                        + arg);
-            }
-        }
-
-        if (value == null && type.equals(String.class) && arg != null) {
-            ContextVariableTypeConverter c = arg.getType().getConverter();
-
-            value = c.toPromptString(invocationContext.getContextVariableTypes(), arg.getValue());
-        }
-
-        return value;
+        return variable;
     }
 
     @SuppressWarnings("OperatorPrecedence")

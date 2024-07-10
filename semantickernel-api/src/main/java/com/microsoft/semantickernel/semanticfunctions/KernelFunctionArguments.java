@@ -295,6 +295,9 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
          * @throws SKException if the value cannot be converted to a ContextVariable
          */
         public Builder withVariable(String key, Object value) {
+            if (value instanceof ContextVariable) {
+                return withVariable(key, (ContextVariable<?>) value);
+            }
             return withVariable(key, ContextVariable.ofGlobalType(value));
         }
 

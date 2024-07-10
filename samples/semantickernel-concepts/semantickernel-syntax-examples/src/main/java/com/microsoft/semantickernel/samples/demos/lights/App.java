@@ -1,12 +1,17 @@
-package com.microsoft.semantickernel.samples.demos;
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.samples.demos.lights;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.google.gson.Gson;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationContext.Builder;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
@@ -59,13 +64,24 @@ public class App {
         builder.withPlugin(lightPlugin);
         // Build the kernel
         Kernel kernel = builder.build();
+
         ChatCompletionService chatCompletionService = kernel.getService(
             ChatCompletionService.class);
+
+        ContextVariableTypes
+            .addGlobalConverter(ContextVariableTypeConverter.builder(LightModel.class)
+                .toPromptString(new Gson()::toJson)
+                .build());
+
         // Enable planning
-        InvocationContext invocationContext = new InvocationContext.Builder()
-            .withReturnMode(InvocationReturnMode.NEW_MESSAGES_ONLY)
+        InvocationContext invocationContext = new Builder()
+            .withReturnMode(InvocationReturnMode.LAST_MESSAGE_ONLY)
             .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+            .withContextVariableConverter(ContextVariableTypeConverter.builder(LightModel.class)
+                .toPromptString(new Gson()::toJson)
+                .build())
             .build();
+
         // Create a history to store the conversation
         ChatHistory history = new ChatHistory();
         // Initiate a back-and-forth chat

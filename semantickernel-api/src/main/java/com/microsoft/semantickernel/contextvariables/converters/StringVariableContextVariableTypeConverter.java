@@ -5,6 +5,7 @@ import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import javax.annotation.Nullable;
 
 /**
  * A {@link ContextVariableTypeConverter} for {@code java.lang.String} variables. Use
@@ -22,8 +23,25 @@ public class StringVariableContextVariableTypeConverter extends
     public StringVariableContextVariableTypeConverter() {
         super(
             String.class,
-            s -> convert(s, String.class),
+            StringVariableContextVariableTypeConverter::convertToString,
             ContextVariableTypeConverter::escapeXmlString,
             s -> s);
+    }
+
+    @Nullable
+    public static String convertToString(@Nullable Object s) {
+        String converted = convert(s, String.class);
+        if (converted != null) {
+            return converted;
+        }
+
+        if (s != null) {
+            String str = s.toString();
+            // ignore if this looks like an object reference
+            if (!str.matches(".*@[a-f0-9]+$")) {
+                return str;
+            }
+        }
+        return null;
     }
 }

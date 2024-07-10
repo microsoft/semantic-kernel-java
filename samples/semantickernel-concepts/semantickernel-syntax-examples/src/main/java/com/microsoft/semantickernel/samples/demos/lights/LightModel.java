@@ -1,11 +1,5 @@
-package com.microsoft.semantickernel.samples.demos;
-
-import com.google.gson.Gson;
-import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.samples.demos.lights;
 
 public class LightModel {
 
@@ -43,4 +37,3 @@ public class LightModel {
         this.isOn = isOn;
     }
 }
-
