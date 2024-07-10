@@ -86,9 +86,9 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
             .getVectorStoreRecordMapper();
 
         // Use custom mapper if available
-        if (mapper != null && mapper.getToRecordMapper() != null) {
+        if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
             return client.getDocument(key, SearchDocument.class)
-                .map(this.options.getVectorStoreRecordMapper()::toRecord);
+                .map(this.options.getVectorStoreRecordMapper()::mapStorageModeltoRecord);
         }
 
         return client.getDocumentWithResponse(key, this.options.getRecordClass(), selectedFields)
@@ -102,8 +102,8 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
     }
 
     @Override
-    public Mono<Collection<Record>> getBatchAsync(
-        @Nonnull Collection<String> keys,
+    public Mono<List<Record>> getBatchAsync(
+        @Nonnull List<String> keys,
         GetRecordOptions options) {
         return Flux.fromIterable(keys)
             .flatMap(key -> getAsync(key, options).flux())
@@ -118,8 +118,8 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
     }
 
     @Override
-    public Mono<Collection<String>> upsertBatchAsync(
-        @Nonnull Collection<Record> records, UpsertRecordOptions options) {
+    public Mono<List<String>> upsertBatchAsync(
+        @Nonnull List<Record> records, UpsertRecordOptions options) {
         if (records.isEmpty()) {
             return Mono.just(Collections.emptyList());
         }
@@ -133,9 +133,9 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
         Iterable<?> documents;
 
         // Use custom mapper if available
-        if (mapper != null && mapper.getToStorageModelMapper() != null) {
+        if (mapper != null && mapper.getRecordToStorageModelMapper() != null) {
             documents = records.stream()
-                .map(this.options.getVectorStoreRecordMapper()::toStorageModel)
+                .map(this.options.getVectorStoreRecordMapper()::mapRecordToStorageModel)
                 .collect(Collectors.toList());
         } else {
             documents = records;
@@ -155,7 +155,7 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
     }
 
     @Override
-    public Mono<Void> deleteBatchAsync(Collection<String> keys, DeleteRecordOptions options) {
+    public Mono<Void> deleteBatchAsync(List<String> keys, DeleteRecordOptions options) {
         String indexName = resolveCollectionName(
             options != null ? options.getCollectionName() : null);
         SearchAsyncClient client = this.getSearchClient(indexName);

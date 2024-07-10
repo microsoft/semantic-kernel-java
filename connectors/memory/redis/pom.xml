@@ -10,18 +10,30 @@
         <relativePath>../../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
-    <name>Semantic Kernel Azure AI Search Memory Connector</name>
-    <description>Defines connector for Azure AI Search to be used with the Semantic Kernel</description>
+    <artifactId>semantickernel-connectors-memory-redis</artifactId>
+    <name>Semantic Kernel Redis Memory Connector</name>
+    <description>Defines connector for Redis to be used with the Semantic Kernel</description>
 
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-search-documents</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
         </dependency>
     </dependencies>
 

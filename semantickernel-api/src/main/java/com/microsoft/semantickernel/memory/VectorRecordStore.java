@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
 import reactor.core.publisher.Mono;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface VectorRecordStore<Key, Record> {
     /**
@@ -23,9 +23,9 @@ public interface VectorRecordStore<Key, Record> {
      *
      * @param keys The keys of the records to get.
      * @param options The options for getting the records.
-     * @return A Mono emitting a collection of records.
+     * @return A Mono emitting a list of records.
      */
-    Mono<Collection<Record>> getBatchAsync(Collection<Key> keys, GetRecordOptions options);
+    Mono<List<Record>> getBatchAsync(List<Key> keys, GetRecordOptions options);
 
     /**
      * Inserts or updates a record in the store.
@@ -41,9 +41,9 @@ public interface VectorRecordStore<Key, Record> {
      *
      * @param data The records to upsert.
      * @param options The options for upserting the records.
-     * @return A Mono emitting a collection of keys of the upserted records.
+     * @return A Mono emitting a list of keys of the upserted records.
      */
-    Mono<Collection<Key>> upsertBatchAsync(Collection<Record> data, UpsertRecordOptions options);
+    Mono<List<Key>> upsertBatchAsync(List<Record> data, UpsertRecordOptions options);
 
     /**
      * Deletes a record from the store.
@@ -61,5 +61,5 @@ public interface VectorRecordStore<Key, Record> {
      * @param options The options for deleting the records.
      * @return A Mono representing the completion of the deletion operation.
      */
-    Mono<Void> deleteBatchAsync(Collection<Key> keys, DeleteRecordOptions options);
+    Mono<Void> deleteBatchAsync(List<Key> keys, DeleteRecordOptions options);
 }
