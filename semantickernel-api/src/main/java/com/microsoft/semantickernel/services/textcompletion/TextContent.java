@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.services.textcompletion;
 
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.services.KernelContent;
+import javax.annotation.Nullable;
 
 /**
  * Content from a text completion service.
@@ -21,8 +22,8 @@ public class TextContent extends KernelContent<String> {
      */
     public TextContent(
         String content,
-        String modelId,
-        FunctionResultMetadata metadata) {
+        @Nullable String modelId,
+        @Nullable FunctionResultMetadata metadata) {
         super(content, modelId, metadata);
         this.content = content;
     }

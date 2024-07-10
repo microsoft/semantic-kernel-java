@@ -58,16 +58,6 @@ public abstract class KernelContent<T> {
     }
 
     /**
-     * Gets the model identifier used to generate the content.
-     *
-     * @return The model identifier used to generate the content.
-     */
-    @Nullable
-    public String getModelId() {
-        return modelId;
-    }
-
-    /**
      * Gets the metadata associated with the content.
      *
      * @return The metadata associated with the content.

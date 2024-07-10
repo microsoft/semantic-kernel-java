@@ -27,6 +27,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageTextContent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +75,7 @@ public class ToolCallBehaviourTest {
 
         ChatHistory messages = new ChatHistory();
         messages.addMessage(
-            new ChatMessageContent<>(
-                AuthorRole.USER,
-                "Call A function"));
+            ChatMessageTextContent.userMessage("Call A function"));
 
         List<ChatMessageContent<?>> result = chatCompletionService
             .getChatMessageContentsAsync(
@@ -125,9 +124,7 @@ public class ToolCallBehaviourTest {
 
         ChatHistory messages = new ChatHistory();
         messages.addMessage(
-            new ChatMessageContent<>(
-                AuthorRole.USER,
-                "Call A function"));
+            ChatMessageTextContent.userMessage("Call A function"));
 
         List<ChatMessageContent<?>> result = chatCompletionService
             .getChatMessageContentsAsync(

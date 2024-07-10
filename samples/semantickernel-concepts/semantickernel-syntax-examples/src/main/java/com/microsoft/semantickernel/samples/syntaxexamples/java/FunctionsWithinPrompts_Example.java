@@ -14,10 +14,9 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
-import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageTextContent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -71,18 +70,16 @@ public class FunctionsWithinPrompts_Example {
         List<ChatHistory> fewShotExamples = Arrays.asList(
             new ChatHistory(
                 Arrays.asList(
-                    new ChatMessageContent<String>(AuthorRole.USER,
+                    ChatMessageTextContent.userMessage(
                         "Can you send a very quick approval to the marketing team?"),
-                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "Intent:"),
-                    new ChatMessageContent<String>(AuthorRole.ASSISTANT,
-                        "ContinueConversation"))),
+                    ChatMessageTextContent.systemMessage("Intent:"),
+                    ChatMessageTextContent.assistantMessage("ContinueConversation"))),
 
             new ChatHistory(
                 Arrays.asList(
-                    new ChatMessageContent<String>(AuthorRole.USER,
-                        "Thats all"),
-                    new ChatMessageContent<String>(AuthorRole.SYSTEM, "Intent:"),
-                    new ChatMessageContent<String>(AuthorRole.ASSISTANT, "EndConversation"))));
+                    ChatMessageTextContent.userMessage("Thats all"),
+                    ChatMessageTextContent.systemMessage("Intent:"),
+                    ChatMessageTextContent.assistantMessage("EndConversation"))));
 
         // Create handlebars template for intent
         // <IntentFunction>
@@ -136,12 +133,12 @@ public class FunctionsWithinPrompts_Example {
 
             /*
              * Renders to:
-             * 
+             *
              * <message role=\"system\">Instructions: What is the intent of this request?
              * Do not explain the reasoning, just reply back with the intent. If you are unsure,
              * reply with .
              * Choices: ContinueConversation,EndConversation.</message>
-             * 
+             *
              * <message role=\"user\">Can you send a very quick approval to the marketing
              * team?</message>
              * <message role=\"system\">Intent:</message>
@@ -149,7 +146,7 @@ public class FunctionsWithinPrompts_Example {
              * <message role=\"user\">Can you send the full update to the marketing team?</message>
              * <message role=\"system\">Intent:</message>
              * <message role=\"assistant\">EndConversation</message>
-             * 
+             *
              * <message role=\"user\">Can you send an approval to the marketing team?</message>
              * <message role=\"system\">Intent:</message>
              */
