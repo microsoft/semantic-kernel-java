@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.contextvariables.converters;
 
 import static com.microsoft.semantickernel.contextvariables.ContextVariableTypes.convert;
 
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import javax.annotation.Nullable;
@@ -33,6 +34,10 @@ public class StringVariableContextVariableTypeConverter extends
         String converted = convert(s, String.class);
         if (converted != null) {
             return converted;
+        }
+
+        if (s instanceof ContextVariable) {
+            s = ((ContextVariable<?>) s).getValue();
         }
 
         if (s != null) {

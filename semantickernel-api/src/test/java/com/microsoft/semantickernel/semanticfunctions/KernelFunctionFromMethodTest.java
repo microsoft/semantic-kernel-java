@@ -136,7 +136,7 @@ public class KernelFunctionFromMethodTest {
         return Arrays.asList(
             new NoAnnotation(),
             new NoTypeOnAnnotation(),
-            new PrimativeTypeOnAnnotation(),
+            new PrimitiveTypeOnAnnotation(),
             new SuperClassTypeTypeOnAnnotation(),
             new DefaultTypeOnAnnotation(),
             new StringTargetTypeOnAnnotation(),
@@ -245,7 +245,7 @@ public class KernelFunctionFromMethodTest {
     }
 
     @Nested
-    class PrimativeTypeOnAnnotation implements InvocationTest {
+    class PrimitiveTypeOnAnnotation implements InvocationTest {
 
         boolean called = false;
 

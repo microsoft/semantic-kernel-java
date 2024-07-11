@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 public class ContextVariableTypeConverterTest {
@@ -48,7 +49,27 @@ public class ContextVariableTypeConverterTest {
 
                 }
             }));
+    }
 
+    class NoToString {
+
+    }
+
+    class WithToString {
+
+        @Override
+        public String toString() {
+            return "foo";
+        }
+    }
+
+    @Test
+    public void checkStringConversionIgnoresObjectReferences() {
+        Assertions.assertNull(StringVariableContextVariableTypeConverter.convertToString(null));
+        Assertions.assertNull(
+            StringVariableContextVariableTypeConverter.convertToString(new NoToString()));
+        Assertions.assertEquals("foo",
+            StringVariableContextVariableTypeConverter.convertToString(new WithToString()));
     }
 
     private static class TestCase<T, U> {
