@@ -15,6 +15,7 @@ import com.azure.ai.openai.models.ChatMessageImageContentItem;
 import com.azure.ai.openai.models.ChatMessageImageDetailLevel;
 import com.azure.ai.openai.models.ChatMessageImageUrl;
 import com.azure.ai.openai.models.ChatRequestAssistantMessage;
+import com.azure.ai.openai.models.ChatRequestFunctionMessage;
 import com.azure.ai.openai.models.ChatRequestMessage;
 import com.azure.ai.openai.models.ChatRequestSystemMessage;
 import com.azure.ai.openai.models.ChatRequestToolMessage;
@@ -133,7 +134,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                             .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
                         chatHistoryResult = new ChatHistory(
                             Collections.singletonList(
-                                CollectionUtil.getLastOrNull(chatHistory.getMessages())));
+                                CollectionUtil.getLastOrNull(chatHistoryResult.getMessages())));
                     }
 
                     return Mono.just(chatHistoryResult.getMessages());
@@ -226,6 +227,54 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 allMessages,
                 newMessages,
                 tmpChatMessageContent);
+        }
+
+        /**
+         * Checks that the two messages have a similar history
+         *
+         * @param messages The messages to merge in
+         * @return The merged chat messages
+         */
+        boolean assertCommonHistory(List<ChatRequestMessage> messages) {
+            int index = 0;
+            while (index < messages.size() && index < this.allMessages.size()) {
+                ChatRequestMessage a = messages.get(index);
+                ChatRequestMessage b = this.allMessages.get(index);
+
+                boolean matches = false;
+                if (a instanceof ChatRequestAssistantMessage
+                    && b instanceof ChatRequestAssistantMessage) {
+                    matches = Objects.equals(((ChatRequestAssistantMessage) a).getContent(),
+                        ((ChatRequestAssistantMessage) b).getContent());
+                } else if (a instanceof ChatRequestSystemMessage
+                    && b instanceof ChatRequestSystemMessage) {
+                    matches = Objects.equals(((ChatRequestSystemMessage) a).getContent(),
+                        ((ChatRequestSystemMessage) b).getContent());
+                } else if (a instanceof ChatRequestUserMessage
+                    && b instanceof ChatRequestUserMessage) {
+                    matches = Objects.equals(((ChatRequestUserMessage) a).getContent(),
+                        ((ChatRequestUserMessage) b).getContent());
+                } else if (a instanceof ChatRequestFunctionMessage
+                    && b instanceof ChatRequestFunctionMessage) {
+                    matches = Objects.equals(((ChatRequestFunctionMessage) a).getContent(),
+                        ((ChatRequestFunctionMessage) b).getContent());
+                } else if (a instanceof ChatRequestToolMessage
+                    && b instanceof ChatRequestToolMessage) {
+                    matches = Objects.equals(((ChatRequestToolMessage) a).getContent(),
+                        ((ChatRequestToolMessage) b).getContent());
+                }
+
+                if (!matches) {
+                    LOGGER.warn("Messages do not match at index: " + index
+                        + " you might be merging unrelated message histories");
+                    return false;
+                }
+
+                index++;
+            }
+
+            return true;
+
         }
     }
 
@@ -354,7 +403,10 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                         if (autoInvokeAttempts > 0) {
                             ChatMessages currentMessages = messages;
                             if (e instanceof FunctionInvocationError) {
-                                currentMessages = currentMessages.addAll(
+                                currentMessages.assertCommonHistory(
+                                    ((FunctionInvocationError) e).getMessages());
+
+                                currentMessages = new ChatMessages(
                                     ((FunctionInvocationError) e).getMessages());
                             }
                             return internalChatMessageContentsAsync(
