@@ -4,7 +4,7 @@ The purpose of this article is to help you quickly grasp the key concepts in Sem
 
 In Semantic Kernel Java, the **builder pattern** is extensively used. If you are not familiar with the builder pattern, I recommend you check out: [Builder Design Pattern](https://refactoring.guru/design-patterns/builder)
 
-All the code examples below are from `java/samples/semantickernel-concepts/semantickernel-syntax-examples`.
+All the code examples below are from `samples/semantickernel-concepts/semantickernel-syntax-examples`.
 
 
 ## How to Define an AI Service?

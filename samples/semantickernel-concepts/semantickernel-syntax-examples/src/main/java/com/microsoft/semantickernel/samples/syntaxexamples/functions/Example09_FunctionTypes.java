@@ -73,7 +73,7 @@ public class Example09_FunctionTypes {
         KernelPlugin summarize = KernelPluginFactory
             .importPluginFromDirectory(
                 Path.of(PLUGIN_DIR,
-                    "java/samples/semantickernel-concepts/semantickernel-syntax-examples/src/main/resources/Plugins"),
+                    "samples/semantickernel-concepts/semantickernel-syntax-examples/src/main/resources/Plugins"),
                 "SummarizePlugin",
                 null);
 

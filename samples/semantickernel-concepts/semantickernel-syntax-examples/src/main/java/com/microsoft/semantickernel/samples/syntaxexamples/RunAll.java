@@ -28,7 +28,7 @@ import java.util.Scanner;
  * Run all the syntax examples.
  * <p>
  * Refer to the <a href=
- * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/java/samples/sample-code/README.md">
+ * "https://github.com/microsoft/semantic-kernel/blob/experimental-java/sample-code/README.md">
  * README</a> for configuring your environment to run the examples.
  */
 public class RunAll {
