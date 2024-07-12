@@ -7,13 +7,14 @@ on:
       - closed
     branches: [ "main" ]
 
-permissions:
-  contents: read
 
 jobs:
   if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +27,16 @@ jobs:
           cache: maven
 
       # Builds the project with Maven using the matrix JDK version
-      - name: Build with Maven
+      - name: Deploy to github pacakges
         run: ./mvnw -B -DskipTests -Pcompile-jdk8 -P-compile-jdk17 -Pgithub-packages clean deploy --file pom.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build artifacts
+        run: ./mvnw -B -DskipTests -Pcompile-jdk8 -P-compile-jdk17 clean deploy --file pom.xml -DaltDeploymentRepository=local::file:///tmp/target/staging-deploy
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts
+          path: /tmp/target/staging-deploy
