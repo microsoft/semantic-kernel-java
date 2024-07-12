@@ -35,7 +35,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.services.gemini.GeminiServiceBuilder;
+import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

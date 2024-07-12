@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.exceptions.SKCheckedException;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.services.gemini.GeminiServiceBuilder;
+import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
 import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
