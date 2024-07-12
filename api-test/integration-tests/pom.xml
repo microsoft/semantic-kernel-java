@@ -179,7 +179,7 @@
                             <environmentVariables>
                                 <AZURE_CLIENT_KEY>foo</AZURE_CLIENT_KEY>
                                 <CLIENT_ENDPOINT>https://localhost:8443/</CLIENT_ENDPOINT>
-                                <PLUGIN_DIR>../../../</PLUGIN_DIR>
+                                <PLUGIN_DIR>../../</PLUGIN_DIR>
                             </environmentVariables>
                         </configuration>
                     </plugin>
