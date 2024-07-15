@@ -8,11 +8,11 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordFie
 import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.services.textembedding.Embedding;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,11 +27,13 @@ import java.util.stream.Collectors;
 
 public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, Record> {
     private final Connection connection;
+    private final String collectionName;
     private final JDBCVectorStoreOptions<Record> options;
     private static final HashSet<Class<?>> supportedVectorTypes = new HashSet<>(Arrays.asList(
         String.class,
         List.class,
-        Collection.class));
+        Collection.class,
+        Embedding.class));
 
     /**
      * Creates a new instance of the JDBCVectorRecordStore.
@@ -40,8 +42,10 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      * @param options    The options for the store.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public JDBCVectorRecordStore(Connection connection, JDBCVectorStoreOptions<Record> options) {
+    public JDBCVectorRecordStore(Connection connection, String collectionName,
+        JDBCVectorStoreOptions<Record> options) {
         this.connection = connection;
+        this.collectionName = collectionName;
 
         // If record definition is not provided, create one from the record class
         final VectorStoreRecordDefinition vectorStoreRecordDefinition;
@@ -62,17 +66,17 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
         JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper = options
             .getVectorStoreRecordMapper();
         if (vectorStoreRecordMapper == null) {
-            vectorStoreRecordMapper = new JDBCVectorStoreRecordMapper.Builder<Record>()
+            vectorStoreRecordMapper = JDBCVectorStoreRecordMapper.<Record>builder()
                 .withRecordClass(options.getRecordClass())
                 .withVectorStoreRecordDefinition(vectorStoreRecordDefinition)
                 .build();
         }
 
         // If query handler is not provided, add a default one
-        JDBCVectorStoreQueryHandler<Record> vectorStoreRecordHandler = options
+        JDBCVectorStoreQueryProvider<Record> vectorStoreRecordHandler = options
             .getVectorStoreQueryHandler();
         if (vectorStoreRecordHandler == null) {
-            vectorStoreRecordHandler = new JDBCVectorStoreDefaultQueryHandler.Builder<Record>()
+            vectorStoreRecordHandler = MySQLVectorStoreDefaultQueryProvider.<Record>builder()
                 .withStorageTableName(options.getStorageTableName())
                 .withRecordDefinition(vectorStoreRecordDefinition)
                 .withRecordClass(options.getRecordClass())
@@ -85,26 +89,10 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
         this.options = JDBCVectorStoreOptions.<Record>builder()
             .withRecordClass(options.getRecordClass())
             .withStorageTableName(options.getStorageTableName())
-            .withDefaultCollectionName(options.getDefaultCollectionName())
             .withRecordDefinition(vectorStoreRecordDefinition)
             .withVectorStoreRecordMapper(vectorStoreRecordMapper)
             .withVectorStoreQueryHandler(vectorStoreRecordHandler)
             .build();
-    }
-
-    /**
-     * Resolves the collection name.
-     * @param collectionName the collection name
-     * @return the resolved collection name
-     */
-    protected String resolveCollectionName(@Nullable String collectionName) {
-        if (collectionName != null) {
-            return collectionName;
-        }
-        if (options.getDefaultCollectionName() != null) {
-            return options.getDefaultCollectionName();
-        }
-        throw new SKException("A collection name is required");
     }
 
     /**
@@ -116,10 +104,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      */
     @Override
     public Mono<Record> getAsync(String key, GetRecordOptions options) {
-        String collectionName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-
-        JDBCVectorStoreQueryHandler<Record> queryHandler = this.options
+        JDBCVectorStoreQueryProvider<Record> queryHandler = this.options
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
@@ -128,7 +113,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     queryHandler.configureStatementGetQuery(statement,
                         Collections.singletonList(key),
-                        collectionName);
+                        this.collectionName);
 
                     ResultSet resultSet = statement.executeQuery();
                     if (resultSet.next()) {
@@ -152,10 +137,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      */
     @Override
     public Mono<List<Record>> getBatchAsync(List<String> keys, GetRecordOptions options) {
-        String collectionName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-
-        JDBCVectorStoreQueryHandler<Record> queryHandler = this.options
+        JDBCVectorStoreQueryProvider<Record> queryHandler = this.options
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
@@ -163,7 +145,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
                 List<Record> records = new ArrayList<>();
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
-                    queryHandler.configureStatementGetQuery(statement, keys, collectionName);
+                    queryHandler.configureStatementGetQuery(statement, keys, this.collectionName);
 
                     ResultSet resultSet = statement.executeQuery();
                     while (resultSet.next()) {
@@ -187,10 +169,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      */
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
-        String collectionName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-
-        JDBCVectorStoreQueryHandler<Record> queryHandler = this.options
+        JDBCVectorStoreQueryProvider<Record> queryHandler = this.options
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
@@ -198,7 +177,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     String key = queryHandler.configureStatementUpsertQuery(statement, data,
-                        collectionName);
+                        this.collectionName);
                     statement.execute();
 
                     return Mono.just(key);
@@ -218,10 +197,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      */
     @Override
     public Mono<List<String>> upsertBatchAsync(List<Record> data, UpsertRecordOptions options) {
-        String collectionName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-
-        JDBCVectorStoreQueryHandler<Record> queryHandler = this.options
+        JDBCVectorStoreQueryProvider<Record> queryHandler = this.options
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
@@ -232,7 +208,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
                     for (Record record : data) {
                         keys.add(
                             queryHandler.configureStatementUpsertQuery(statement, record,
-                                collectionName));
+                                this.collectionName));
                         statement.addBatch();
                     }
 
@@ -254,10 +230,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      */
     @Override
     public Mono<Void> deleteAsync(String key, DeleteRecordOptions options) {
-        String collectionName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-
-        JDBCVectorStoreQueryHandler<Record> queryHandler = this.options
+        JDBCVectorStoreQueryProvider<Record> queryHandler = this.options
             .getVectorStoreQueryHandler();
         return Mono.fromRunnable(
             () -> {
@@ -266,7 +239,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     queryHandler.configureStatementDeleteQuery(statement,
                         Collections.singletonList(key),
-                        collectionName);
+                        this.collectionName);
                     statement.execute();
                 } catch (SQLException e) {
                     throw new SKException("Failed to delete record", e);
@@ -283,17 +256,15 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
      */
     @Override
     public Mono<Void> deleteBatchAsync(List<String> keys, DeleteRecordOptions options) {
-        String collectionName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-
-        JDBCVectorStoreQueryHandler<Record> queryHandler = this.options
+        JDBCVectorStoreQueryProvider<Record> queryHandler = this.options
             .getVectorStoreQueryHandler();
         return Mono.fromRunnable(
             () -> {
                 String query = queryHandler.formatDeleteQuery(keys.size());
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
-                    queryHandler.configureStatementDeleteQuery(statement, keys, collectionName);
+                    queryHandler.configureStatementDeleteQuery(statement, keys,
+                        this.collectionName);
 
                     statement.execute();
                 } catch (SQLException e) {

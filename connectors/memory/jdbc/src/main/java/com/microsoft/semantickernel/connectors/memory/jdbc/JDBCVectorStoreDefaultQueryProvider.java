@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDef
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.services.textembedding.Embedding;
 
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
@@ -17,14 +18,14 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-public class JDBCVectorStoreDefaultQueryHandler<Record>
-    implements JDBCVectorStoreQueryHandler<Record> {
-    private final String storageTableName;
-    private final VectorStoreRecordDefinition recordDefinition;
-    private final Class<Record> recordClass;
-    private final BiFunction<String, String, String> sanitizeKeyFunction;
+public class JDBCVectorStoreDefaultQueryProvider<Record>
+    implements JDBCVectorStoreQueryProvider<Record> {
+    protected final String storageTableName;
+    protected final VectorStoreRecordDefinition recordDefinition;
+    protected final Class<Record> recordClass;
+    protected final BiFunction<String, String, String> sanitizeKeyFunction;
 
-    public JDBCVectorStoreDefaultQueryHandler(String storageTableName,
+    public JDBCVectorStoreDefaultQueryProvider(String storageTableName,
         VectorStoreRecordDefinition recordDefinition,
         Class<Record> recordClass, BiFunction<String, String, String> sanitizeKeyFunction) {
         this.storageTableName = storageTableName;
@@ -123,31 +124,13 @@ public class JDBCVectorStoreDefaultQueryHandler<Record>
 
     /**
      * Builds an upsert query.
-     * This implementation uses the ON DUPLICATE KEY UPDATE MySQL feature. Override this method
-     * to provide a different implementation for other databases.
      *
      * @return the upsert query
      */
     @Override
     public String formatUpsertQuery() {
-        List<VectorStoreRecordField> fields = recordDefinition.getAllFields();
-
-        StringBuilder onDuplicateKeyUpdate = new StringBuilder();
-        for (int i = 0; i < fields.size(); ++i) {
-            onDuplicateKeyUpdate.append(fields.get(i).getName())
-                .append(" = VALUES(")
-                .append(fields.get(i).getName())
-                .append(")");
-
-            if (i < fields.size() - 1) {
-                onDuplicateKeyUpdate.append(", ");
-            }
-        }
-
-        return "INSERT INTO " + storageTableName
-            + " (" + getQueryColumnsFromFields(fields) + ")"
-            + " VALUES (" + getWildcardString(fields.size()) + ")"
-            + " ON DUPLICATE KEY UPDATE " + onDuplicateKeyUpdate;
+        throw new UnsupportedOperationException(
+            "Upsert is not supported. Try with a specific query provider.");
     }
 
     /**
@@ -214,12 +197,17 @@ public class JDBCVectorStoreDefaultQueryHandler<Record>
                     // Sanitize the key
                     statement.setObject(i + 1, sanitizeKeyFunction.apply(key, collectionName));
                 } else if (field instanceof VectorStoreRecordVectorField) {
+                    Class<?> vectorType = recordClass.getDeclaredField(field.getName()).getType();
 
                     // If the vector field is other than String, serialize it to JSON
-                    if (recordClass.getDeclaredField(field.getName()).getType()
-                        .equals(String.class)) {
+                    if (vectorType.equals(String.class)) {
                         statement.setObject(i + 1, value);
                     } else {
+                        // If the vector field is Embedding, serialize the vector
+                        if (vectorType.equals(Embedding.class)) {
+                            value = ((Embedding) value).getVector();
+                        }
+
                         statement.setObject(i + 1, new ObjectMapper().writeValueAsString(value));
                     }
 
@@ -237,12 +225,12 @@ public class JDBCVectorStoreDefaultQueryHandler<Record>
     }
 
     public static class Builder<Record>
-        implements SemanticKernelBuilder<JDBCVectorStoreDefaultQueryHandler<Record>> {
+        implements JDBCVectorStoreQueryProvider.Builder<Record> {
 
-        private String storageTableName;
-        private VectorStoreRecordDefinition recordDefinition;
-        private Class<Record> recordClass;
-        private BiFunction<String, String, String> sanitizeKeyFunction;
+        protected String storageTableName;
+        protected VectorStoreRecordDefinition recordDefinition;
+        protected Class<Record> recordClass;
+        protected BiFunction<String, String, String> sanitizeKeyFunction;
 
         /**
          * Sets the storage table name.
@@ -286,7 +274,7 @@ public class JDBCVectorStoreDefaultQueryHandler<Record>
         }
 
         @Override
-        public JDBCVectorStoreDefaultQueryHandler<Record> build() {
+        public JDBCVectorStoreDefaultQueryProvider<Record> build() {
             if (storageTableName == null) {
                 throw new IllegalArgumentException("storageTableName is required");
             }
@@ -300,7 +288,7 @@ public class JDBCVectorStoreDefaultQueryHandler<Record>
                 throw new IllegalArgumentException("sanitizeKeyFunction is required");
             }
 
-            return new JDBCVectorStoreDefaultQueryHandler<>(
+            return new JDBCVectorStoreDefaultQueryProvider<>(
                 storageTableName,
                 recordDefinition,
                 recordClass,

@@ -51,9 +51,8 @@ public class JDBCVectorRecordStoreTest {
     }
 
     private JDBCVectorRecordStore<Hotel> buildRecordStore(@Nonnull String collectionName) {
-        return new JDBCVectorRecordStore<>(connection, JDBCVectorStoreOptions.<Hotel>builder()
+        return new JDBCVectorRecordStore<>(connection, collectionName, JDBCVectorStoreOptions.<Hotel>builder()
                 .withStorageTableName(STORAGE_TABLE_NAME)
-                .withDefaultCollectionName(collectionName)
                 .withRecordClass(Hotel.class)
                 .withSanitizeKeyFunction(this::sanitizeKey)
                 .build());

@@ -7,24 +7,21 @@ import java.util.function.BiFunction;
 
 public class JDBCVectorStoreOptions<Record> {
     private final String storageTableName;
-    private final String defaultCollectionName;
     private final Class<Record> recordClass;
     private final JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper;
-    private final JDBCVectorStoreQueryHandler<Record> vectorStoreQueryHandler;
+    private final JDBCVectorStoreQueryProvider<Record> vectorStoreQueryHandler;
     private final VectorStoreRecordDefinition recordDefinition;
     private final BiFunction<String, String, String> sanitizeKeyFunction;
 
     public JDBCVectorStoreOptions(
         Class<Record> recordClass,
         String storageTableName,
-        String defaultCollectionName,
         JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper,
-        JDBCVectorStoreQueryHandler<Record> vectorStoreQueryHandler,
+        JDBCVectorStoreQueryProvider<Record> vectorStoreQueryHandler,
         VectorStoreRecordDefinition recordDefinition,
         BiFunction<String, String, String> sanitizeKeyFunction) {
         this.recordClass = recordClass;
         this.storageTableName = storageTableName;
-        this.defaultCollectionName = defaultCollectionName;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
         this.vectorStoreQueryHandler = vectorStoreQueryHandler;
         this.recordDefinition = recordDefinition;
@@ -57,14 +54,6 @@ public class JDBCVectorStoreOptions<Record> {
     }
 
     /**
-     * Gets the default collection name. This is the name of the collection to use if none is provided.
-     * @return the default collection name
-     */
-    public String getDefaultCollectionName() {
-        return defaultCollectionName;
-    }
-
-    /**
      * Gets the vector store record mapper.
      * @return the vector store record mapper
      */
@@ -76,7 +65,7 @@ public class JDBCVectorStoreOptions<Record> {
      * Gets the vector store query handler.
      * @return the vector store query handler
      */
-    public JDBCVectorStoreQueryHandler<Record> getVectorStoreQueryHandler() {
+    public JDBCVectorStoreQueryProvider<Record> getVectorStoreQueryHandler() {
         return vectorStoreQueryHandler;
     }
 
@@ -109,9 +98,8 @@ public class JDBCVectorStoreOptions<Record> {
     public static class Builder<Record> {
         private Class<Record> recordClass;
         private String storageTableName;
-        private String defaultCollectionName;
         private JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper;
-        private JDBCVectorStoreQueryHandler<Record> vectorStoreQueryHandler;
+        private JDBCVectorStoreQueryProvider<Record> vectorStoreQueryHandler;
         private VectorStoreRecordDefinition recordDefinition;
         private BiFunction<String, String, String> sanitizeKeyFunction;
 
@@ -136,16 +124,6 @@ public class JDBCVectorStoreOptions<Record> {
         }
 
         /**
-         * Sets the default collection name. This is the name of the collection to use if none is provided.
-         * @param defaultCollectionName the default collection name
-         * @return the builder
-         */
-        public Builder<Record> withDefaultCollectionName(String defaultCollectionName) {
-            this.defaultCollectionName = defaultCollectionName;
-            return this;
-        }
-
-        /**
          * Sets the vector store record mapper.
          * @param vectorStoreRecordMapper the vector store record mapper
          * @return the builder
@@ -162,7 +140,7 @@ public class JDBCVectorStoreOptions<Record> {
          * @return the builder
          */
         public Builder<Record> withVectorStoreQueryHandler(
-            JDBCVectorStoreQueryHandler<Record> vectorStoreQueryHandler) {
+            JDBCVectorStoreQueryProvider<Record> vectorStoreQueryHandler) {
             this.vectorStoreQueryHandler = vectorStoreQueryHandler;
             return this;
         }
@@ -206,7 +184,6 @@ public class JDBCVectorStoreOptions<Record> {
             return new JDBCVectorStoreOptions<>(
                 recordClass,
                 storageTableName,
-                defaultCollectionName,
                 vectorStoreRecordMapper,
                 vectorStoreQueryHandler,
                 recordDefinition,

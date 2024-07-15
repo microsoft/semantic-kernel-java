@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.jdbc;
 
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+
 import java.sql.PreparedStatement;
 import java.util.List;
 
-public interface JDBCVectorStoreQueryHandler<Record> {
+public interface JDBCVectorStoreQueryProvider<Record> {
     /**
      * Formats a query to get records from the database.
      *
@@ -59,4 +61,7 @@ public interface JDBCVectorStoreQueryHandler<Record> {
     String configureStatementUpsertQuery(PreparedStatement statement, Record data,
         String collectionName);
 
+    interface Builder<Record> extends SemanticKernelBuilder<JDBCVectorStoreQueryProvider<Record>> {
+
+    }
 }

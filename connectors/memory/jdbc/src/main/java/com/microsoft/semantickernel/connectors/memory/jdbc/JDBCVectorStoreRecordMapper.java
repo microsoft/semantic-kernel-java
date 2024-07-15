@@ -3,11 +3,13 @@ package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.services.textembedding.Embedding;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -29,6 +31,16 @@ public class JDBCVectorStoreRecordMapper<Record>
     }
 
     /**
+     * Creates a new builder.
+     *
+     * @param <Record> the record type
+     * @return the builder
+     */
+    public static <Record> Builder<Record> builder() {
+        return new Builder<>();
+    }
+
+    /**
      * Operation not supported.
      */
     @Override
@@ -36,8 +48,8 @@ public class JDBCVectorStoreRecordMapper<Record>
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public static class Builder<Record> {
-
+    public static class Builder<Record>
+        implements SemanticKernelBuilder<JDBCVectorStoreRecordMapper<Record>> {
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition vectorStoreRecordDefinition;
 
@@ -91,13 +103,21 @@ public class JDBCVectorStoreRecordMapper<Record>
                             recordField.setAccessible(true);
 
                             if (field instanceof VectorStoreRecordVectorField) {
-                                // If the vector field is other than String, deserialize it from JSON
-                                if (!recordField.getType().equals(String.class)) {
-                                    recordField.set(record,
-                                        new ObjectMapper().readValue((String) value,
-                                            recordField.getType()));
-                                } else {
+                                Class<?> vectorType = recordField.getType();
+
+                                // If the vector type is a string, set the value directly
+                                if (vectorType.equals(String.class)) {
                                     recordField.set(record, value);
+                                } else {
+                                    // Deserialize the JSON string to the vector type
+
+                                    Object fromJSON = new ObjectMapper().readValue((String) value,
+                                        vectorType);
+                                    if (vectorType.equals(Embedding.class)) {
+                                        recordField.set(record, new Embedding((float[]) fromJSON));
+                                    } else {
+                                        recordField.set(record, fromJSON);
+                                    }
                                 }
                             } else {
                                 recordField.set(record, value);
