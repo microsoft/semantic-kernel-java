@@ -40,6 +40,13 @@ public class VectorStoreRecordDefinition {
         return allFields;
     }
 
+    public List<VectorStoreRecordField> getNonVectorFields() {
+        List<VectorStoreRecordField> nonVectorFields = new ArrayList<>();
+        nonVectorFields.add(keyField);
+        nonVectorFields.addAll(dataFields);
+        return nonVectorFields;
+    }
+
     private VectorStoreRecordDefinition(
         VectorStoreRecordKeyField keyField,
         List<VectorStoreRecordDataField> dataFields,

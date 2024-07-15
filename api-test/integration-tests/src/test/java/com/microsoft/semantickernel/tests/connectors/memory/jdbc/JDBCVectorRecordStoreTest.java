@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCVectorRecordStore;
 import com.microsoft.semantickernel.connectors.memory.jdbc.JDBCVectorStoreOptions;
+import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -181,6 +182,75 @@ public class JDBCVectorRecordStoreTest {
         for (String key : keys) {
             Hotel retrievedHotel = recordStore.getAsync(key, null).block();
             assertNull(retrievedHotel);
+        }
+    }
+
+    @Test
+    public void getWithNoVectors() {
+        String collectionName = "getWithNoVectors";
+        JDBCVectorRecordStore<Hotel> recordStore = buildRecordStore(collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordStore.upsertBatchAsync(hotels, null).block();
+
+        GetRecordOptions options = GetRecordOptions.builder()
+            .includeVectors(false)
+            .build();
+
+        for (Hotel hotel : hotels) {
+            Hotel retrievedHotel = recordStore.getAsync(hotel.getId(), options).block();
+            assertNotNull(retrievedHotel);
+            assertEquals(sanitizeKey(hotel.getId(), collectionName), retrievedHotel.getId());
+            assertNull(retrievedHotel.getDescriptionEmbedding());
+        }
+
+        options = GetRecordOptions.builder()
+            .includeVectors(true)
+            .build();
+
+        for (Hotel hotel : hotels) {
+            Hotel retrievedHotel = recordStore.getAsync(hotel.getId(), options).block();
+            assertNotNull(retrievedHotel);
+            assertEquals(sanitizeKey(hotel.getId(), collectionName), retrievedHotel.getId());
+            assertNotNull(retrievedHotel.getDescriptionEmbedding());
+        }
+    }
+
+    @Test
+    public void getBatchWithNoVectors() {
+        String collectionName = "getBatchWithNoVectors";
+        JDBCVectorRecordStore<Hotel> recordStore = buildRecordStore(collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordStore.upsertBatchAsync(hotels, null).block();
+
+        GetRecordOptions options = GetRecordOptions.builder()
+            .includeVectors(false)
+            .build();
+
+        List<String> keys = new ArrayList<>();
+        for (Hotel hotel : hotels) {
+            keys.add(hotel.getId());
+        }
+
+        List<Hotel> retrievedHotels = recordStore.getBatchAsync(keys, options).block();
+        assertNotNull(retrievedHotels);
+        assertEquals(hotels.size(), retrievedHotels.size());
+
+        for (Hotel hotel : retrievedHotels) {
+            assertNull(hotel.getDescriptionEmbedding());
+        }
+
+        options = GetRecordOptions.builder()
+            .includeVectors(true)
+            .build();
+
+        retrievedHotels = recordStore.getBatchAsync(keys, options).block();
+        assertNotNull(retrievedHotels);
+        assertEquals(hotels.size(), retrievedHotels.size());
+
+        for (Hotel hotel : retrievedHotels) {
+            assertNotNull(hotel.getDescriptionEmbedding());
         }
     }
 }

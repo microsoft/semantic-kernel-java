@@ -11,6 +11,8 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordFie
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.services.textembedding.Embedding;
 
+import java.sql.ResultSetMetaData;
+import java.util.List;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -96,12 +98,22 @@ public class JDBCVectorStoreRecordMapper<Record>
                         constructor.setAccessible(true);
                         Record record = (Record) constructor.newInstance();
 
-                        for (VectorStoreRecordField field : vectorStoreRecordDefinition
-                            .getAllFields()) {
+                        // Select fields from the record definition.
+                        // Check if vector fields are present in the result set.
+                        List<VectorStoreRecordField> fields;
+                        ResultSetMetaData metaData = resultSet.getMetaData();
+                        if (metaData.getColumnCount() == vectorStoreRecordDefinition.getAllFields().size()) {
+                            fields = vectorStoreRecordDefinition.getAllFields();
+                        } else {
+                            fields = vectorStoreRecordDefinition.getNonVectorFields();
+                        }
+
+                        for (VectorStoreRecordField field : fields) {
                             Object value = resultSet.getObject(field.getName());
                             Field recordField = recordClass.getDeclaredField(field.getName());
                             recordField.setAccessible(true);
 
+                            // If the field is a vector field, deserialize the JSON string
                             if (field instanceof VectorStoreRecordVectorField) {
                                 Class<?> vectorType = recordField.getType();
 
@@ -110,7 +122,6 @@ public class JDBCVectorStoreRecordMapper<Record>
                                     recordField.set(record, value);
                                 } else {
                                     // Deserialize the JSON string to the vector type
-
                                     Object fromJSON = new ObjectMapper().readValue((String) value,
                                         vectorType);
                                     if (vectorType.equals(Embedding.class)) {

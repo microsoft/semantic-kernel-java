@@ -108,7 +108,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
-                String query = queryHandler.formatGetQuery(1);
+                String query = queryHandler.formatGetQuery(1, options);
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     queryHandler.configureStatementGetQuery(statement,
@@ -141,7 +141,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
-                String query = queryHandler.formatGetQuery(keys.size());
+                String query = queryHandler.formatGetQuery(keys.size(), options);
                 List<Record> records = new ArrayList<>();
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
@@ -173,7 +173,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
-                String query = queryHandler.formatUpsertQuery();
+                String query = queryHandler.formatUpsertQuery(options);
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     String key = queryHandler.configureStatementUpsertQuery(statement, data,
@@ -201,7 +201,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
             .getVectorStoreQueryHandler();
         return Mono.defer(
             () -> {
-                String query = queryHandler.formatUpsertQuery();
+                String query = queryHandler.formatUpsertQuery(options);
                 List<String> keys = new ArrayList<>();
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
@@ -234,7 +234,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
             .getVectorStoreQueryHandler();
         return Mono.fromRunnable(
             () -> {
-                String query = queryHandler.formatDeleteQuery(1);
+                String query = queryHandler.formatDeleteQuery(1, options);
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     queryHandler.configureStatementDeleteQuery(statement,
@@ -260,7 +260,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
             .getVectorStoreQueryHandler();
         return Mono.fromRunnable(
             () -> {
-                String query = queryHandler.formatDeleteQuery(keys.size());
+                String query = queryHandler.formatDeleteQuery(keys.size(), options);
 
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     queryHandler.configureStatementDeleteQuery(statement, keys,

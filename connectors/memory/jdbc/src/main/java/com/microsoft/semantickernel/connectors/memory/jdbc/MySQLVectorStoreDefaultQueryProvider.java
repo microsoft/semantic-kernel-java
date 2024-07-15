@@ -3,7 +3,9 @@ package com.microsoft.semantickernel.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordField;
+import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -26,7 +28,7 @@ public class MySQLVectorStoreDefaultQueryProvider<Record> extends
     }
 
     @Override
-    public String formatUpsertQuery() {
+    public String formatUpsertQuery(@Nullable UpsertRecordOptions options) {
         List<VectorStoreRecordField> fields = this.recordDefinition.getAllFields();
 
         StringBuilder onDuplicateKeyUpdate = new StringBuilder();

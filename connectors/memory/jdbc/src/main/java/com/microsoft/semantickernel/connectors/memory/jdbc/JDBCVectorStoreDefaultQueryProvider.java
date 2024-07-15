@@ -9,11 +9,16 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDef
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
+import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
 import com.microsoft.semantickernel.services.textembedding.Embedding;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -103,8 +108,15 @@ public class JDBCVectorStoreDefaultQueryProvider<Record>
      * @return the formatted get query
      */
     @Override
-    public String formatGetQuery(int numberOfKeys) {
-        return "SELECT " + getQueryColumnsFromFields(recordDefinition.getAllFields())
+    public String formatGetQuery(int numberOfKeys, @Nullable GetRecordOptions options) {
+        List<VectorStoreRecordField> fields;
+        if (options == null || options.includeVectors()) {
+            fields = recordDefinition.getAllFields();
+        } else {
+            fields = recordDefinition.getNonVectorFields();
+        }
+
+        return "SELECT " + getQueryColumnsFromFields(fields)
             + " FROM " + storageTableName
             + " WHERE " + recordDefinition.getKeyField().getName()
             + " IN (" + getWildcardString(numberOfKeys) + ")";
@@ -116,7 +128,7 @@ public class JDBCVectorStoreDefaultQueryProvider<Record>
      * @return the formatted delete query
      */
     @Override
-    public String formatDeleteQuery(int numberOfKeys) {
+    public String formatDeleteQuery(int numberOfKeys, @Nullable DeleteRecordOptions options) {
         return "DELETE FROM " + storageTableName
             + " WHERE " + recordDefinition.getKeyField().getName()
             + " IN (" + getWildcardString(numberOfKeys) + ")";
@@ -128,7 +140,7 @@ public class JDBCVectorStoreDefaultQueryProvider<Record>
      * @return the upsert query
      */
     @Override
-    public String formatUpsertQuery() {
+    public String formatUpsertQuery(@Nullable UpsertRecordOptions options) {
         throw new UnsupportedOperationException(
             "Upsert is not supported. Try with a specific query provider.");
     }
