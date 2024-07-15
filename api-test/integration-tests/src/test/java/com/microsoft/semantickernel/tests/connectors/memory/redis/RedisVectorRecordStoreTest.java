@@ -61,8 +61,7 @@ public class RedisVectorRecordStoreTest {
     }
 
     private RedisVectorRecordStore<Hotel> buildRecordStore(@Nonnull RedisVectorStoreOptions<Hotel> options, @Nonnull String collectionName) {
-        return new RedisVectorRecordStore<>(new JedisPooled(redisContainer.getRedisURI()), RedisVectorStoreOptions.<Hotel>builder()
-                .withDefaultCollectionName(collectionName)
+        return new RedisVectorRecordStore<>(new JedisPooled(redisContainer.getRedisURI()), collectionName, RedisVectorStoreOptions.<Hotel>builder()
                 .withRecordClass(options.getRecordClass())
                 .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
                 .withRecordDefinition(options.getRecordDefinition())
