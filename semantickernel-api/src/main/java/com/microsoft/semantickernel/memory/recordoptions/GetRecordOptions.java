@@ -3,12 +3,13 @@ package com.microsoft.semantickernel.memory.recordoptions;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
+/**
+ * Options for getting a record.
+ */
 public class GetRecordOptions {
-    private final String collectionName;
     private final boolean includeVectors;
 
-    private GetRecordOptions(String collectionName, boolean includeVectors) {
-        this.collectionName = collectionName;
+    private GetRecordOptions(boolean includeVectors) {
         this.includeVectors = includeVectors;
     }
 
@@ -22,20 +23,7 @@ public class GetRecordOptions {
     }
 
     public static class Builder implements SemanticKernelBuilder<GetRecordOptions> {
-        private String collectionName;
         private boolean includeVectors;
-
-        /**
-         * Sets the collection name.
-         * When a default collection name is not available, the collection name must be specified in the options.
-         *
-         * @param collectionName the collection name
-         * @return GetRecordOptions.Builder
-         */
-        public Builder collectionName(String collectionName) {
-            this.collectionName = collectionName;
-            return this;
-        }
 
         /**
          * Sets whether to include vectors.
@@ -55,17 +43,8 @@ public class GetRecordOptions {
          */
         @Override
         public GetRecordOptions build() {
-            return new GetRecordOptions(collectionName, includeVectors);
+            return new GetRecordOptions(includeVectors);
         }
-    }
-
-    /**
-     * Gets the collection name.
-     *
-     * @return the collection name
-     */
-    public String getCollectionName() {
-        return collectionName;
     }
 
     /**

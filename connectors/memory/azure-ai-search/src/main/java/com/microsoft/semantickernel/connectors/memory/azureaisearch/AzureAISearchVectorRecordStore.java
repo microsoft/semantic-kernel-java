@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore<String, Record> {
     private final SearchIndexAsyncClient client;
+    private final String collectionName;
     private final Map<String, SearchAsyncClient> clientsByIndex = new ConcurrentHashMap<>();
     private final AzureAISearchVectorStoreOptions<Record> options;
     private final List<String> nonVectorFields = new ArrayList<>();
@@ -38,8 +39,10 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public AzureAISearchVectorRecordStore(
         @Nonnull SearchIndexAsyncClient client,
+        @Nonnull String collectionName,
         @Nonnull AzureAISearchVectorStoreOptions<Record> options) {
         this.client = client;
+        this.collectionName = collectionName;
 
         // If record definition is not provided, create one from the record class
         if (options.getRecordDefinition() == null) {
@@ -59,22 +62,10 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
             .collect(Collectors.toList()));
     }
 
-    private String resolveCollectionName(@Nullable String collectionName) {
-        if (collectionName != null) {
-            return collectionName;
-        }
-        if (options.getDefaultCollectionName() != null) {
-            return options.getDefaultCollectionName();
-        }
-        throw new SKException("A collection name is required");
-    }
-
     @Override
     public Mono<Record> getAsync(
         @Nonnull String key, GetRecordOptions options) {
-        String indexName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-        SearchAsyncClient client = this.getSearchClient(indexName);
+        SearchAsyncClient client = this.getSearchClient(this.collectionName);
 
         // If vectors are not requested, only fetch non-vector fields
         List<String> selectedFields = null;
@@ -123,10 +114,7 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
         if (records.isEmpty()) {
             return Mono.just(Collections.emptyList());
         }
-
-        String indexName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-        SearchAsyncClient client = this.getSearchClient(indexName);
+        SearchAsyncClient client = this.getSearchClient(this.collectionName);
 
         VectorStoreRecordMapper<Record, SearchDocument> mapper = this.options
             .getVectorStoreRecordMapper();
@@ -156,9 +144,7 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
 
     @Override
     public Mono<Void> deleteBatchAsync(List<String> keys, DeleteRecordOptions options) {
-        String indexName = resolveCollectionName(
-            options != null ? options.getCollectionName() : null);
-        SearchAsyncClient client = this.getSearchClient(indexName);
+        SearchAsyncClient client = this.getSearchClient(this.collectionName);
 
         return client.deleteDocuments(keys.stream().map(key -> {
             SearchDocument document = new SearchDocument();

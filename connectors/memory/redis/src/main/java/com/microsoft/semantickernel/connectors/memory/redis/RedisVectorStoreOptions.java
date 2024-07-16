@@ -7,19 +7,16 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDef
 import java.util.Map.Entry;
 
 public class RedisVectorStoreOptions<Record> {
-
-    private final String defaultCollectionName;
     private final Class<Record> recordClass;
     private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
 
-    private RedisVectorStoreOptions(String defaultCollectionName,
+    private RedisVectorStoreOptions(
         Class<Record> recordClass,
         VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
         VectorStoreRecordDefinition recordDefinition,
         boolean prefixCollectionName) {
-        this.defaultCollectionName = defaultCollectionName;
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
         this.recordDefinition = recordDefinition;
@@ -34,15 +31,6 @@ public class RedisVectorStoreOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
-    }
-
-    /**
-     * Gets the default collection name.
-     *
-     * @return the default collection name
-     */
-    public String getDefaultCollectionName() {
-        return defaultCollectionName;
     }
 
     /**
@@ -87,7 +75,6 @@ public class RedisVectorStoreOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
-        private String defaultCollectionName;
         private VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;
@@ -101,17 +88,6 @@ public class RedisVectorStoreOptions<Record> {
          */
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
-            return this;
-        }
-
-        /**
-         * Sets the default collection name.
-         *
-         * @param defaultCollectionName the default collection name
-         * @return the builder
-         */
-        public Builder<Record> withDefaultCollectionName(String defaultCollectionName) {
-            this.defaultCollectionName = defaultCollectionName;
             return this;
         }
 
@@ -159,7 +135,7 @@ public class RedisVectorStoreOptions<Record> {
                 throw new IllegalArgumentException("recordClass must be provided");
             }
 
-            return new RedisVectorStoreOptions<>(defaultCollectionName,
+            return new RedisVectorStoreOptions<>(
                 recordClass,
                 vectorStoreRecordMapper,
                 recordDefinition,

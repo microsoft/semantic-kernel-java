@@ -11,7 +11,6 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDef
  * @param <Record> the record type
  */
 public class AzureAISearchVectorStoreOptions<Record> {
-    private final String defaultCollectionName;
     private final Class<Record> recordClass;
     private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
@@ -24,15 +23,6 @@ public class AzureAISearchVectorStoreOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
-    }
-
-    /**
-     * Gets the default collection name.
-     *
-     * @return the default collection name
-     */
-    public String getDefaultCollectionName() {
-        return defaultCollectionName;
     }
 
     /**
@@ -63,11 +53,9 @@ public class AzureAISearchVectorStoreOptions<Record> {
     }
 
     private AzureAISearchVectorStoreOptions(
-        String defaultCollectionName,
         Class<Record> recordClass,
         VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper,
         VectorStoreRecordDefinition recordDefinition) {
-        this.defaultCollectionName = defaultCollectionName;
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
         this.recordDefinition = recordDefinition;
@@ -79,24 +67,12 @@ public class AzureAISearchVectorStoreOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
-        private String defaultCollectionName;
         private VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;
 
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
-            return this;
-        }
-
-        /**
-         * Sets the default collection name.
-         *
-         * @param defaultCollectionName the default collection name
-         * @return the builder
-         */
-        public Builder<Record> withDefaultCollectionName(String defaultCollectionName) {
-            this.defaultCollectionName = defaultCollectionName;
             return this;
         }
 
@@ -133,7 +109,7 @@ public class AzureAISearchVectorStoreOptions<Record> {
                 throw new IllegalArgumentException("recordClass must be provided");
             }
 
-            return new AzureAISearchVectorStoreOptions<>(defaultCollectionName,
+            return new AzureAISearchVectorStoreOptions<>(
                 recordClass,
                 vectorStoreRecordMapper,
                 recordDefinition);
