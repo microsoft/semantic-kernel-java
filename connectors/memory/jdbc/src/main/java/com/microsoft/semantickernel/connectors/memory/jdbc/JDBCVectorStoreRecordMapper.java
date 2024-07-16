@@ -123,7 +123,8 @@ public class JDBCVectorStoreRecordMapper<Record>
                                     recordField.set(record, value);
                                 } else {
                                     // Deserialize the JSON string to the vector type
-                                    recordField.set(record, new ObjectMapper().readValue((String) value, vectorType));
+                                    recordField.set(record,
+                                        new ObjectMapper().readValue((String) value, vectorType));
                                 }
                             } else {
                                 recordField.set(record, value);
