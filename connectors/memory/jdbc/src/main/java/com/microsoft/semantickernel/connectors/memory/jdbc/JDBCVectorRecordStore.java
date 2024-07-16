@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordFie
 import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
-import com.microsoft.semantickernel.services.textembedding.Embedding;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -32,8 +31,7 @@ public class JDBCVectorRecordStore<Record> implements VectorRecordStore<String, 
     private static final HashSet<Class<?>> supportedVectorTypes = new HashSet<>(Arrays.asList(
         String.class,
         List.class,
-        Collection.class,
-        Embedding.class));
+        Collection.class));
 
     /**
      * Creates a new instance of the JDBCVectorRecordStore.

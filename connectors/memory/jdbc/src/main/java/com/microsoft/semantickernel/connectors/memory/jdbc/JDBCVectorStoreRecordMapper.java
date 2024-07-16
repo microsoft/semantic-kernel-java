@@ -102,7 +102,8 @@ public class JDBCVectorStoreRecordMapper<Record>
                         // Check if vector fields are present in the result set.
                         List<VectorStoreRecordField> fields;
                         ResultSetMetaData metaData = resultSet.getMetaData();
-                        if (metaData.getColumnCount() == vectorStoreRecordDefinition.getAllFields().size()) {
+                        if (metaData.getColumnCount() == vectorStoreRecordDefinition.getAllFields()
+                            .size()) {
                             fields = vectorStoreRecordDefinition.getAllFields();
                         } else {
                             fields = vectorStoreRecordDefinition.getNonVectorFields();
@@ -122,13 +123,7 @@ public class JDBCVectorStoreRecordMapper<Record>
                                     recordField.set(record, value);
                                 } else {
                                     // Deserialize the JSON string to the vector type
-                                    Object fromJSON = new ObjectMapper().readValue((String) value,
-                                        vectorType);
-                                    if (vectorType.equals(Embedding.class)) {
-                                        recordField.set(record, new Embedding((float[]) fromJSON));
-                                    } else {
-                                        recordField.set(record, fromJSON);
-                                    }
+                                    recordField.set(record, new ObjectMapper().readValue((String) value, vectorType));
                                 }
                             } else {
                                 recordField.set(record, value);
