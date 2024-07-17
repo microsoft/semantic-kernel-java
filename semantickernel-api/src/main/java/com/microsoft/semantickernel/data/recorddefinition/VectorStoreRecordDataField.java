@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory.recorddefinition;
+package com.microsoft.semantickernel.data.recorddefinition;
 
 public class VectorStoreRecordDataField extends VectorStoreRecordField {
     private final boolean hasEmbedding;

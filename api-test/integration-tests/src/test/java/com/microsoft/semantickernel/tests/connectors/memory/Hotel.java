@@ -1,8 +1,8 @@
 package com.microsoft.semantickernel.tests.connectors.memory;
 
-import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
 
 import java.util.List;
 

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory.recorddefinition;
+package com.microsoft.semantickernel.data.recorddefinition;
 
-import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.memory.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory.recordoptions;
+package com.microsoft.semantickernel.data.recordoptions;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 

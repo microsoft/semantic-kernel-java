@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory;
+package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface VectorRecordStore<Key, Record> {
+public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Gets a record from the store.
      *

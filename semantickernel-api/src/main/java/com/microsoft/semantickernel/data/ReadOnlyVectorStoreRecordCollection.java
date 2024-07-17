@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.memory;
+package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 
-interface ReadOnlyVectorRecordStore<Key, Record> extends VectorRecordStore<Key, Record> {
+interface ReadOnlyVectorStoreRecordCollection<Key, Record>
+    extends VectorStoreRecordCollection<Key, Record> {
 
     default Mono<Key> upsertAsync(Record data, UpsertRecordOptions options) {
         throw new UnsupportedOperationException();

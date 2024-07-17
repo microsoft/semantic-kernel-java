@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.connectors.memory.azureaisearch;
 
 import com.azure.search.documents.SearchDocument;
-import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 
 /**
  * Options for an Azure AI Search vector store.

@@ -3,22 +3,25 @@ package com.microsoft.semantickernel.connectors.memory.redis;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.memory.VectorRecordStore;
-import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.json.Path2;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +29,13 @@ import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
 
-public class RedisVectorRecordStore<Record> implements VectorRecordStore<String, Record> {
+public class RedisVectorStoreRecordCollection<Record> implements VectorStoreRecordCollection<String, Record> {
     private final JedisPooled client;
     private final String collectionName;
     private final RedisVectorStoreOptions<Record> options;
+    private final Path2[] dataFields;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Creates a new instance of the RedisVectorRecordStore.
@@ -38,7 +44,7 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
      * @param options The options for the store.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public RedisVectorRecordStore(
+    public RedisVectorStoreRecordCollection(
         @Nonnull JedisPooled client,
         @Nonnull String collectionName,
         @Nonnull RedisVectorStoreOptions<Record> options) {
@@ -61,6 +67,13 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
                 .build();
         }
 
+        // Creates a list of paths to retrieve from Redis when no vectors are requested
+        // Paths are in the format of $.field
+        this.dataFields = definition.getDataFields().stream()
+            .map(VectorStoreRecordDataField::getName)
+            .map(Path2::new)
+            .toArray(Path2[]::new);
+
         this.options = RedisVectorStoreOptions.<Record>builder()
             .withRecordClass(options.getRecordClass())
             .withPrefixCollectionName(options.prefixCollectionName())
@@ -71,6 +84,21 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
 
     private String getRedisKey(String key, String collectionName) {
         return options.prefixCollectionName() ? collectionName + ":" + key : key;
+    }
+
+    private JsonNode removeRedisPathPrefix(JSONObject object) {
+        ObjectNode noPathPrefix = objectMapper.createObjectNode();
+        object.keySet().forEach(key -> {
+            String newKey = key;
+            if (key.startsWith("$.")) {
+                newKey = key.substring(2);
+            }
+
+            Object value = ((JSONArray) object.get(key)).get(0);
+            noPathPrefix.set(newKey, objectMapper.valueToTree(value));
+        });
+
+        return noPathPrefix;
     }
 
     /**
@@ -86,14 +114,27 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
 
         return Mono.defer(() -> {
             try {
-                Object value = client.jsonGet(redisKey);
+                Object value;
+                if (options == null || options.includeVectors()) {
+                    value = client.jsonGet(redisKey);
+                } else {
+                    value = client.jsonGet(redisKey, dataFields);
+                }
+
                 if (value == null) {
                     return Mono.empty();
                 }
 
-                JsonNode jsonNode = new ObjectMapper().valueToTree(value);
+                JsonNode jsonNode;
+                if (options == null || options.includeVectors()) {
+                    jsonNode = objectMapper.valueToTree(value);
+                } else {
+                    // Remove the $. prefix from every key in the JSON object
+                    jsonNode = removeRedisPathPrefix((JSONObject) value);
+                }
+
                 return Mono.just(this.options.getVectorStoreRecordMapper()
-                    .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
+                        .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
             } catch (Exception e) {
                 return Mono.error(e);
             }
@@ -109,12 +150,17 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
      */
     @Override
     public Mono<List<Record>> getBatchAsync(List<String> keys,
-        GetRecordOptions options) {
+                                            GetRecordOptions options) {
         Pipeline pipeline = client.pipelined();
         List<Entry<String, Response<Object>>> responses = new ArrayList<>(keys.size());
         keys.forEach(key -> {
             String redisKey = getRedisKey(key, collectionName);
-            responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey)));
+
+            if (options == null || options.includeVectors()) {
+                responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey)));
+            } else {
+                responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey, dataFields)));
+            }
         });
 
         return Mono.defer(() -> {
@@ -122,17 +168,22 @@ public class RedisVectorRecordStore<Record> implements VectorRecordStore<String,
 
             try {
                 return Mono.just(responses.stream()
-                    .map(entry -> {
-                        Object value = entry.getValue().get();
-                        if (value == null) {
-                            return null;
-                        }
+                        .map(entry -> {
+                            Object value = entry.getValue().get();
+                            if (value == null) {
+                                return null;
+                            }
 
-                        JsonNode jsonNode = new ObjectMapper().valueToTree(value);
-                        return this.options.getVectorStoreRecordMapper()
-                            .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
-                    })
-                    .collect(Collectors.toList()));
+                            JsonNode jsonNode;
+                            if (options == null || options.includeVectors()) {
+                                jsonNode = objectMapper.valueToTree(value);
+                            } else {
+                                jsonNode = removeRedisPathPrefix((JSONObject) value);
+                            }
+                            return this.options.getVectorStoreRecordMapper()
+                                    .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
+                        })
+                        .collect(Collectors.toList()));
             } catch (Exception e) {
                 return Mono.error(e);
             }
