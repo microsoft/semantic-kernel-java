@@ -70,13 +70,11 @@
         <module>semantickernel-bom</module>
 
         <module>semantickernel-api</module>
+        <module>semantickernel-experimental</module>
 
         <module>aiservices/openai</module>
         <module>aiservices/google</module>
         <module>aiservices/huggingface</module>
-
-        <module>connectors/memory/azure-ai-search</module>
-        <module>connectors/memory/redis</module>
     </modules>
 
     <dependencyManagement>

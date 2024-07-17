@@ -56,6 +56,11 @@
             <artifactId>semantickernel-api</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-experimental</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.xerial</groupId>
