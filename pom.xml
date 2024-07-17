@@ -796,17 +796,6 @@
                 </repository>
             </repositories>
         </profile>
-
-        <profile>
-            <id>experimental</id>
-
-            <modules>
-                <module>semantickernel-experimental</module>
-
-                <module>connectors/memory/azure-ai-search</module>
-                <module>connectors/memory/redis</module>
-            </modules>
-        </profile>
     </profiles>
 
     <developers>
