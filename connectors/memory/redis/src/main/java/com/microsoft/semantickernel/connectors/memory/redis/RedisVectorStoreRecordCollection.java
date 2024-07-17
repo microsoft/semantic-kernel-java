@@ -29,7 +29,8 @@ import java.util.Map.Entry;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Collectors;
 
-public class RedisVectorStoreRecordCollection<Record> implements VectorStoreRecordCollection<String, Record> {
+public class RedisVectorStoreRecordCollection<Record>
+    implements VectorStoreRecordCollection<String, Record> {
     private final JedisPooled client;
     private final String collectionName;
     private final RedisVectorStoreOptions<Record> options;
@@ -134,7 +135,7 @@ public class RedisVectorStoreRecordCollection<Record> implements VectorStoreReco
                 }
 
                 return Mono.just(this.options.getVectorStoreRecordMapper()
-                        .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
+                    .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
             } catch (Exception e) {
                 return Mono.error(e);
             }
@@ -150,7 +151,7 @@ public class RedisVectorStoreRecordCollection<Record> implements VectorStoreReco
      */
     @Override
     public Mono<List<Record>> getBatchAsync(List<String> keys,
-                                            GetRecordOptions options) {
+        GetRecordOptions options) {
         Pipeline pipeline = client.pipelined();
         List<Entry<String, Response<Object>>> responses = new ArrayList<>(keys.size());
         keys.forEach(key -> {
@@ -168,22 +169,22 @@ public class RedisVectorStoreRecordCollection<Record> implements VectorStoreReco
 
             try {
                 return Mono.just(responses.stream()
-                        .map(entry -> {
-                            Object value = entry.getValue().get();
-                            if (value == null) {
-                                return null;
-                            }
+                    .map(entry -> {
+                        Object value = entry.getValue().get();
+                        if (value == null) {
+                            return null;
+                        }
 
-                            JsonNode jsonNode;
-                            if (options == null || options.includeVectors()) {
-                                jsonNode = objectMapper.valueToTree(value);
-                            } else {
-                                jsonNode = removeRedisPathPrefix((JSONObject) value);
-                            }
-                            return this.options.getVectorStoreRecordMapper()
-                                    .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
-                        })
-                        .collect(Collectors.toList()));
+                        JsonNode jsonNode;
+                        if (options == null || options.includeVectors()) {
+                            jsonNode = objectMapper.valueToTree(value);
+                        } else {
+                            jsonNode = removeRedisPathPrefix((JSONObject) value);
+                        }
+                        return this.options.getVectorStoreRecordMapper()
+                            .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
+                    })
+                    .collect(Collectors.toList()));
             } catch (Exception e) {
                 return Mono.error(e);
             }

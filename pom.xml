@@ -75,6 +75,8 @@
         <module>aiservices/google</module>
         <module>aiservices/huggingface</module>
 
+        <module>semantickernel-experimental</module>
+
         <module>connectors/memory/azure-ai-search</module>
         <module>connectors/memory/redis</module>
     </modules>
@@ -793,6 +795,17 @@
                     </snapshots>
                 </repository>
             </repositories>
+        </profile>
+
+        <profile>
+            <id>experimental</id>
+
+            <modules>
+                <module>semantickernel-experimental</module>
+
+                <module>connectors/memory/azure-ai-search</module>
+                <module>connectors/memory/redis</module>
+            </modules>
         </profile>
     </profiles>
 
