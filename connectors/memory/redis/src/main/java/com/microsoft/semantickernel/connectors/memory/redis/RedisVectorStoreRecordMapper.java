@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
 import java.util.AbstractMap;

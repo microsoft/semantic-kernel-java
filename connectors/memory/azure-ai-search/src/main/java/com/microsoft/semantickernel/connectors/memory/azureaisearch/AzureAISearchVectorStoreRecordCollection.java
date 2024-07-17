@@ -7,19 +7,18 @@ import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.IndexingResult;
 import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.memory.VectorRecordStore;
-import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.memory.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.memory.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +28,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore<String, Record> {
+public class AzureAISearchVectorStoreRecordCollection<Record>
+    implements VectorStoreRecordCollection<String, Record> {
     private final SearchIndexAsyncClient client;
     private final String collectionName;
     private final Map<String, SearchAsyncClient> clientsByIndex = new ConcurrentHashMap<>();
@@ -37,7 +37,7 @@ public class AzureAISearchVectorRecordStore<Record> implements VectorRecordStore
     private final List<String> nonVectorFields = new ArrayList<>();
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public AzureAISearchVectorRecordStore(
+    public AzureAISearchVectorStoreRecordCollection(
         @Nonnull SearchIndexAsyncClient client,
         @Nonnull String collectionName,
         @Nonnull AzureAISearchVectorStoreOptions<Record> options) {

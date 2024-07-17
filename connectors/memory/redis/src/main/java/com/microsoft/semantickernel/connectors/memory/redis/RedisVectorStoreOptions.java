@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
-import com.microsoft.semantickernel.memory.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.memory.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 
 import java.util.Map.Entry;
 
