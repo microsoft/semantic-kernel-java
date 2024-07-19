@@ -32,6 +32,11 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-experimental</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-aiservices-huggingface</artifactId>
         </dependency>
 

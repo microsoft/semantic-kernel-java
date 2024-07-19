@@ -83,6 +83,51 @@ public class RedisVectorStoreRecordCollection<Record>
             .build();
     }
 
+    /**
+     * Gets the name of the collection.
+     *
+     * @return The name of the collection.
+     */
+    @Override
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    /**
+     * Checks if the collection exists in the store.
+     *
+     * @return A Mono emitting a boolean indicating if the collection exists.
+     */
+    @Override
+    public Mono<Boolean> collectionExistsAsync() {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    /**
+     * Creates the collection in the store.
+     *
+     * @return A Mono representing the completion of the creation operation.
+     */
+    @Override
+    public Mono<Void> createCollectionAsync() {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    @Override
+    public Mono<Void> createCollectionIfNotExistsAsync() {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
+    /**
+     * Deletes the collection from the store.
+     *
+     * @return A Mono representing the completion of the deletion operation.
+     */
+    @Override
+    public Mono<Void> deleteCollectionAsync() {
+        throw new UnsupportedOperationException("Not supported");
+    }
+
     private String getRedisKey(String key, String collectionName) {
         return options.prefixCollectionName() ? collectionName + ":" + key : key;
     }

@@ -9,4 +9,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface VectorStoreRecordVectorAttribute {
+    int dimensions();
+
+    String storageName() default "";
+
+    String indexKind() default "";
+
+    String distanceFunction() default "";
 }

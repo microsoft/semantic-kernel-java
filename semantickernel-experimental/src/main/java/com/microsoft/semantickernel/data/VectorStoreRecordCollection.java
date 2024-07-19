@@ -9,6 +9,42 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface VectorStoreRecordCollection<Key, Record> {
+
+    /**
+     * Gets the name of the collection.
+     *
+     * @return The name of the collection.
+     */
+    public String getCollectionName();
+
+    /**
+     * Checks if the collection exists in the store.
+     *
+     * @return A Mono emitting a boolean indicating if the collection exists.
+     */
+    public Mono<Boolean> collectionExistsAsync();
+
+    /**
+     * Creates the collection in the store.
+     *
+     * @return A Mono representing the completion of the creation operation.
+     */
+    public Mono<Void> createCollectionAsync();
+
+    /**
+     * Creates the collection in the store if it does not exist.
+     *
+     * @return A Mono representing the completion of the creation operation.
+     */
+    public Mono<Void> createCollectionIfNotExistsAsync();
+
+    /**
+     * Deletes the collection from the store.
+     *
+     * @return A Mono representing the completion of the deletion operation.
+     */
+    public Mono<Void> deleteCollectionAsync();
+
     /**
      * Gets a record from the store.
      *

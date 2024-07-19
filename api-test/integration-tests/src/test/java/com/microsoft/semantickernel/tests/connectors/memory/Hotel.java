@@ -15,7 +15,7 @@ public class Hotel {
     private final int code;
     @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
     private final String description;
-    @VectorStoreRecordVectorAttribute
+    @VectorStoreRecordVectorAttribute(dimensions = 3)
     private final List<Float> descriptionEmbedding;
     @VectorStoreRecordDataAttribute
     private final double rating;

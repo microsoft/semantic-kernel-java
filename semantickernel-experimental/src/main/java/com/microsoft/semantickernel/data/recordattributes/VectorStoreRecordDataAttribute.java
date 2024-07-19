@@ -9,7 +9,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface VectorStoreRecordDataAttribute {
+    String storageName() default "";
+
     boolean hasEmbedding() default false;
 
     String embeddingFieldName() default "";
+
+    boolean isFilterable() default false;
 }

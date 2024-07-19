@@ -27,6 +27,8 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
     implements TextEmbeddingGenerationService {
     private static final Logger LOGGER = LoggerFactory
         .getLogger(OpenAITextEmbeddingGenerationService.class);
+    public static final int DEFAULT_DIMENSIONS = 1536;
+    private final int dimensions;
 
     /**
      * Creates a new {@link OpenAITextEmbeddingGenerationService}.
@@ -40,8 +42,10 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
         OpenAIAsyncClient client,
         String deploymentName,
         String modelId,
-        @Nullable String serviceId) {
+        @Nullable String serviceId,
+        int dimensions) {
         super(client, serviceId, modelId, deploymentName);
+        this.dimensions = dimensions;
     }
 
     /**
@@ -67,6 +71,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
     protected Mono<List<Embedding>> internalGenerateTextEmbeddingsAsync(List<String> data) {
         EmbeddingsOptions options = new EmbeddingsOptions(data)
             .setModel(getModelId())
+            .setDimensions(dimensions)
             .setInputType("string");
 
         return getClient()
@@ -83,9 +88,21 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
      */
     public static class Builder extends
         OpenAiServiceBuilder<OpenAITextEmbeddingGenerationService, OpenAITextEmbeddingGenerationService.Builder> {
+        private int dimensions = DEFAULT_DIMENSIONS;
+
+        /**
+         * Sets the dimensions for the embeddings.
+         *
+         * @param dimensions The dimensions for the embeddings.
+         * @return The builder.
+         */
+        public Builder withDimensions(int dimensions) {
+            this.dimensions = dimensions;
+            return this;
+        }
+
         @Override
         public OpenAITextEmbeddingGenerationService build() {
-
             if (this.client == null) {
                 throw new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                     "OpenAI client must be provided");
@@ -102,7 +119,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
             }
 
             return new OpenAITextEmbeddingGenerationService(client, deploymentName, modelId,
-                serviceId);
+                serviceId, dimensions);
         }
     }
 }

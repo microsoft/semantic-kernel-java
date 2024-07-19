@@ -47,12 +47,31 @@ public class RedisVectorStoreRecordCollectionTest {
                 .build());
 
         List<VectorStoreRecordField> fields = new ArrayList<>();
-        fields.add(new VectorStoreRecordKeyField("id"));
-        fields.add(new VectorStoreRecordDataField("name"));
-        fields.add(new VectorStoreRecordDataField("code"));
-        fields.add(new VectorStoreRecordDataField("description", true, "descriptionEmbedding"));
-        fields.add(new VectorStoreRecordVectorField("descriptionEmbedding"));
-        fields.add(new VectorStoreRecordDataField("rating"));
+        fields.add(VectorStoreRecordKeyField.builder()
+                .withName("id")
+                .build());
+        fields.add(VectorStoreRecordDataField.builder()
+                .withName("name")
+                .withFieldType(String.class)
+                .build());
+        fields.add(VectorStoreRecordDataField.builder()
+                .withName("code")
+                .withFieldType(Integer.class)
+                .build());
+        fields.add(VectorStoreRecordDataField.builder()
+                .withName("description")
+                .withFieldType(String.class)
+                .withHasEmbedding(true)
+                .withEmbeddingFieldName("descriptionEmbedding")
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("descriptionEmbedding")
+                .withDimensions(768)
+                .build());
+        fields.add(VectorStoreRecordDataField.builder()
+                .withName("rating")
+                .withFieldType(Double.class)
+                .build());
         VectorStoreRecordDefinition recordDefinition = VectorStoreRecordDefinition.create(fields);
 
         optionsMap.put(Options.WITH_CUSTOM_DEFINITION, RedisVectorStoreOptions.<Hotel>builder()
