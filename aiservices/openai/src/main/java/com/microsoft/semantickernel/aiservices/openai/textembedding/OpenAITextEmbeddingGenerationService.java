@@ -27,7 +27,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
     implements TextEmbeddingGenerationService {
     private static final Logger LOGGER = LoggerFactory
         .getLogger(OpenAITextEmbeddingGenerationService.class);
-    public static final int DEFAULT_DIMENSIONS = 1536;
+    private static final int DEFAULT_DIMENSIONS = 1536;
     private final int dimensions;
 
     /**

@@ -20,6 +20,7 @@ public class VectorStoreRecordKeyField extends VectorStoreRecordField {
 
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordKeyField, Builder> {
+        @Override
         public VectorStoreRecordKeyField build() {
             return new VectorStoreRecordKeyField(name, storageName);
         }

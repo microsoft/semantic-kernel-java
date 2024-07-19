@@ -21,10 +21,20 @@ public class VectorStoreRecordField {
         this.storageName = storageName;
     }
 
+    /**
+     * Gets the name of the field.
+     *
+     * @return the name of the field
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the storage name of the field.
+     *
+     * @return the storage name of the field
+     */
     public String getStorageName() {
         return storageName;
     }
@@ -34,16 +44,33 @@ public class VectorStoreRecordField {
         protected String name;
         protected String storageName;
 
+        /**
+         * Sets the name of the field.
+         *
+         * @param name the name of the field
+         * @return the builder
+         */
         public U withName(String name) {
             this.name = name;
             return (U) this;
         }
 
+        /**
+         * Sets the storage name of the field.
+         *
+         * @param storageName the storage name of the field
+         * @return the builder
+         */
         public U withStorageName(String storageName) {
             this.storageName = storageName;
             return (U) this;
         }
 
+        /**
+         * Builds the field.
+         *
+         * @return the field
+         */
         public abstract T build();
     }
 }

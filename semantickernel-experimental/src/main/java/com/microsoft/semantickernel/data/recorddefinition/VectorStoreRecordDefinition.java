@@ -29,10 +29,18 @@ public class VectorStoreRecordDefinition {
         return Collections.unmodifiableList(dataFields);
     }
 
+    /**
+     * Gets the vector fields in the record definition.
+     * @return List of VectorStoreRecordVectorField
+     */
     public List<VectorStoreRecordVectorField> getVectorFields() {
         return Collections.unmodifiableList(vectorFields);
     }
 
+    /**
+     * Gets all fields in the record definition.
+     * @return List of VectorStoreRecordField
+     */
     public List<VectorStoreRecordField> getAllFields() {
         List<VectorStoreRecordField> fields = new ArrayList<>();
         fields.add(keyField);

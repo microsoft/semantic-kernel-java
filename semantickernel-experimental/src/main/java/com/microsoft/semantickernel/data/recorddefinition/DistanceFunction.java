@@ -14,6 +14,13 @@ public enum DistanceFunction {
         return value;
     }
 
+    /**
+     * Converts a string to a DistanceFunction.
+     * If the string is null or empty, the method returns DistanceFunction.COSINE_SIMILARITY.
+     *
+     * @param text the string to convert
+     * @return the DistanceFunction
+     */
     public static DistanceFunction fromString(String text) {
         if (text == null || text.isEmpty()) {
             return COSINE_SIMILARITY;

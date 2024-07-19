@@ -14,6 +14,13 @@ public enum IndexKind {
         return value;
     }
 
+    /**
+     * Converts a string to an IndexKind.
+     * If the string is null or empty, the method returns IndexKind.FLAT.
+     *
+     * @param text the string to convert
+     * @return the IndexKind
+     */
     public static IndexKind fromString(String text) {
         if (text == null || text.isEmpty()) {
             return FLAT;

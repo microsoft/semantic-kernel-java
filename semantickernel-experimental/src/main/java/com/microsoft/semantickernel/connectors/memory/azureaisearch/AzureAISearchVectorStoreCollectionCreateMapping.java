@@ -86,11 +86,9 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
             throw new IllegalArgumentException("Vector field dimensions must be greater than 0");
         }
 
-        String vectorSearchProfileName = getVectorSearchProfileName(vectorField);
-        String algorithmConfigName = getAlgorithmConfigName(vectorField);
-
         algorithms.add(getAlgorithmConfig(vectorField));
-        profiles.add(new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName));
+        profiles.add(new VectorSearchProfile(getVectorSearchProfileName(vectorField),
+            getAlgorithmConfigName(vectorField)));
     }
 
     public static SearchFieldDataType getSearchFieldDataType(Class<?> fieldType) {

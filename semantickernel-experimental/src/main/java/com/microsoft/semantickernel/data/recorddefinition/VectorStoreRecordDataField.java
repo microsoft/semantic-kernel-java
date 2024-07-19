@@ -15,8 +15,11 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
      * Creates a new instance of the VectorStoreRecordDataField class.
      *
      * @param name the name of the field
+     * @param storageName the storage name of the field
      * @param hasEmbedding a value indicating whether the field has an embedding
      * @param embeddingFieldName the name of the embedding
+     * @param fieldType the field type
+     * @param isFilterable a value indicating whether the field is filterable
      */
     public VectorStoreRecordDataField(
         String name,
@@ -75,26 +78,55 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
         private Class<?> fieldType;
         private boolean isFilterable;
 
+        /**
+         * Sets a value indicating whether the field has an embedding.
+         *
+         * @param hasEmbedding a value indicating whether the field has an embedding
+         * @return the builder
+         */
         public Builder withHasEmbedding(boolean hasEmbedding) {
             this.hasEmbedding = hasEmbedding;
             return this;
         }
 
+        /**
+         * Sets the name of the embedding field.
+         *
+         * @param embeddingFieldName the name of the embedding
+         * @return the builder
+         */
         public Builder withEmbeddingFieldName(String embeddingFieldName) {
             this.embeddingFieldName = embeddingFieldName;
             return this;
         }
 
+        /**
+         * Sets the field type.
+         *
+         * @param fieldType the field type
+         * @return the builder
+         */
         public Builder withFieldType(Class<?> fieldType) {
             this.fieldType = fieldType;
             return this;
         }
 
+        /**
+         * Sets a value indicating whether the field is filterable.
+         *
+         * @param isFilterable a value indicating whether the field is filterable
+         * @return the builder
+         */
         public Builder withIsFilterable(boolean isFilterable) {
             this.isFilterable = isFilterable;
             return this;
         }
 
+        /**
+         * Builds a new instance of the VectorStoreRecordDataField class.
+         *
+         * @return a new instance of the VectorStoreRecordDataField class
+         */
         @Override
         public VectorStoreRecordDataField build() {
             if (name == null) {

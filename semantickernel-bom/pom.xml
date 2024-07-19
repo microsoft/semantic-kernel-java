@@ -87,22 +87,7 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-aiservices-google</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-connectors-memory-azureaisearch</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel</groupId>
-                <artifactId>semantickernel-connectors-memory-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

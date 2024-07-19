@@ -67,21 +67,45 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
         private IndexKind indexKind;
         private DistanceFunction distanceFunction;
 
+        /**
+         * Sets the number of dimensions in the vector.
+         *
+         * @param dimensions the number of dimensions in the vector
+         * @return the builder
+         */
         public Builder withDimensions(int dimensions) {
             this.dimensions = dimensions;
             return this;
         }
 
+        /**
+         * Sets the index kind.
+         *
+         * @param indexKind the index kind
+         * @return the builder
+         */
         public Builder withIndexKind(IndexKind indexKind) {
             this.indexKind = indexKind;
             return this;
         }
 
+        /**
+         * Sets the distance function.
+         *
+         * @param distanceFunction the distance function
+         * @return the builder
+         */
         public Builder withDistanceFunction(DistanceFunction distanceFunction) {
             this.distanceFunction = distanceFunction;
             return this;
         }
 
+        /**
+         * Builds a new instance of the VectorStoreRecordVectorField class.
+         *
+         * @return a new instance of the VectorStoreRecordVectorField class
+         */
+        @Override
         public VectorStoreRecordVectorField build() {
             if (name == null) {
                 throw new IllegalArgumentException("name is required");

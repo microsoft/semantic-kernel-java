@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples.memory;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -39,10 +40,9 @@ public class AzureAISearch {
     private static final String AZURE_AI_SEARCH_ENDPOINT = System.getenv("AZURE_AISEARCH_ENDPOINT");
     private static final String AZURE_AISEARCH_KEY = System.getenv("AZURE_AISEARCH_KEY");
     private static final String MODEL_ID = System.getenv()
-            .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
+        .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
     private static final String COLLECTION_NAME = "skgithubtest";
     private static final int EMBEDDING_DIMENSIONS = 1536;
-
 
     static class GitHubFile {
         @VectorStoreRecordKeyAttribute()
@@ -59,10 +59,10 @@ public class AzureAISearch {
         }
 
         public GitHubFile(
-                String id,
-                String description,
-                String link,
-                List<Float> embedding) {
+            String id,
+            String description,
+            String link,
+            List<Float> embedding) {
             this.id = id;
             this.description = description;
             this.link = link;
@@ -75,7 +75,6 @@ public class AzureAISearch {
         }
     }
 
-
     public static void main(String[] args) {
         System.out.println("==============================================================");
         System.out.println("========== Azure AI Search Vector Store Example ==============");
@@ -85,14 +84,14 @@ public class AzureAISearch {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
 
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         var embeddingGeneration = OpenAITextEmbeddingGenerationService.builder()
@@ -102,62 +101,60 @@ public class AzureAISearch {
             .build();
 
         var searchClient = new SearchIndexClientBuilder()
-                .endpoint(AZURE_AI_SEARCH_ENDPOINT)
-                .credential(new AzureKeyCredential(AZURE_AISEARCH_KEY))
-                .clientOptions(clientOptions())
-                .buildAsyncClient();
+            .endpoint(AZURE_AI_SEARCH_ENDPOINT)
+            .credential(new AzureKeyCredential(AZURE_AISEARCH_KEY))
+            .clientOptions(clientOptions())
+            .buildAsyncClient();
 
         documentSearchWithAzureAISearch(searchClient, embeddingGeneration);
     }
 
     public static void documentSearchWithAzureAISearch(
-            SearchIndexAsyncClient searchClient,
-            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        SearchIndexAsyncClient searchClient,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
         var azureAISearchVectorStoreCollection = new AzureAISearchVectorStoreRecordCollection<GitHubFile>(
-                searchClient,
-                COLLECTION_NAME,
-                AzureAISearchVectorStoreOptions.<GitHubFile>builder()
-                        .withRecordClass(GitHubFile.class)
-                        .build()
-                );
+            searchClient,
+            COLLECTION_NAME,
+            AzureAISearchVectorStoreOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         azureAISearchVectorStoreCollection.createCollectionIfNotExistsAsync()
-                .then(storeData(azureAISearchVectorStoreCollection, embeddingGeneration, sampleData()))
-                .block();
+            .then(storeData(azureAISearchVectorStoreCollection, embeddingGeneration, sampleData()))
+            .block();
 
         // Query the Azure AI Search client for results
         // This might take a few seconds to return the best result
         var result = searchClient.getSearchAsyncClient(COLLECTION_NAME)
-                .search("How to get started with the Semantic Kernel?")
-                .blockFirst();
+            .search("How to get started with the Semantic Kernel?")
+            .blockFirst();
 
         GitHubFile gitHubFile = result.getDocument(GitHubFile.class);
         System.out.println("Best result: " + gitHubFile.description + ". Link: " + gitHubFile.link);
     }
 
     private static Mono<List<String>> storeData(
-            AzureAISearchVectorStoreRecordCollection<GitHubFile> recordStore,
-            OpenAITextEmbeddingGenerationService embeddingGeneration,
-            Map<String, String> data) {
+        AzureAISearchVectorStoreRecordCollection<GitHubFile> recordStore,
+        OpenAITextEmbeddingGenerationService embeddingGeneration,
+        Map<String, String> data) {
 
         return Flux.fromIterable(data.entrySet())
-                .flatMap(entry -> {
-                    System.out.println("Save '" + entry.getKey() + "' to memory.");
+            .flatMap(entry -> {
+                System.out.println("Save '" + entry.getKey() + "' to memory.");
 
-                    return embeddingGeneration
-                            .generateEmbeddingsAsync(Collections.singletonList(entry.getValue()))
-                            .flatMap(embeddings -> {
-                                GitHubFile gitHubFile = new GitHubFile(
-                                        GitHubFile.encodeId(entry.getKey()),
-                                        entry.getValue(),
-                                        entry.getKey(),
-                                        embeddings.get(0).getVector()
-                                );
-                                return recordStore.upsertAsync(gitHubFile, null);
-                            });
-                })
-                .collectList();
+                return embeddingGeneration
+                    .generateEmbeddingsAsync(Collections.singletonList(entry.getValue()))
+                    .flatMap(embeddings -> {
+                        GitHubFile gitHubFile = new GitHubFile(
+                            GitHubFile.encodeId(entry.getKey()),
+                            entry.getValue(),
+                            entry.getKey(),
+                            embeddings.get(0).getVector());
+                        return recordStore.upsertAsync(gitHubFile, null);
+                    });
+            })
+            .collectList();
     }
 
     private static Map<String, String> sampleData() {
@@ -176,10 +173,11 @@ public class AzureAISearch {
                         "README: README associated with a sample chat summary react-based webapp" },
         }).collect(Collectors.toMap(element -> element[0], element -> element[1]));
     }
+
     private static ClientOptions clientOptions() {
         return new ClientOptions()
-                .setTracingOptions(new TracingOptions())
-                .setMetricsOptions(new MetricsOptions())
-                .setApplicationId("Semantic-Kernel");
+            .setTracingOptions(new TracingOptions())
+            .setMetricsOptions(new MetricsOptions())
+            .setApplicationId("Semantic-Kernel");
     }
 }
