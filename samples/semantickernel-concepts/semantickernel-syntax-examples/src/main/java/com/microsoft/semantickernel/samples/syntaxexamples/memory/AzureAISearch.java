@@ -11,7 +11,9 @@ import com.azure.core.util.TracingOptions;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
+import com.microsoft.semantickernel.connectors.memory.azureaisearch.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.connectors.memory.azureaisearch.AzureAISearchVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.memory.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.memory.azureaisearch.AzureAISearchVectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
@@ -41,7 +43,6 @@ public class AzureAISearch {
     private static final String AZURE_AISEARCH_KEY = System.getenv("AZURE_AISEARCH_KEY");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
-    private static final String COLLECTION_NAME = "skgithubtest";
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
@@ -113,20 +114,24 @@ public class AzureAISearch {
         SearchIndexAsyncClient searchClient,
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
-        var azureAISearchVectorStoreCollection = new AzureAISearchVectorStoreRecordCollection<GitHubFile>(
-            searchClient,
-            COLLECTION_NAME,
-            AzureAISearchVectorStoreOptions.<GitHubFile>builder()
+        // Create a new Azure AI Search vector store
+        var azureAISearchVectorStore = new AzureAISearchVectorStore<>(searchClient,
+                AzureAISearchVectorStoreOptions.<GitHubFile>builder()
                 .withRecordClass(GitHubFile.class)
                 .build());
 
-        azureAISearchVectorStoreCollection.createCollectionIfNotExistsAsync()
-            .then(storeData(azureAISearchVectorStoreCollection, embeddingGeneration, sampleData()))
+        String collectionName = "skgithubfiles";
+        var collection = azureAISearchVectorStore.getCollection(collectionName, null);
+
+        // Create collection if it does not exist and store data
+        collection
+            .createCollectionIfNotExistsAsync()
+            .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
         // Query the Azure AI Search client for results
         // This might take a few seconds to return the best result
-        var result = searchClient.getSearchAsyncClient(COLLECTION_NAME)
+        var result = searchClient.getSearchAsyncClient(collectionName)
             .search("How to get started with the Semantic Kernel?")
             .blockFirst();
 
