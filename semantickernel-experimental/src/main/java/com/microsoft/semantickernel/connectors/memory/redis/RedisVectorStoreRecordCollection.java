@@ -55,7 +55,7 @@ public class RedisVectorStoreRecordCollection<Record>
         // If record definition is not provided, create one from the record class
         VectorStoreRecordDefinition definition = options.getRecordDefinition();
         if (definition == null) {
-            definition = VectorStoreRecordDefinition.create(options.getRecordClass());
+            definition = VectorStoreRecordDefinition.fromRecordClass(options.getRecordClass());
         }
 
         // If mapper is not provided, add a default one

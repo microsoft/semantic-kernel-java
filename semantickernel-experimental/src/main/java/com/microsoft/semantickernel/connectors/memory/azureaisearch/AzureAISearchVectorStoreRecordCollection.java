@@ -4,13 +4,10 @@ package com.microsoft.semantickernel.connectors.memory.azureaisearch;
 import com.azure.search.documents.SearchAsyncClient;
 import com.azure.search.documents.SearchDocument;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
-import com.azure.search.documents.indexes.models.HnswAlgorithmConfiguration;
-import com.azure.search.documents.indexes.models.HnswParameters;
 import com.azure.search.documents.indexes.models.SearchField;
 import com.azure.search.documents.indexes.models.SearchIndex;
 import com.azure.search.documents.indexes.models.VectorSearch;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
-import com.azure.search.documents.indexes.models.VectorSearchAlgorithmMetric;
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
 import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.IndexingResult;
@@ -45,56 +42,61 @@ import java.util.stream.Collectors;
 public class AzureAISearchVectorStoreRecordCollection<Record>
     implements VectorStoreRecordCollection<String, Record> {
 
-    // TODO: Check if the types are supported
-    //
-    //    private HashSet<Class<?>> supportedDataTypes = new HashSet<>(
-    //        Arrays.asList(
-    //            String.class,
-    //            Integer.class,
-    //            int.class,
-    //            Long.class,
-    //            long.class,
-    //            Float.class,
-    //            float.class,
-    //            Double.class,
-    //            double.class,
-    //            Boolean.class,
-    //            boolean.class,
-    //            OffsetDateTime.class));
-    //
-    //    private HashSet<Class<?>> supportedVectorTypes = new HashSet<>(
-    //        Arrays.asList(
-    //            List.class,
-    //            Collection.class));
+    private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
+        Collections.singletonList(
+            String.class));
+
+    private static final HashSet<Class<?>> supportedDataTypes = new HashSet<>(
+        Arrays.asList(
+            String.class,
+            Integer.class,
+            int.class,
+            Long.class,
+            long.class,
+            Float.class,
+            float.class,
+            Double.class,
+            double.class,
+            Boolean.class,
+            boolean.class,
+            OffsetDateTime.class));
+
+    private static final HashSet<Class<?>> supportedVectorTypes = new HashSet<>(
+        Arrays.asList(
+            List.class,
+            Collection.class));
 
     private final SearchIndexAsyncClient client;
     private final String collectionName;
     private final Map<String, SearchAsyncClient> clientsByIndex = new ConcurrentHashMap<>();
-    private final AzureAISearchVectorStoreOptions<Record> options;
+    private final AzureAISearchVectorStoreRecordCollectionOptions<Record> options;
+    private final VectorStoreRecordDefinition recordDefinition;
+
+    // List of non-vector fields. Used to fetch only non-vector fields when vectors are not requested
     private final List<String> nonVectorFields = new ArrayList<>();
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public AzureAISearchVectorStoreRecordCollection(
         @Nonnull SearchIndexAsyncClient client,
         @Nonnull String collectionName,
-        @Nonnull AzureAISearchVectorStoreOptions<Record> options) {
+        @Nonnull AzureAISearchVectorStoreRecordCollectionOptions<Record> options) {
         this.client = client;
         this.collectionName = collectionName;
+        this.options = options;
 
         // If record definition is not provided, create one from the record class
-        if (options.getRecordDefinition() == null) {
-            this.options = AzureAISearchVectorStoreOptions.<Record>builder()
-                .withRecordClass(options.getRecordClass())
-                .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
-                .withRecordDefinition(VectorStoreRecordDefinition.create(options.getRecordClass()))
-                .build();
-        } else {
-            this.options = options;
-        }
+        this.recordDefinition = options.getRecordDefinition() == null
+            ? VectorStoreRecordDefinition.fromRecordClass(options.getRecordClass())
+            : options.getRecordDefinition();
+
+        // Validate supported types
+        VectorStoreRecordDefinition.validateSupportedTypes(
+            this.options.getRecordClass(), this.recordDefinition, supportedKeyTypes,
+            supportedDataTypes, supportedVectorTypes);
 
         // Add non-vector fields to the list
-        nonVectorFields.add(this.options.getRecordDefinition().getKeyField().getName());
-        nonVectorFields.addAll(this.options.getRecordDefinition().getDataFields().stream()
+        nonVectorFields.add(this.recordDefinition.getKeyField().getName());
+        nonVectorFields.addAll(this.recordDefinition.getDataFields().stream()
             .map(VectorStoreRecordDataField::getName)
             .collect(Collectors.toList()));
     }
@@ -120,7 +122,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record>
         List<VectorSearchAlgorithmConfiguration> algorithms = new ArrayList<>();
         List<VectorSearchProfile> profiles = new ArrayList<>();
 
-        for (VectorStoreRecordField field : this.options.getRecordDefinition().getAllFields()) {
+        for (VectorStoreRecordField field : this.recordDefinition.getAllFields()) {
             if (field instanceof VectorStoreRecordKeyField) {
                 searchFields.add(AzureAISearchVectorStoreCollectionCreateMapping
                     .mapKeyField((VectorStoreRecordKeyField) field));
@@ -247,7 +249,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record>
 
         return client.deleteDocuments(keys.stream().map(key -> {
             SearchDocument document = new SearchDocument();
-            document.put(this.options.getRecordDefinition().getKeyField().getName(), key);
+            document.put(this.recordDefinition.getKeyField().getName(), key);
             return document;
         }).collect(Collectors.toList())).then();
     }

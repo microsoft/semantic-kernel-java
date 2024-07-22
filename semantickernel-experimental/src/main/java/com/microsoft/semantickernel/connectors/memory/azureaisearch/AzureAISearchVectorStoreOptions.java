@@ -1,19 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.azureaisearch;
 
-import com.azure.search.documents.SearchDocument;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-
-/**
- * Options for an Azure AI Search vector store.
- *
- * @param <Record> the record type
- */
 public class AzureAISearchVectorStoreOptions<Record> {
     private final Class<Record> recordClass;
-    private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
-    private final VectorStoreRecordDefinition recordDefinition;
+    private final AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
+
+    /**
+     * Creates a new instance of the Azure AI Search vector store options.
+     *
+     * @param recordClass The record class.
+     * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
+     */
+    public AzureAISearchVectorStoreOptions(Class<Record> recordClass,
+        AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+        this.recordClass = recordClass;
+        this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
+    }
 
     /**
      * Creates a new builder.
@@ -35,84 +37,54 @@ public class AzureAISearchVectorStoreOptions<Record> {
     }
 
     /**
-     * Gets the record definition.
+     * Gets the vector store record collection factory.
      *
-     * @return the record definition
+     * @return the vector store record collection factory
      */
-    public VectorStoreRecordDefinition getRecordDefinition() {
-        return recordDefinition;
+    public AzureAISearchVectorStoreRecordCollectionFactory<Record> getVectorStoreRecordCollectionFactory() {
+        return vectorStoreRecordCollectionFactory;
     }
 
     /**
-     * Gets the vector store record mapper.
-     *
-     * @return the vector store record mapper
-     */
-    public VectorStoreRecordMapper<Record, SearchDocument> getVectorStoreRecordMapper() {
-        return vectorStoreRecordMapper;
-    }
-
-    private AzureAISearchVectorStoreOptions(
-        Class<Record> recordClass,
-        VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper,
-        VectorStoreRecordDefinition recordDefinition) {
-        this.recordClass = recordClass;
-        this.vectorStoreRecordMapper = vectorStoreRecordMapper;
-        this.recordDefinition = recordDefinition;
-    }
-
-    /**
-     * Builder for {@link AzureAISearchVectorStoreOptions}.
+     * Builder for Azure AI Search vector store options.
      *
      * @param <Record> the record type
      */
     public static class Builder<Record> {
-        private VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
         private Class<Record> recordClass;
-        private VectorStoreRecordDefinition recordDefinition;
+        private AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
 
+        /**
+         * Sets the record class.
+         *
+         * @param recordClass The record class.
+         * @return The updated builder instance.
+         */
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
             return this;
         }
 
         /**
-         * Sets the vector store record mapper.
+         * Sets the vector store record collection factory.
          *
-         * @param vectorStoreRecordMapper the vector store record mapper
-         * @return the builder
+         * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
+         * @return The updated builder instance.
          */
-        public Builder<Record> withVectorStoreRecordMapper(
-            VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper) {
-            this.vectorStoreRecordMapper = vectorStoreRecordMapper;
+        public Builder<Record> withVectorStoreRecordCollectionFactory(
+            AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+            this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
             return this;
         }
 
         /**
-         * Sets the record definition.
+         * Builds the Azure AI Search vector store options.
          *
-         * @param recordDefinition the record definition
-         * @return the builder
-         */
-        public Builder<Record> withRecordDefinition(VectorStoreRecordDefinition recordDefinition) {
-            this.recordDefinition = recordDefinition;
-            return this;
-        }
-
-        /**
-         * Builds the options.
-         *
-         * @return the options
+         * @return The Azure AI Search vector store options.
          */
         public AzureAISearchVectorStoreOptions<Record> build() {
-            if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass must be provided");
-            }
-
-            return new AzureAISearchVectorStoreOptions<>(
-                recordClass,
-                vectorStoreRecordMapper,
-                recordDefinition);
+            return new AzureAISearchVectorStoreOptions<>(recordClass,
+                vectorStoreRecordCollectionFactory);
         }
     }
 }

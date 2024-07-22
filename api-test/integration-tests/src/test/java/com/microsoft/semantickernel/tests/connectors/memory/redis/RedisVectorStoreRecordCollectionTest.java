@@ -72,7 +72,7 @@ public class RedisVectorStoreRecordCollectionTest {
                 .withName("rating")
                 .withFieldType(Double.class)
                 .build());
-        VectorStoreRecordDefinition recordDefinition = VectorStoreRecordDefinition.create(fields);
+        VectorStoreRecordDefinition recordDefinition = VectorStoreRecordDefinition.fromFields(fields);
 
         optionsMap.put(Options.WITH_CUSTOM_DEFINITION, RedisVectorStoreOptions.<Hotel>builder()
                 .withRecordClass(Hotel.class)
