@@ -7,12 +7,14 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Kernel.Builder;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionYaml;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.io.IOException;
 
@@ -24,7 +26,7 @@ public class KernelFunctionYaml_Example {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "text-davinci-003");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) throws ConfigurationException, IOException {
 
@@ -41,13 +43,13 @@ public class KernelFunctionYaml_Example {
                 .buildAsyncClient();
         }
 
-        TextGenerationService textGenerationService = TextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
 
         Builder kernelBuilder = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService);
+            .withAIService(ChatCompletionService.class, openAIChatCompletion);
 
         semanticKernelTemplate(kernelBuilder.build());
         handlebarsTemplate(kernelBuilder.build());

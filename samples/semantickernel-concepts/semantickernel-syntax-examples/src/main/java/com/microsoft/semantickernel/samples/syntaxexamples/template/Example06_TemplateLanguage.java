@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -15,6 +16,7 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 
 public class Example06_TemplateLanguage {
@@ -25,7 +27,7 @@ public class Example06_TemplateLanguage {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "text-davinci-003");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) throws ConfigurationException {
 
@@ -44,13 +46,13 @@ public class Example06_TemplateLanguage {
                 .buildAsyncClient();
         }
 
-        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         // Load native plugin into the kernel function collection, sharing its functions with prompt templates

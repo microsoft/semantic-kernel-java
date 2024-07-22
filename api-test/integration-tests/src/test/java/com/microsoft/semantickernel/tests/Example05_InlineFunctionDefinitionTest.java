@@ -6,6 +6,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -27,13 +28,13 @@ public class Example05_InlineFunctionDefinitionTest {
             .endpoint("http://localhost:" + wmRuntimeInfo.getHttpPort())
             .buildAsyncClient();
 
-        TextGenerationService textGenerationService = TextGenerationService.builder()
+        OpenAIChatCompletion chatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId("text-davinci-003")
+            .withModelId("gpt-35-turbo")
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(OpenAIChatCompletion.class, chatCompletion)
             .build();
 
         System.out.println("======== Inline Function Definition ========");

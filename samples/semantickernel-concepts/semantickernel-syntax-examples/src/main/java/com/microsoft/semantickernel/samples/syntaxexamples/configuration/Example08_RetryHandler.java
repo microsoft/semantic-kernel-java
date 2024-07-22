@@ -7,16 +7,18 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.http.policy.ExponentialBackoffOptions;
 import com.azure.core.http.policy.RetryOptions;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.time.Duration;
 
 public class Example08_RetryHandler {
 
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "text-davinci-003");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) throws ConfigurationException {
         // Create a Kernel with the HttpClient
@@ -31,13 +33,13 @@ public class Example08_RetryHandler {
             .credential(new AzureKeyCredential("BAD KEY"))
             .buildAsyncClient();
 
-        TextGenerationService textGenerationService = TextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
 
         String question = "How popular is the Polly library?";

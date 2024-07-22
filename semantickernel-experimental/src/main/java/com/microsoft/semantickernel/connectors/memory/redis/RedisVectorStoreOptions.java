@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.connectors.memory.redis;
 
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-
 import java.util.Map.Entry;
 
 public class RedisVectorStoreOptions<Record> {
@@ -75,6 +74,7 @@ public class RedisVectorStoreOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
+
         private VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;
