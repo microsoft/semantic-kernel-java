@@ -90,7 +90,7 @@ public class RedisVectorStoreRecordCollectionTest {
                 .withRecordClass(options.getRecordClass())
                 .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
                 .withRecordDefinition(options.getRecordDefinition())
-                .withPrefixCollectionName(options.prefixCollectionName())
+                .withPrefixCollectionName(options.isPrefixCollectionName())
                 .build());
     }
 

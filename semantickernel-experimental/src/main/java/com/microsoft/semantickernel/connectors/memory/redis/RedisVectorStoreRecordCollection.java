@@ -21,15 +21,11 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.search.FTCreateParams;
-import redis.clients.jedis.search.IndexDataType;
 import redis.clients.jedis.search.IndexDefinition;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.schemafields.SchemaField;
 
 import javax.annotation.Nonnull;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -182,7 +178,7 @@ public class RedisVectorStoreRecordCollection<Record>
     }
 
     private String getRedisKey(String key, String collectionName) {
-        return options.prefixCollectionName() ? collectionName + ":" + key : key;
+        return options.isPrefixCollectionName() ? collectionName + ":" + key : key;
     }
 
     private JsonNode removeRedisPathPrefix(JSONObject object) {

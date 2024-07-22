@@ -65,7 +65,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
      *
      * @return whether to prefix the collection name to the redis key
      */
-    public boolean prefixCollectionName() {
+    public boolean isPrefixCollectionName() {
         return prefixCollectionName;
     }
 
