@@ -116,7 +116,7 @@ public class AzureAISearch {
 
         // Create a new Azure AI Search vector store
         var azureAISearchVectorStore = new AzureAISearchVectorStore<>(searchClient,
-                AzureAISearchVectorStoreOptions.<GitHubFile>builder()
+            AzureAISearchVectorStoreOptions.<GitHubFile>builder()
                 .withRecordClass(GitHubFile.class)
                 .build());
 
