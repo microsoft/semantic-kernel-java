@@ -5,6 +5,8 @@ import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataA
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -147,15 +149,20 @@ public class VectorStoreRecordDefinition {
     }
 
     private static String getSupportedTypesString(HashSet<Class<?>> types) {
+        if (types == null || types.isEmpty()) {
+            return "";
+        }
         return types.stream().map(Class::getName).collect(Collectors.joining(", "));
     }
 
-    public static void validateSupportedTypes(Class<?> recordClass,
-        VectorStoreRecordDefinition recordDefinition, HashSet<Class<?>> keyTypes,
-        HashSet<Class<?>> dataTypes, HashSet<Class<?>> vectorTypes) {
+    public static void validateSupportedTypes(@Nonnull Class<?> recordClass,
+        @Nonnull VectorStoreRecordDefinition recordDefinition,
+        @Nonnull HashSet<Class<?>> keyTypes,
+        @Nonnull HashSet<Class<?>> vectorTypes,
+        @Nullable HashSet<Class<?>> dataTypes) {
         String keyTypesString = getSupportedTypesString(keyTypes);
-        String dataTypesString = getSupportedTypesString(dataTypes);
         String vectorTypesString = getSupportedTypesString(vectorTypes);
+        String dataTypesString = getSupportedTypesString(dataTypes);
 
         for (VectorStoreRecordField field : recordDefinition.getAllFields()) {
             if (field instanceof VectorStoreRecordKeyField) {
@@ -174,6 +181,10 @@ public class VectorStoreRecordDefinition {
             }
 
             if (field instanceof VectorStoreRecordDataField) {
+                // If dataTypes is null, there is no restriction on the data field type
+                if (dataTypes == null) {
+                    continue;
+                }
                 try {
                     Field declaredField = recordClass.getDeclaredField(field.getName());
 

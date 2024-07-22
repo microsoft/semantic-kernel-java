@@ -1,26 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.memory.redis;
 
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-
-import java.util.Map.Entry;
-
 public class RedisVectorStoreOptions<Record> {
-    private final Class<Record> recordClass;
-    private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
-    private final VectorStoreRecordDefinition recordDefinition;
-    private final boolean prefixCollectionName;
 
-    private RedisVectorStoreOptions(
-        Class<Record> recordClass,
-        VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
-        VectorStoreRecordDefinition recordDefinition,
-        boolean prefixCollectionName) {
+    private final Class<Record> recordClass;
+    private final RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
+
+    /**
+     * Creates a new instance of the Redis vector store options.
+     *
+     * @param recordClass The record class.
+     * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
+     */
+    public RedisVectorStoreOptions(Class<Record> recordClass,
+        RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
         this.recordClass = recordClass;
-        this.vectorStoreRecordMapper = vectorStoreRecordMapper;
-        this.recordDefinition = recordDefinition;
-        this.prefixCollectionName = prefixCollectionName;
+        this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
     }
 
     /**
@@ -43,48 +38,28 @@ public class RedisVectorStoreOptions<Record> {
     }
 
     /**
-     * Gets the record definition.
+     * Gets the vector store record collection factory.
      *
-     * @return the record definition
+     * @return the vector store record collection factory
      */
-    public VectorStoreRecordDefinition getRecordDefinition() {
-        return recordDefinition;
+    public RedisVectorStoreRecordCollectionFactory<Record> getVectorStoreRecordCollectionFactory() {
+        return vectorStoreRecordCollectionFactory;
     }
 
     /**
-     * Gets the vector store record mapper.
-     *
-     * @return the vector store record mapper
-     */
-    public VectorStoreRecordMapper<Record, Entry<String, Object>> getVectorStoreRecordMapper() {
-        return vectorStoreRecordMapper;
-    }
-
-    /**
-     * Gets whether to prefix the collection name to the redis key.
-     *
-     * @return whether to prefix the collection name to the redis key
-     */
-    public boolean prefixCollectionName() {
-        return prefixCollectionName;
-    }
-
-    /**
-     * Builder for {@link RedisVectorStoreOptions}.
+     * Builder for Redis vector store options.
      *
      * @param <Record> the record type
      */
     public static class Builder<Record> {
-        private VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
         private Class<Record> recordClass;
-        private VectorStoreRecordDefinition recordDefinition;
-        private boolean prefixCollectionName = false;
+        private RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
 
         /**
          * Sets the record class.
          *
-         * @param recordClass the record class
-         * @return the builder
+         * @param recordClass The record class.
+         * @return The updated builder instance.
          */
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
@@ -92,54 +67,24 @@ public class RedisVectorStoreOptions<Record> {
         }
 
         /**
-         * Sets the vector store record mapper.
+         * Sets the vector store record collection factory.
          *
-         * @param vectorStoreRecordMapper the vector store record mapper
-         * @return the builder
+         * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
+         * @return The updated builder instance.
          */
-        public Builder<Record> withVectorStoreRecordMapper(
-            VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper) {
-            this.vectorStoreRecordMapper = vectorStoreRecordMapper;
-            return this;
-        }
-
-        /**
-         * Sets the record definition.
-         *
-         * @param recordDefinition the record definition
-         * @return the builder
-         */
-        public Builder<Record> withRecordDefinition(VectorStoreRecordDefinition recordDefinition) {
-            this.recordDefinition = recordDefinition;
-            return this;
-        }
-
-        /**
-         * Sets whether to prefix the collection name to the redis key.
-         *
-         * @param prefixCollectionName whether to prefix the collection name to the redis key
-         * @return the builder
-         */
-        public Builder<Record> withPrefixCollectionName(boolean prefixCollectionName) {
-            this.prefixCollectionName = prefixCollectionName;
+        public Builder<Record> withVectorStoreRecordCollectionFactory(
+            RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+            this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
             return this;
         }
 
         /**
          * Builds the options.
          *
-         * @return the options
+         * @return The options.
          */
         public RedisVectorStoreOptions<Record> build() {
-            if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass must be provided");
-            }
-
-            return new RedisVectorStoreOptions<>(
-                recordClass,
-                vectorStoreRecordMapper,
-                recordDefinition,
-                prefixCollectionName);
+            return new RedisVectorStoreOptions<>(recordClass, vectorStoreRecordCollectionFactory);
         }
     }
 }
