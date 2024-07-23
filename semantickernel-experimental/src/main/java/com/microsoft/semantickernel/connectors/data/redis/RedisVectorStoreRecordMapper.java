@@ -4,17 +4,18 @@ package com.microsoft.semantickernel.connectors.data.redis;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
-
+import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
 public class RedisVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, Entry<String, Object>> {
+
     private RedisVectorStoreRecordMapper(
         Function<Record, Entry<String, Object>> toStorageModelMapper,
         Function<Entry<String, Object>, Record> toRecordMapper) {
@@ -32,6 +33,7 @@ public class RedisVectorStoreRecordMapper<Record>
      */
     public static class Builder<Record>
         implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
+
         private String keyFieldName;
         private Class<Record> recordClass;
 
@@ -70,9 +72,9 @@ public class RedisVectorStoreRecordMapper<Record>
             if (recordClass == null) {
                 throw new IllegalArgumentException("recordClass is required");
             }
+            ObjectMapper mapper = new ObjectMapper();
 
             return new RedisVectorStoreRecordMapper<>(record -> {
-                ObjectMapper mapper = new ObjectMapper();
                 try {
                     String json = mapper.writeValueAsString(record);
                     ObjectNode jsonNode = (ObjectNode) mapper.readTree(json);
@@ -81,18 +83,21 @@ public class RedisVectorStoreRecordMapper<Record>
 
                     return new AbstractMap.SimpleEntry<>(key, jsonNode);
                 } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    throw new SKException(
+                        "Failure to serialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
+                        e);
                 }
             }, storageModel -> {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.setVisibility(VisibilityChecker.Std.defaultInstance()
-                    .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
-
-                ObjectNode jsonNode = mapper.valueToTree(storageModel.getValue());
-
-                // Add the key back to the record
-                jsonNode.put(keyFieldName, storageModel.getKey());
-                return mapper.convertValue(jsonNode, recordClass);
+                try {
+                    ObjectNode jsonNode = mapper.valueToTree(storageModel.getValue());
+                    // Add the key back to the record
+                    jsonNode.put(keyFieldName, storageModel.getKey());
+                    return mapper.convertValue(jsonNode, recordClass);
+                } catch (Exception e) {
+                    throw new SKException(
+                        "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
+                        e);
+                }
             });
         }
     }
