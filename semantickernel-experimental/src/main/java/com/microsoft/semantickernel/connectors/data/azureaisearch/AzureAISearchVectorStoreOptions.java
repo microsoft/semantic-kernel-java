@@ -1,19 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.redis;
+package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
-public class RedisVectorStoreOptions<Record> {
-
+public class AzureAISearchVectorStoreOptions<Record> {
     private final Class<Record> recordClass;
-    private final RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
+    private final AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
 
     /**
-     * Creates a new instance of the Redis vector store options.
+     * Creates a new instance of the Azure AI Search vector store options.
      *
      * @param recordClass The record class.
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
      */
-    public RedisVectorStoreOptions(Class<Record> recordClass,
-        RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+    public AzureAISearchVectorStoreOptions(Class<Record> recordClass,
+        AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
         this.recordClass = recordClass;
         this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
     }
@@ -42,18 +41,18 @@ public class RedisVectorStoreOptions<Record> {
      *
      * @return the vector store record collection factory
      */
-    public RedisVectorStoreRecordCollectionFactory<Record> getVectorStoreRecordCollectionFactory() {
+    public AzureAISearchVectorStoreRecordCollectionFactory<Record> getVectorStoreRecordCollectionFactory() {
         return vectorStoreRecordCollectionFactory;
     }
 
     /**
-     * Builder for Redis vector store options.
+     * Builder for Azure AI Search vector store options.
      *
      * @param <Record> the record type
      */
     public static class Builder<Record> {
         private Class<Record> recordClass;
-        private RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
+        private AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
 
         /**
          * Sets the record class.
@@ -73,18 +72,19 @@ public class RedisVectorStoreOptions<Record> {
          * @return The updated builder instance.
          */
         public Builder<Record> withVectorStoreRecordCollectionFactory(
-            RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+            AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
             this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
             return this;
         }
 
         /**
-         * Builds the options.
+         * Builds the Azure AI Search vector store options.
          *
-         * @return The options.
+         * @return The Azure AI Search vector store options.
          */
-        public RedisVectorStoreOptions<Record> build() {
-            return new RedisVectorStoreOptions<>(recordClass, vectorStoreRecordCollectionFactory);
+        public AzureAISearchVectorStoreOptions<Record> build() {
+            return new AzureAISearchVectorStoreOptions<>(recordClass,
+                vectorStoreRecordCollectionFactory);
         }
     }
 }

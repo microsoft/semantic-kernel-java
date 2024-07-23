@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.redis;
+package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +19,10 @@ public class RedisVectorStoreRecordMapper<Record>
         Function<Record, Entry<String, Object>> toStorageModelMapper,
         Function<Entry<String, Object>, Record> toRecordMapper) {
         super(toStorageModelMapper, toRecordMapper);
+    }
+
+    public static <Record> Builder<Record> builder() {
+        return null;
     }
 
     /**

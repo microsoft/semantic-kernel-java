@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.redis;
+package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.azure.search.documents.indexes.models.ExhaustiveKnnAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.ExhaustiveKnnParameters;

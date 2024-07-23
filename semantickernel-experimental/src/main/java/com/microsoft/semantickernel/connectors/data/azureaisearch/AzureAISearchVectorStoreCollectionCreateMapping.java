@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.azureaisearch;
+package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.indexes.models.ExhaustiveKnnAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.ExhaustiveKnnParameters;

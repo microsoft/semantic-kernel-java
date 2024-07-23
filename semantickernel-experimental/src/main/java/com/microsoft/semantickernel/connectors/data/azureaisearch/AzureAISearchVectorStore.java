@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.azureaisearch;
+package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.models.SearchIndex;
 import com.microsoft.semantickernel.data.VectorStore;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;

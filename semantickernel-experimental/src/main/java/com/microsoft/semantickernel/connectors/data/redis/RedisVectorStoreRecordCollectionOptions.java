@@ -1,19 +1,27 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.azureaisearch;
+package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.azure.search.documents.SearchDocument;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 
-/**
- * Options for an Azure AI Search vector store.
- *
- * @param <Record> the record type
- */
-public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
+import java.util.Map.Entry;
+
+public class RedisVectorStoreRecordCollectionOptions<Record> {
     private final Class<Record> recordClass;
-    private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
+    private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
+    private final boolean prefixCollectionName;
+
+    private RedisVectorStoreRecordCollectionOptions(
+        Class<Record> recordClass,
+        VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
+        VectorStoreRecordDefinition recordDefinition,
+        boolean prefixCollectionName) {
+        this.recordClass = recordClass;
+        this.vectorStoreRecordMapper = vectorStoreRecordMapper;
+        this.recordDefinition = recordDefinition;
+        this.prefixCollectionName = prefixCollectionName;
+    }
 
     /**
      * Creates a new builder.
@@ -48,29 +56,36 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
      *
      * @return the vector store record mapper
      */
-    public VectorStoreRecordMapper<Record, SearchDocument> getVectorStoreRecordMapper() {
+    public VectorStoreRecordMapper<Record, Entry<String, Object>> getVectorStoreRecordMapper() {
         return vectorStoreRecordMapper;
     }
 
-    private AzureAISearchVectorStoreRecordCollectionOptions(
-        Class<Record> recordClass,
-        VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper,
-        VectorStoreRecordDefinition recordDefinition) {
-        this.recordClass = recordClass;
-        this.vectorStoreRecordMapper = vectorStoreRecordMapper;
-        this.recordDefinition = recordDefinition;
+    /**
+     * Gets whether to prefix the collection name to the redis key.
+     *
+     * @return whether to prefix the collection name to the redis key
+     */
+    public boolean isPrefixCollectionName() {
+        return prefixCollectionName;
     }
 
     /**
-     * Builder for {@link AzureAISearchVectorStoreRecordCollectionOptions}.
+     * Builder for {@link RedisVectorStoreRecordCollectionOptions}.
      *
      * @param <Record> the record type
      */
     public static class Builder<Record> {
-        private VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
+        private VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;
+        private boolean prefixCollectionName = true;
 
+        /**
+         * Sets the record class.
+         *
+         * @param recordClass the record class
+         * @return the builder
+         */
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
             return this;
@@ -83,7 +98,7 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
          * @return the builder
          */
         public Builder<Record> withVectorStoreRecordMapper(
-            VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper) {
+            VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper) {
             this.vectorStoreRecordMapper = vectorStoreRecordMapper;
             return this;
         }
@@ -100,19 +115,32 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
         }
 
         /**
+         * Sets whether to prefix the collection name to the redis key.
+         * Default is true.
+         *
+         * @param prefixCollectionName whether to prefix the collection name to the redis key
+         * @return the builder
+         */
+        public Builder<Record> withPrefixCollectionName(boolean prefixCollectionName) {
+            this.prefixCollectionName = prefixCollectionName;
+            return this;
+        }
+
+        /**
          * Builds the options.
          *
          * @return the options
          */
-        public AzureAISearchVectorStoreRecordCollectionOptions<Record> build() {
+        public RedisVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
                 throw new IllegalArgumentException("recordClass must be provided");
             }
 
-            return new AzureAISearchVectorStoreRecordCollectionOptions<>(
+            return new RedisVectorStoreRecordCollectionOptions<>(
                 recordClass,
                 vectorStoreRecordMapper,
-                recordDefinition);
+                recordDefinition,
+                prefixCollectionName);
         }
     }
 }

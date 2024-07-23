@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.redis;
+package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.microsoft.semantickernel.data.VectorStore;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
@@ -10,7 +10,6 @@ import redis.clients.jedis.JedisPooled;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class RedisVectorStore<Record>
     implements VectorStore<String, Record, RedisVectorStoreRecordCollection<Record>> {

@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
-import com.microsoft.semantickernel.connectors.memory.redis.RedisVectorStore;
-import com.microsoft.semantickernel.connectors.memory.redis.RedisVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.redis.testcontainers.RedisContainer;
@@ -9,10 +9,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

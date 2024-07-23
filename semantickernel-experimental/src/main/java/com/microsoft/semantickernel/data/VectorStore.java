@@ -24,7 +24,7 @@ public interface VectorStore<Key, Record, RecordCollection extends VectorStoreRe
      * @param recordDefinition The record definition.
      * @return The collection.
      */
-    public RecordCollection getCollection(@Nonnull String collectionName,
+    RecordCollection getCollection(@Nonnull String collectionName,
         VectorStoreRecordDefinition recordDefinition);
 
     /**
@@ -32,5 +32,5 @@ public interface VectorStore<Key, Record, RecordCollection extends VectorStoreRe
      *
      * @return A list of collection names.
      */
-    public Mono<List<String>> getCollectionNamesAsync();
+    Mono<List<String>> getCollectionNamesAsync();
 }
