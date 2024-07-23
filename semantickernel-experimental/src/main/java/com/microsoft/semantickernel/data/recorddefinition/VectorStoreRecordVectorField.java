@@ -1,12 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.recorddefinition;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Represents a vector field in a record.
  */
 public class VectorStoreRecordVectorField extends VectorStoreRecordField {
     private final int dimensions;
+    @Nullable
     private final IndexKind indexKind;
+    @Nullable
     private final DistanceFunction distanceFunction;
 
     public static Builder builder() {
@@ -23,11 +28,11 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
      * @param distanceFunction the distance function
      */
     public VectorStoreRecordVectorField(
-        String name,
-        String storageName,
+        @Nonnull String name,
+        @Nullable String storageName,
         int dimensions,
-        IndexKind indexKind,
-        DistanceFunction distanceFunction) {
+        @Nullable IndexKind indexKind,
+        @Nullable DistanceFunction distanceFunction) {
         super(name, storageName);
         this.dimensions = dimensions;
         this.indexKind = indexKind;
@@ -48,6 +53,7 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
      *
      * @return the index kind
      */
+    @Nullable
     public IndexKind getIndexKind() {
         return indexKind;
     }
@@ -57,6 +63,7 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
      *
      * @return the distance function
      */
+    @Nullable
     public DistanceFunction getDistanceFunction() {
         return distanceFunction;
     }
@@ -64,7 +71,9 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordVectorField, Builder> {
         private int dimensions;
+        @Nullable
         private IndexKind indexKind;
+        @Nullable
         private DistanceFunction distanceFunction;
 
         /**

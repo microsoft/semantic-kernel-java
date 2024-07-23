@@ -1,7 +1,7 @@
 package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
-import com.microsoft.semantickernel.connectors.memory.redis.RedisVectorStoreRecordCollection;
-import com.microsoft.semantickernel.connectors.memory.redis.RedisVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreRecordCollection;
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;

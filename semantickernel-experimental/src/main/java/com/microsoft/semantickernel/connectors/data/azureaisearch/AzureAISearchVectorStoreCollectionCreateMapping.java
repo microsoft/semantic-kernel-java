@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.azureaisearch;
+package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.indexes.models.ExhaustiveKnnAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.ExhaustiveKnnParameters;
@@ -14,8 +14,11 @@ import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataF
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public class AzureAISearchVectorStoreCollectionCreateMapping {
 
@@ -28,7 +31,11 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
     }
 
     private static VectorSearchAlgorithmMetric getAlgorithmMetric(
-        VectorStoreRecordVectorField vectorField) {
+        @Nonnull VectorStoreRecordVectorField vectorField) {
+        if (vectorField.getDistanceFunction() == null) {
+            return VectorSearchAlgorithmMetric.COSINE;
+        }
+
         switch (vectorField.getDistanceFunction()) {
             case COSINE_SIMILARITY:
                 return VectorSearchAlgorithmMetric.COSINE;
@@ -43,7 +50,12 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
     }
 
     private static VectorSearchAlgorithmConfiguration getAlgorithmConfig(
-        VectorStoreRecordVectorField vectorField) {
+        @Nonnull VectorStoreRecordVectorField vectorField) {
+        if (vectorField.getIndexKind() == null) {
+            return new HnswAlgorithmConfiguration(getAlgorithmConfigName(vectorField))
+                .setParameters(new HnswParameters().setMetric(getAlgorithmMetric(vectorField)));
+        }
+
         switch (vectorField.getIndexKind()) {
             case HNSW:
                 return new HnswAlgorithmConfiguration(getAlgorithmConfigName(vectorField))
@@ -65,6 +77,11 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
     }
 
     public static SearchField mapDataField(VectorStoreRecordDataField dataField) {
+        if (dataField.getFieldType() == null) {
+            throw new IllegalArgumentException(
+                "Field type is required: " + dataField.getName());
+        }
+
         return new SearchField(dataField.getName(),
             getSearchFieldDataType(dataField.getFieldType()))
             .setFilterable(dataField.isFilterable());

@@ -28,10 +28,6 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
         this.storageModelToRecordMapper = storageModelToRecordMapper;
     }
 
-    public static <Record, StorageModel> Builder<Record, StorageModel> builder() {
-        return new Builder<>();
-    }
-
     /**
      * Gets the function to convert a record to a storage model.
      *
@@ -68,47 +64,5 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      */
     public Record mapStorageModeltoRecord(StorageModel storageModel) {
         return getStorageModelToRecordMapper().apply(storageModel);
-    }
-
-    public static class Builder<Record, StorageModel>
-        implements SemanticKernelBuilder<VectorStoreRecordMapper<Record, StorageModel>> {
-        private Function<Record, StorageModel> recordToStorageModelMapper;
-        private Function<StorageModel, Record> storageModelToRecordMapper;
-
-        /**
-         * Sets the function to convert a record to a storage model.
-         *
-         * @param recordToStorageModelMapper the function to convert a record to a storage model
-         * @return the builder
-         */
-        public Builder<Record, StorageModel> withRecordToStorageModelMapper(
-            Function<Record, StorageModel> recordToStorageModelMapper) {
-            this.recordToStorageModelMapper = recordToStorageModelMapper;
-            return this;
-        }
-
-        /**
-         * Sets the function to convert a storage model to a record.
-         *
-         * @param storageModeltoRecordMapper the function to convert a storage model to a record
-         * @return the builder
-         */
-        public Builder<Record, StorageModel> withStorageModelToRecordMapper(
-            Function<StorageModel, Record> storageModeltoRecordMapper) {
-            this.storageModelToRecordMapper = storageModeltoRecordMapper;
-            return this;
-        }
-
-        /**
-         * Builds the vector store record mapper.
-         *
-         * @return VectorStoreRecordMapper
-         */
-        @Override
-        public VectorStoreRecordMapper<Record, StorageModel> build() {
-            return new VectorStoreRecordMapper<>(
-                recordToStorageModelMapper,
-                storageModelToRecordMapper);
-        }
     }
 }

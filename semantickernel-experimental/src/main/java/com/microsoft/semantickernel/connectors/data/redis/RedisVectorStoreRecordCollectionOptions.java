@@ -1,21 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.memory.redis;
+package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map.Entry;
 
 public class RedisVectorStoreRecordCollectionOptions<Record> {
     private final Class<Record> recordClass;
+    @Nullable
     private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
+    @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
 
     private RedisVectorStoreRecordCollectionOptions(
-        Class<Record> recordClass,
-        VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
-        VectorStoreRecordDefinition recordDefinition,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
+        @Nullable VectorStoreRecordDefinition recordDefinition,
         boolean prefixCollectionName) {
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
@@ -47,6 +51,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
      *
      * @return the record definition
      */
+    @Nullable
     public VectorStoreRecordDefinition getRecordDefinition() {
         return recordDefinition;
     }
@@ -56,6 +61,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
      *
      * @return the vector store record mapper
      */
+    @Nullable
     public VectorStoreRecordMapper<Record, Entry<String, Object>> getVectorStoreRecordMapper() {
         return vectorStoreRecordMapper;
     }
@@ -75,8 +81,11 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
+        @Nullable
         private VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
+        @Nullable
         private Class<Record> recordClass;
+        @Nullable
         private VectorStoreRecordDefinition recordDefinition;
         private boolean prefixCollectionName = true;
 

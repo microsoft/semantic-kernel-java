@@ -1,9 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.recorddefinition;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class VectorStoreRecordDataField extends VectorStoreRecordField {
     private final boolean hasEmbedding;
+    @Nullable
     private final String embeddingFieldName;
+    @Nullable
     private final Class<?> fieldType;
     private final boolean isFilterable;
 
@@ -22,11 +27,11 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
      * @param isFilterable a value indicating whether the field is filterable
      */
     public VectorStoreRecordDataField(
-        String name,
-        String storageName,
+        @Nonnull String name,
+        @Nullable String storageName,
         boolean hasEmbedding,
-        String embeddingFieldName,
-        Class<?> fieldType,
+        @Nullable String embeddingFieldName,
+        @Nullable Class<?> fieldType,
         boolean isFilterable) {
         super(name, storageName);
         this.hasEmbedding = hasEmbedding;
@@ -49,6 +54,7 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
      *
      * @return the name of the embedding
      */
+    @Nullable
     public String getEmbeddingFieldName() {
         return embeddingFieldName;
     }
@@ -58,6 +64,7 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
      *
      * @return the field type
      */
+    @Nullable
     public Class<?> getFieldType() {
         return fieldType;
     }
@@ -74,7 +81,9 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordDataField, Builder> {
         private boolean hasEmbedding;
+        @Nullable
         private String embeddingFieldName;
+        @Nullable
         private Class<?> fieldType;
         private boolean isFilterable;
 
