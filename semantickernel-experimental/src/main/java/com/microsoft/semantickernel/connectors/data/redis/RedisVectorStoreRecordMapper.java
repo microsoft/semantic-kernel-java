@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
+
+import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -37,7 +39,9 @@ public class RedisVectorStoreRecordMapper<Record>
      */
     public static class Builder<Record>
         implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
+        @Nullable
         private String keyFieldName;
+        @Nullable
         private Class<Record> recordClass;
 
         /**

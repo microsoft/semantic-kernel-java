@@ -77,6 +77,7 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
     public static class Builder<Record> {
         @Nullable
         private VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
+        @Nullable
         private Class<Record> recordClass;
         @Nullable
         private VectorStoreRecordDefinition recordDefinition;

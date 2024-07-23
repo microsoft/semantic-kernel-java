@@ -56,6 +56,7 @@ public class AzureAISearchVectorStoreOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
+        @Nullable
         private Class<Record> recordClass;
         @Nullable
         private AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
@@ -89,6 +90,10 @@ public class AzureAISearchVectorStoreOptions<Record> {
          * @return The Azure AI Search vector store options.
          */
         public AzureAISearchVectorStoreOptions<Record> build() {
+            if (recordClass == null) {
+                throw new IllegalArgumentException("recordClass is required");
+            }
+
             return new AzureAISearchVectorStoreOptions<>(recordClass,
                 vectorStoreRecordCollectionFactory);
         }

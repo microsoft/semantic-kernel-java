@@ -57,6 +57,7 @@ public class RedisVectorStoreOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
+        @Nullable
         private Class<Record> recordClass;
         @Nullable
         private RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;

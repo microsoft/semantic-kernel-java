@@ -83,6 +83,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
     public static class Builder<Record> {
         @Nullable
         private VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
+        @Nullable
         private Class<Record> recordClass;
         @Nullable
         private VectorStoreRecordDefinition recordDefinition;
