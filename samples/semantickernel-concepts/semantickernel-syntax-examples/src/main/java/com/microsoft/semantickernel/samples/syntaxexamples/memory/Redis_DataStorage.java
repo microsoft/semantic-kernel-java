@@ -67,6 +67,10 @@ public class Redis_DataStorage {
             this.link = link;
             this.embedding = embedding;
         }
+
+        public String getId() {
+            return id;
+        }
         public String getDescription() {
             return description;
         }
@@ -79,7 +83,7 @@ public class Redis_DataStorage {
 
     public static void main(String[] args) {
         System.out.println("==============================================================");
-        System.out.println("========== Redis AI Search Vector Store Example ==============");
+        System.out.println("========== Redis Vector Store Example ==============");
         System.out.println("==============================================================");
 
         OpenAIAsyncClient client;

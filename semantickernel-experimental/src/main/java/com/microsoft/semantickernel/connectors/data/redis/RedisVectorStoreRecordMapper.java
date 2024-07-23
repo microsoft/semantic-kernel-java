@@ -73,8 +73,6 @@ public class RedisVectorStoreRecordMapper<Record>
                 throw new IllegalArgumentException("recordClass is required");
             }
             ObjectMapper mapper = new ObjectMapper();
-            mapper.setVisibility(VisibilityChecker.Std.defaultInstance()
-                    .withFieldVisibility(JsonAutoDetect.Visibility.ANY));
 
             return new RedisVectorStoreRecordMapper<>(record -> {
                 try {
@@ -86,7 +84,7 @@ public class RedisVectorStoreRecordMapper<Record>
                     return new AbstractMap.SimpleEntry<>(key, jsonNode);
                 } catch (JsonProcessingException e) {
                     throw new SKException(
-                        "Failure to serialize object. By default, the Redis connector uses Jackson. Ensure your model object can be serialized by Jackson by adding at least a default constructor. Additionally, the class should be visible, have getters, and appropriate annotations.",
+                        "Failure to serialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);
                 }
             }, storageModel -> {
@@ -97,7 +95,7 @@ public class RedisVectorStoreRecordMapper<Record>
                     return mapper.convertValue(jsonNode, recordClass);
                 } catch (Exception e) {
                     throw new SKException(
-                        "Failure to deserialize object. By default, the Redis connector uses Jackson. Ensure your model object can be deserialized by Jackson by adding at least a default constructor. Additionally, the class should be visible, have getters, and appropriate annotations.",
+                        "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);
                 }
             });
