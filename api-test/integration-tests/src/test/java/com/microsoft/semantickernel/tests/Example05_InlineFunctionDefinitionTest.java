@@ -64,7 +64,7 @@ public class Example05_InlineFunctionDefinitionTest {
                     .build())
             .build();
 
-        WireMockUtil.mockCompletionResponse("I missed the F1 final race", "a-response");
+        WireMockUtil.mockChatCompletionResponse("I missed the F1 final race", "a-response");
 
         var result = kernel.invokeAsync(excuseFunction)
             .withArguments(
@@ -75,7 +75,7 @@ public class Example05_InlineFunctionDefinitionTest {
 
         Assertions.assertEquals("a-response", result.getResult());
 
-        WireMockUtil.mockCompletionResponse("sorry I forgot your birthday", "a-response-2");
+        WireMockUtil.mockChatCompletionResponse("sorry I forgot your birthday", "a-response-2");
 
         result = kernel.invokeAsync(excuseFunction)
             .withArguments(
@@ -86,7 +86,7 @@ public class Example05_InlineFunctionDefinitionTest {
 
         Assertions.assertEquals("a-response-2", result.getResult());
 
-        WireMockUtil.mockCompletionResponse("Translate this date ", "a-response-3");
+        WireMockUtil.mockChatCompletionResponse("Translate this date ", "a-response-3");
 
         var date = DateTimeFormatter.ISO_LOCAL_DATE.withZone(ZoneOffset.UTC)
             .format(Instant.ofEpochSecond(1));
