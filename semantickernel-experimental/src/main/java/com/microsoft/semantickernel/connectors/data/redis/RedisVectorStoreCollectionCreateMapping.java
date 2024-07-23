@@ -1,25 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.azure.search.documents.indexes.models.ExhaustiveKnnAlgorithmConfiguration;
-import com.azure.search.documents.indexes.models.ExhaustiveKnnParameters;
-import com.azure.search.documents.indexes.models.HnswAlgorithmConfiguration;
-import com.azure.search.documents.indexes.models.HnswParameters;
-import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
-import com.azure.search.documents.indexes.models.VectorSearchAlgorithmMetric;
-import com.microsoft.semantickernel.data.recorddefinition.IndexKind;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.search.Schema;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import redis.clients.jedis.search.Schema;
 
 public class RedisVectorStoreCollectionCreateMapping {
     private static final HashSet<Class<?>> supportedFilterableNumericTypes = new HashSet<>(
