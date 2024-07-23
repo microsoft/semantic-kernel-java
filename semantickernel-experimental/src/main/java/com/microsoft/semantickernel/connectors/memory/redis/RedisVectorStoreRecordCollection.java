@@ -19,10 +19,18 @@ import reactor.core.scheduler.Schedulers;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.search.IndexDefinition;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Schema;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,11 +39,22 @@ import java.util.stream.Collectors;
 
 public class RedisVectorStoreRecordCollection<Record>
     implements VectorStoreRecordCollection<String, Record> {
+
+    private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
+        Collections.singletonList(
+            String.class));
+
+    private static final HashSet<Class<?>> supportedVectorTypes = new HashSet<>(
+        Arrays.asList(
+            List.class,
+            Collection.class));
+
     private final JedisPooled client;
     private final String collectionName;
-    private final RedisVectorStoreOptions<Record> options;
+    private final RedisVectorStoreRecordCollectionOptions<Record> options;
+    private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
+    private final VectorStoreRecordDefinition recordDefinition;
     private final Path2[] dataFields;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -48,39 +67,40 @@ public class RedisVectorStoreRecordCollection<Record>
     public RedisVectorStoreRecordCollection(
         @Nonnull JedisPooled client,
         @Nonnull String collectionName,
-        @Nonnull RedisVectorStoreOptions<Record> options) {
+        @Nonnull RedisVectorStoreRecordCollectionOptions<Record> options) {
         this.client = client;
         this.collectionName = collectionName;
+        this.options = options;
 
         // If record definition is not provided, create one from the record class
-        VectorStoreRecordDefinition definition = options.getRecordDefinition();
-        if (definition == null) {
-            definition = VectorStoreRecordDefinition.fromRecordClass(options.getRecordClass());
+        if (options.getRecordDefinition() == null) {
+            this.recordDefinition = VectorStoreRecordDefinition.fromRecordClass(
+                options.getRecordClass());
+        } else {
+            this.recordDefinition = options.getRecordDefinition();
         }
 
-        // If mapper is not provided, add a default one
-        VectorStoreRecordMapper<Record, Map.Entry<String, Object>> mapper = options
-            .getVectorStoreRecordMapper();
-        if (mapper == null) {
-            mapper = new RedisVectorStoreRecordMapper.Builder<Record>()
-                .withKeyFieldName(definition.getKeyField().getName())
+        // Validate supported types
+        VectorStoreRecordDefinition.validateSupportedTypes(options.getRecordClass(),
+            recordDefinition,
+            supportedKeyTypes, supportedVectorTypes, null);
+
+        // If mapper is not provided, set a default one
+        if (options.getVectorStoreRecordMapper() == null) {
+            vectorStoreRecordMapper = new RedisVectorStoreRecordMapper.Builder<Record>()
+                .withKeyFieldName(recordDefinition.getKeyField().getName())
                 .withRecordClass(options.getRecordClass())
                 .build();
+        } else {
+            vectorStoreRecordMapper = options.getVectorStoreRecordMapper();
         }
 
         // Creates a list of paths to retrieve from Redis when no vectors are requested
         // Paths are in the format of $.field
-        this.dataFields = definition.getDataFields().stream()
+        this.dataFields = recordDefinition.getDataFields().stream()
             .map(VectorStoreRecordDataField::getName)
             .map(Path2::new)
             .toArray(Path2[]::new);
-
-        this.options = RedisVectorStoreOptions.<Record>builder()
-            .withRecordClass(options.getRecordClass())
-            .withPrefixCollectionName(options.prefixCollectionName())
-            .withRecordDefinition(definition)
-            .withVectorStoreRecordMapper(mapper)
-            .build();
     }
 
     /**
@@ -100,7 +120,17 @@ public class RedisVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Boolean> collectionExistsAsync() {
-        throw new UnsupportedOperationException("Not supported");
+        return Mono.fromCallable(() -> {
+            try {
+                Map<String, Object> info = this.client.ftInfo(collectionName);
+                return info != null && !info.isEmpty();
+            } catch (Exception e) {
+                if (!(e instanceof JedisDataException)) {
+                    throw e;
+                }
+                return false;
+            }
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
@@ -110,12 +140,29 @@ public class RedisVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Void> createCollectionAsync() {
-        throw new UnsupportedOperationException("Not supported");
+        return Mono.fromRunnable(() -> {
+            Schema schema = RedisVectorStoreCollectionCreateMapping
+                .mapToSchema(recordDefinition.getAllFields());
+
+            IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.JSON)
+                .setPrefixes(collectionName + ":");
+
+            client.ftCreate(
+                collectionName,
+                IndexOptions.defaultOptions().setDefinition(indexDefinition),
+                schema);
+        }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     @Override
     public Mono<Void> createCollectionIfNotExistsAsync() {
-        throw new UnsupportedOperationException("Not supported");
+        return collectionExistsAsync().flatMap(exists -> {
+            if (!exists) {
+                return createCollectionAsync();
+            }
+
+            return Mono.empty();
+        });
     }
 
     /**
@@ -125,11 +172,13 @@ public class RedisVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Void> deleteCollectionAsync() {
-        throw new UnsupportedOperationException("Not supported");
+        return Mono.fromRunnable(() -> client.ftDropIndex(collectionName))
+            .subscribeOn(Schedulers.boundedElastic())
+            .then();
     }
 
     private String getRedisKey(String key, String collectionName) {
-        return options.prefixCollectionName() ? collectionName + ":" + key : key;
+        return options.isPrefixCollectionName() ? collectionName + ":" + key : key;
     }
 
     private JsonNode removeRedisPathPrefix(JSONObject object) {
@@ -179,7 +228,7 @@ public class RedisVectorStoreRecordCollection<Record>
                     jsonNode = removeRedisPathPrefix((JSONObject) value);
                 }
 
-                return Mono.just(this.options.getVectorStoreRecordMapper()
+                return Mono.just(this.vectorStoreRecordMapper
                     .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode)));
             } catch (Exception e) {
                 return Mono.error(e);
@@ -226,7 +275,7 @@ public class RedisVectorStoreRecordCollection<Record>
                         } else {
                             jsonNode = removeRedisPathPrefix((JSONObject) value);
                         }
-                        return this.options.getVectorStoreRecordMapper()
+                        return this.vectorStoreRecordMapper
                             .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode));
                     })
                     .collect(Collectors.toList()));
@@ -245,7 +294,7 @@ public class RedisVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
-        Entry<String, Object> redisObject = this.options.getVectorStoreRecordMapper()
+        Entry<String, Object> redisObject = this.vectorStoreRecordMapper
             .mapRecordToStorageModel(data);
         String redisKey = getRedisKey(redisObject.getKey(), collectionName);
 
@@ -267,7 +316,7 @@ public class RedisVectorStoreRecordCollection<Record>
         List<String> keys = new ArrayList<>(data.size());
 
         data.forEach(record -> {
-            Entry<String, Object> redisObject = this.options.getVectorStoreRecordMapper()
+            Entry<String, Object> redisObject = this.vectorStoreRecordMapper
                 .mapRecordToStorageModel(record);
             String redisKey = getRedisKey(redisObject.getKey(), collectionName);
 
