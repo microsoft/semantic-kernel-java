@@ -8,15 +8,18 @@ import com.azure.core.credential.KeyCredential;
 import com.azure.core.util.ClientOptions;
 import com.azure.core.util.MetricsOptions;
 import com.azure.core.util.TracingOptions;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.azure.search.documents.indexes.SearchIndexAsyncClient;
+import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
-import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
-import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore;
+import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -24,28 +27,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import redis.clients.jedis.JedisPooled;
 
-public class RedisAISearch {
-
+public class AzureAISearch_DataStorage {
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
 
+    //////////////////////////////////////////////////////////////
+    // Azure AI Search configuration
+    //////////////////////////////////////////////////////////////
+    private static final String AZURE_AI_SEARCH_ENDPOINT = System.getenv("AZURE_AISEARCH_ENDPOINT");
+    private static final String AZURE_AISEARCH_KEY = System.getenv("AZURE_AISEARCH_KEY");
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
-    // Can start a test server with:
-    // docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
-    private static final String REDIS_URL = "redis://127.0.0.1:6379";
-
-    public static class GitHubFile {
-
+    static class GitHubFile {
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
@@ -59,32 +58,15 @@ public class RedisAISearch {
             this(null, null, null, Collections.emptyList());
         }
 
-        @JsonCreator
         public GitHubFile(
-            @JsonProperty("id") String id,
-            @JsonProperty("description") String description,
-            @JsonProperty("link") String link,
-            @JsonProperty("embedding") List<Float> embedding) {
+            String id,
+            String description,
+            String link,
+            List<Float> embedding) {
             this.id = id;
             this.description = description;
             this.link = link;
             this.embedding = embedding;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getLink() {
-            return link;
-        }
-
-        public List<Float> getEmbedding() {
-            return embedding;
         }
 
         static String encodeId(String realId) {
@@ -95,7 +77,7 @@ public class RedisAISearch {
 
     public static void main(String[] args) {
         System.out.println("==============================================================");
-        System.out.println("========== Redis AI Search Vector Store Example ==============");
+        System.out.println("========== Azure AI Search Vector Store Example ==============");
         System.out.println("==============================================================");
 
         OpenAIAsyncClient client;
@@ -118,38 +100,46 @@ public class RedisAISearch {
             .withDimensions(EMBEDDING_DIMENSIONS)
             .build();
 
-        documentSearchWithReditSearch(embeddingGeneration);
+        var searchClient = new SearchIndexClientBuilder()
+            .endpoint(AZURE_AI_SEARCH_ENDPOINT)
+            .credential(new AzureKeyCredential(AZURE_AISEARCH_KEY))
+            .clientOptions(clientOptions())
+            .buildAsyncClient();
+
+        dataStorageWithAzureAISearch(searchClient, embeddingGeneration);
     }
 
-    public static void documentSearchWithReditSearch(
+    public static void dataStorageWithAzureAISearch(
+        SearchIndexAsyncClient searchClient,
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
-        JedisPooled jedis = new JedisPooled(REDIS_URL);
-
-        RedisVectorStore<GitHubFile> vectorStore = RedisVectorStore.<GitHubFile>builder()
-            .withClient(jedis)
-            .withOptions(new RedisVectorStoreOptions<>(GitHubFile.class, null))
-            .build();
+        // Create a new Azure AI Search vector store
+        var azureAISearchVectorStore = new AzureAISearchVectorStore<>(searchClient,
+            AzureAISearchVectorStoreOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         String collectionName = "skgithubfiles";
-        var collection = vectorStore.getCollection(collectionName, null);
+        var collection = azureAISearchVectorStore.getCollection(collectionName, null);
 
         // Create collection if it does not exist and store data
-        List<String> ids = collection
+        collection
             .createCollectionIfNotExistsAsync()
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        List<GitHubFile> data = collection.getBatchAsync(ids, null).block();
+        // Query the Azure AI Search client for results
+        // This might take a few seconds to return the best result
+        var result = searchClient.getSearchAsyncClient(collectionName)
+            .search("How to get started with the Semantic Kernel?")
+            .blockFirst();
 
-        data.forEach(gitHubFile -> System.out.println("Retrieved: " + gitHubFile.getDescription()));
-
-        // TODO: Implement search functionality using Redis AI Search.
-
+        GitHubFile gitHubFile = result.getDocument(GitHubFile.class);
+        System.out.println("Best result: " + gitHubFile.description + ". Link: " + gitHubFile.link);
     }
 
     private static Mono<List<String>> storeData(
-        VectorStoreRecordCollection<String, GitHubFile> recordStore,
+        AzureAISearchVectorStoreRecordCollection<GitHubFile> recordStore,
         OpenAITextEmbeddingGenerationService embeddingGeneration,
         Map<String, String> data) {
 
