@@ -5,6 +5,9 @@ import com.azure.search.documents.SearchDocument;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Options for an Azure AI Search vector store.
  *
@@ -12,7 +15,10 @@ import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefin
  */
 public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
     private final Class<Record> recordClass;
+    @Nullable
     private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
+
+    @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
 
     /**
@@ -39,6 +45,7 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
      *
      * @return the record definition
      */
+    @Nullable
     public VectorStoreRecordDefinition getRecordDefinition() {
         return recordDefinition;
     }
@@ -48,14 +55,15 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
      *
      * @return the vector store record mapper
      */
+    @Nullable
     public VectorStoreRecordMapper<Record, SearchDocument> getVectorStoreRecordMapper() {
         return vectorStoreRecordMapper;
     }
 
     private AzureAISearchVectorStoreRecordCollectionOptions(
-        Class<Record> recordClass,
-        VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper,
-        VectorStoreRecordDefinition recordDefinition) {
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
         this.recordDefinition = recordDefinition;
@@ -67,8 +75,10 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
      * @param <Record> the record type
      */
     public static class Builder<Record> {
+        @Nullable
         private VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
         private Class<Record> recordClass;
+        @Nullable
         private VectorStoreRecordDefinition recordDefinition;
 
         public Builder<Record> withRecordClass(Class<Record> recordClass) {

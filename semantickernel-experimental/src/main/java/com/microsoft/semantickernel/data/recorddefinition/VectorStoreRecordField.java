@@ -3,11 +3,15 @@ package com.microsoft.semantickernel.data.recorddefinition;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Represents a field in a record.
  */
 public class VectorStoreRecordField {
     private final String name;
+    @Nullable
     private final String storageName;
 
     /**
@@ -15,8 +19,8 @@ public class VectorStoreRecordField {
      *
      * @param name the name of the field
      */
-    public VectorStoreRecordField(String name,
-        String storageName) {
+    public VectorStoreRecordField(@Nonnull String name,
+        @Nullable String storageName) {
         this.name = name;
         this.storageName = storageName;
     }
@@ -35,14 +39,15 @@ public class VectorStoreRecordField {
      *
      * @return the storage name of the field
      */
+    @Nullable
     public String getStorageName() {
         return storageName;
     }
 
     public abstract static class Builder<T, U extends Builder<T, U>>
         implements SemanticKernelBuilder<T> {
-        protected String name;
-        protected String storageName;
+        protected String name = "";
+        protected String storageName = "";
 
         /**
          * Sets the name of the field.
@@ -71,6 +76,7 @@ public class VectorStoreRecordField {
          *
          * @return the field
          */
+        @Override
         public abstract T build();
     }
 }

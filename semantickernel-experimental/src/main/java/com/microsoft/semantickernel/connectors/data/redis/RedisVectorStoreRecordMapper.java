@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
@@ -22,8 +20,14 @@ public class RedisVectorStoreRecordMapper<Record>
         super(toStorageModelMapper, toRecordMapper);
     }
 
+    /**
+     * Creates a new builder.
+     *
+     * @param <Record> the record type
+     * @return the builder
+     */
     public static <Record> Builder<Record> builder() {
-        return null;
+        return new Builder<>();
     }
 
     /**
@@ -33,7 +37,6 @@ public class RedisVectorStoreRecordMapper<Record>
      */
     public static class Builder<Record>
         implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
-
         private String keyFieldName;
         private Class<Record> recordClass;
 

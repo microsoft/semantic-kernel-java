@@ -148,7 +148,7 @@ public class VectorStoreRecordDefinition {
         return checkFields(keyFields, dataFields, vectorFields);
     }
 
-    private static String getSupportedTypesString(HashSet<Class<?>> types) {
+    private static String getSupportedTypesString(@Nullable HashSet<Class<?>> types) {
         if (types == null || types.isEmpty()) {
             return "";
         }

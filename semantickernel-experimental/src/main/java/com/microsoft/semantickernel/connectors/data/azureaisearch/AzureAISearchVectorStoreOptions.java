@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class AzureAISearchVectorStoreOptions<Record> {
     private final Class<Record> recordClass;
+    @Nullable
     private final AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
 
     /**
@@ -11,8 +15,8 @@ public class AzureAISearchVectorStoreOptions<Record> {
      * @param recordClass The record class.
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
      */
-    public AzureAISearchVectorStoreOptions(Class<Record> recordClass,
-        AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+    public AzureAISearchVectorStoreOptions(@Nonnull Class<Record> recordClass,
+        @Nullable AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
         this.recordClass = recordClass;
         this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
     }
@@ -41,6 +45,7 @@ public class AzureAISearchVectorStoreOptions<Record> {
      *
      * @return the vector store record collection factory
      */
+    @Nullable
     public AzureAISearchVectorStoreRecordCollectionFactory<Record> getVectorStoreRecordCollectionFactory() {
         return vectorStoreRecordCollectionFactory;
     }
@@ -52,6 +57,7 @@ public class AzureAISearchVectorStoreOptions<Record> {
      */
     public static class Builder<Record> {
         private Class<Record> recordClass;
+        @Nullable
         private AzureAISearchVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
 
         /**
