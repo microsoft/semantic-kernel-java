@@ -10,6 +10,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.Kernel.Builder;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
@@ -19,6 +20,7 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 
 public class Example10_DescribeAllPluginsAndFunctions {
@@ -31,7 +33,7 @@ public class Example10_DescribeAllPluginsAndFunctions {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "text-davinci-003");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     /// <summary>
     /// Print a list of all the functions imported into the kernel, including function descriptions,
@@ -53,13 +55,13 @@ public class Example10_DescribeAllPluginsAndFunctions {
                 .buildAsyncClient();
         }
 
-        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
 
         Builder kernelBuilder = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService);
+            .withAIService(ChatCompletionService.class, openAIChatCompletion);
 
         kernelBuilder.withPlugin(
             KernelPluginFactory.createFromObject(

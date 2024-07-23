@@ -43,13 +43,13 @@ public class Example42_KernelBuilder {
             .credential(new KeyCredential("a-key"))
             .buildAsyncClient();
 
-        TextGenerationService textGenerationService = TextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
+            .withModelId("gpt-35-turbo")
             .withOpenAIAsyncClient(client2)
-            .withModelId("text-davinci-003")
             .build();
 
         Kernel kernel2 = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
         /////////////////////////////////////////////////////////
 

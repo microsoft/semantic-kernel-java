@@ -22,8 +22,6 @@ public class Example82_Audio {
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-    private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     private static final String TextToAudioModel = "tts-1";
     private static final String AudioToTextModel = "whisper-1";
