@@ -47,13 +47,13 @@ public class Example41_HttpClientUsage {
             .credential(new AzureKeyCredential("BAD KEY"))
             .buildAsyncClient();
 
-        TextGenerationService textGenerationService = TextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
-            .withModelId("text-davinci-003")
+            .withModelId("gpt-35-turbo")
             .build();
 
         Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .build();
     }
 }

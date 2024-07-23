@@ -8,6 +8,7 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
@@ -19,6 +20,7 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
+import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -42,7 +44,7 @@ public class Example09_FunctionTypes {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "text-davinci-003");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -61,7 +63,7 @@ public class Example09_FunctionTypes {
                 .buildAsyncClient();
         }
 
-        TextGenerationService textGenerationService = OpenAITextGenerationService.builder()
+        ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .build();
@@ -86,7 +88,7 @@ public class Example09_FunctionTypes {
                 Example09_FunctionTypes.class);
 
         Kernel kernel = Kernel.builder()
-            .withAIService(TextGenerationService.class, textGenerationService)
+            .withAIService(ChatCompletionService.class, openAIChatCompletion)
             .withPlugin(plugin)
             .withPlugin(summarize)
             .withPlugin(examplePlugin)

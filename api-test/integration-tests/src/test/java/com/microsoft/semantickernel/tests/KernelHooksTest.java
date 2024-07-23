@@ -29,7 +29,7 @@ public class KernelHooksTest {
             .buildAsyncClient();
 
         ChatCompletionService openAIChatCompletion = OpenAIChatCompletion.builder()
-            .withModelId("text-davinci-003")
+            .withModelId("gpt-35-turbo")
             .withOpenAIAsyncClient(client)
             .build();
 

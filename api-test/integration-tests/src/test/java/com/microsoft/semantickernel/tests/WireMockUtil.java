@@ -116,7 +116,7 @@ public class WireMockUtil {
         WireMock.reset();
         WireMock.stubFor(WireMock
             .post(new UrlPathPattern(
-                new RegexPattern("/openai/deployments/text-davinci-003/chat/completions"), true))
+                new RegexPattern("/openai/deployments/gpt-35-turbo/chat/completions"), true))
             .withRequestBody(WireMock.matching(".*" + regexMatcher + ".*"))
             .willReturn(WireMock.ok()
                 .withBody(body)));
