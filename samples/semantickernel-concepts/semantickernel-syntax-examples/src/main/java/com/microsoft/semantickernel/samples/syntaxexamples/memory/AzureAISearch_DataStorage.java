@@ -114,13 +114,13 @@ public class AzureAISearch_DataStorage {
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
         // Create a new Azure AI Search vector store
-        var azureAISearchVectorStore = new AzureAISearchVectorStore<>(searchClient,
-            AzureAISearchVectorStoreOptions.<GitHubFile>builder()
-                .withRecordClass(GitHubFile.class)
-                .build());
+        var azureAISearchVectorStore = AzureAISearchVectorStore.builder()
+                .withClient(searchClient)
+                .withOptions(new AzureAISearchVectorStoreOptions())
+                .build();
 
         String collectionName = "skgithubfiles";
-        var collection = azureAISearchVectorStore.getCollection(collectionName, null);
+        var collection = azureAISearchVectorStore.getCollection(collectionName, GitHubFile.class, null);
 
         // Create collection if it does not exist and store data
         collection

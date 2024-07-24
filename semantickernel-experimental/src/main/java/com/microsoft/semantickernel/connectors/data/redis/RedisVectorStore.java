@@ -12,11 +12,10 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
 
-public class RedisVectorStore<Record>
-    implements VectorStore<String, Record, RedisVectorStoreRecordCollection<Record>> {
+public class RedisVectorStore implements VectorStore<RedisVectorStoreRecordCollection<?>> {
 
     private final JedisPooled client;
-    private final RedisVectorStoreOptions<Record> options;
+    private final RedisVectorStoreOptions options;
 
     /**
      * Creates a new instance of the Redis vector store.
@@ -26,7 +25,7 @@ public class RedisVectorStore<Record>
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public RedisVectorStore(@Nonnull JedisPooled client,
-        @Nonnull RedisVectorStoreOptions<Record> options) {
+        @Nonnull RedisVectorStoreOptions options) {
         this.client = client;
         this.options = options;
     }
@@ -35,26 +34,30 @@ public class RedisVectorStore<Record>
      * Gets a collection from the vector store.
      *
      * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the record.
      * @param recordDefinition The record definition.
      * @return The collection.
      */
     @Override
-    public RedisVectorStoreRecordCollection<Record> getCollection(@Nonnull String collectionName,
-        VectorStoreRecordDefinition recordDefinition) {
+    public <Key, Record> RedisVectorStoreRecordCollection<Record> getCollection(
+        @Nonnull String collectionName,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
+
         if (options.getVectorStoreRecordCollectionFactory() != null) {
             return options.getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
                     client,
                     collectionName,
                     RedisVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(options.getRecordClass())
+                        .withRecordClass(recordClass)
                         .withRecordDefinition(recordDefinition)
                         .build());
         }
 
         return new RedisVectorStoreRecordCollection<>(client, collectionName,
             RedisVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(options.getRecordClass())
+                .withRecordClass(recordClass)
                 .withRecordDefinition(recordDefinition)
                 .build());
     }
@@ -72,18 +75,17 @@ public class RedisVectorStore<Record>
     /**
      * Builder for the Redis vector store.
      *
-     * @param <Record> The record type.
      */
-    public static <Record> Builder<Record> builder() {
-        return new Builder<>();
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public static class Builder<Record> implements SemanticKernelBuilder<RedisVectorStore<Record>> {
+    public static class Builder implements SemanticKernelBuilder<RedisVectorStore> {
 
         @Nullable
         private JedisPooled client;
         @Nullable
-        private RedisVectorStoreOptions<Record> options;
+        private RedisVectorStoreOptions options;
 
         /**
          * Sets the Redis client.
@@ -92,7 +94,7 @@ public class RedisVectorStore<Record>
          * @return the builder
          */
         @SuppressFBWarnings("EI_EXPOSE_REP2")
-        public Builder<Record> withClient(JedisPooled client) {
+        public Builder withClient(JedisPooled client) {
             this.client = client;
             return this;
         }
@@ -103,13 +105,13 @@ public class RedisVectorStore<Record>
          * @param options the options for the vector store
          * @return the builder
          */
-        public Builder<Record> withOptions(RedisVectorStoreOptions<Record> options) {
+        public Builder withOptions(RedisVectorStoreOptions options) {
             this.options = options;
             return this;
         }
 
         @Override
-        public RedisVectorStore<Record> build() {
+        public RedisVectorStore build() {
             if (client == null) {
                 throw new IllegalArgumentException("client is required");
             }
@@ -118,7 +120,7 @@ public class RedisVectorStore<Record>
                 throw new IllegalArgumentException("options is required");
             }
 
-            return new RedisVectorStore<>(client, options);
+            return new RedisVectorStore(client, options);
         }
     }
 }

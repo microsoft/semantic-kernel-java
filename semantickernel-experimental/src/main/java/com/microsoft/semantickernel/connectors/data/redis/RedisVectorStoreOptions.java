@@ -4,41 +4,34 @@ package com.microsoft.semantickernel.connectors.data.redis;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RedisVectorStoreOptions<Record> {
-
-    private final Class<Record> recordClass;
+public class RedisVectorStoreOptions {
     @Nullable
-    private final RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
+    private final RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
 
     /**
      * Creates a new instance of the Redis vector store options.
      *
-     * @param recordClass The record class.
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
      */
-    public RedisVectorStoreOptions(@Nonnull Class<Record> recordClass,
-        @Nullable RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
-        this.recordClass = recordClass;
+    public RedisVectorStoreOptions(
+        @Nullable RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory) {
         this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
+    }
+
+    /**
+     * Creates a new instance of the Redis vector store options.
+     */
+    public RedisVectorStoreOptions() {
+        this(null);
     }
 
     /**
      * Creates a new builder.
      *
-     * @param <Record> the record type
      * @return the builder
      */
-    public static <Record> Builder<Record> builder() {
-        return new Builder<>();
-    }
-
-    /**
-     * Gets the record class.
-     *
-     * @return the record class
-     */
-    public Class<Record> getRecordClass() {
-        return recordClass;
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -47,31 +40,16 @@ public class RedisVectorStoreOptions<Record> {
      * @return the vector store record collection factory
      */
     @Nullable
-    public RedisVectorStoreRecordCollectionFactory<Record> getVectorStoreRecordCollectionFactory() {
+    public RedisVectorStoreRecordCollectionFactory getVectorStoreRecordCollectionFactory() {
         return vectorStoreRecordCollectionFactory;
     }
 
     /**
      * Builder for Redis vector store options.
-     *
-     * @param <Record> the record type
      */
-    public static class Builder<Record> {
+    public static class Builder {
         @Nullable
-        private Class<Record> recordClass;
-        @Nullable
-        private RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory;
-
-        /**
-         * Sets the record class.
-         *
-         * @param recordClass The record class.
-         * @return The updated builder instance.
-         */
-        public Builder<Record> withRecordClass(Class<Record> recordClass) {
-            this.recordClass = recordClass;
-            return this;
-        }
+        private RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
 
         /**
          * Sets the vector store record collection factory.
@@ -79,8 +57,8 @@ public class RedisVectorStoreOptions<Record> {
          * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
          * @return The updated builder instance.
          */
-        public Builder<Record> withVectorStoreRecordCollectionFactory(
-            RedisVectorStoreRecordCollectionFactory<Record> vectorStoreRecordCollectionFactory) {
+        public Builder withVectorStoreRecordCollectionFactory(
+            RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory) {
             this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
             return this;
         }
@@ -90,12 +68,8 @@ public class RedisVectorStoreOptions<Record> {
          *
          * @return The options.
          */
-        public RedisVectorStoreOptions<Record> build() {
-            if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
-            }
-
-            return new RedisVectorStoreOptions<>(recordClass, vectorStoreRecordCollectionFactory);
+        public RedisVectorStoreOptions build() {
+            return new RedisVectorStoreOptions(vectorStoreRecordCollectionFactory);
         }
     }
 }
