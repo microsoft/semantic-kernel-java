@@ -115,12 +115,13 @@ public class AzureAISearch_DataStorage {
 
         // Create a new Azure AI Search vector store
         var azureAISearchVectorStore = AzureAISearchVectorStore.builder()
-                .withClient(searchClient)
-                .withOptions(new AzureAISearchVectorStoreOptions())
-                .build();
+            .withClient(searchClient)
+            .withOptions(new AzureAISearchVectorStoreOptions())
+            .build();
 
         String collectionName = "skgithubfiles";
-        var collection = azureAISearchVectorStore.getCollection(collectionName, GitHubFile.class, null);
+        var collection = azureAISearchVectorStore.getCollection(collectionName, GitHubFile.class,
+            null);
 
         // Create collection if it does not exist and store data
         collection

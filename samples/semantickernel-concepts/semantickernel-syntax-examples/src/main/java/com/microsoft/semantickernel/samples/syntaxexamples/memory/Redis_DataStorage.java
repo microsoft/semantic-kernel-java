@@ -71,6 +71,7 @@ public class Redis_DataStorage {
         public String getId() {
             return id;
         }
+
         public String getDescription() {
             return description;
         }
