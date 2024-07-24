@@ -155,63 +155,63 @@ public class VectorStoreRecordDefinition {
         return types.stream().map(Class::getName).collect(Collectors.joining(", "));
     }
 
-    public static void validateSupportedTypes(@Nonnull Class<?> recordClass,
+    public static void validateSupportedKeyTypes(@Nonnull Class<?> recordClass,
         @Nonnull VectorStoreRecordDefinition recordDefinition,
-        @Nonnull HashSet<Class<?>> keyTypes,
-        @Nonnull HashSet<Class<?>> vectorTypes,
-        @Nullable HashSet<Class<?>> dataTypes) {
-        String keyTypesString = getSupportedTypesString(keyTypes);
-        String vectorTypesString = getSupportedTypesString(vectorTypes);
-        String dataTypesString = getSupportedTypesString(dataTypes);
+        @Nonnull HashSet<Class<?>> supportedTypes) {
+        String supportedTypesString = getSupportedTypesString(supportedTypes);
 
-        for (VectorStoreRecordField field : recordDefinition.getAllFields()) {
-            if (field instanceof VectorStoreRecordKeyField) {
-                try {
-                    Field declaredField = recordClass.getDeclaredField(field.getName());
+        try {
+            Field declaredField = recordClass.getDeclaredField(recordDefinition.keyField.getName());
 
-                    if (!keyTypes.contains(declaredField.getType())) {
-                        throw new IllegalArgumentException(
-                            "Unsupported key field type: " + declaredField.getType().getName()
-                                + ". Supported types are: " + keyTypesString);
-                    }
-                } catch (NoSuchFieldException e) {
-                    throw new IllegalArgumentException(
-                        "Key field not found in record class: " + field.getName());
-                }
+            if (!supportedTypes.contains(declaredField.getType())) {
+                throw new IllegalArgumentException(
+                    "Unsupported key field type: " + declaredField.getType().getName()
+                        + ". Supported types are: " + supportedTypesString);
             }
+        } catch (NoSuchFieldException e) {
+            throw new IllegalArgumentException(
+                "Key field not found in record class: " + recordDefinition.keyField.getName());
+        }
+    }
 
-            if (field instanceof VectorStoreRecordDataField) {
-                // If dataTypes is null, there is no restriction on the data field type
-                if (dataTypes == null) {
-                    continue;
-                }
-                try {
-                    Field declaredField = recordClass.getDeclaredField(field.getName());
+    public static void validateSupportedDataTypes(@Nonnull Class<?> recordClass,
+        @Nonnull VectorStoreRecordDefinition recordDefinition,
+        @Nonnull HashSet<Class<?>> supportedTypes) {
+        String supportedTypesString = getSupportedTypesString(supportedTypes);
 
-                    if (!dataTypes.contains(declaredField.getType())) {
-                        throw new IllegalArgumentException(
-                            "Unsupported data field type: " + declaredField.getType().getName()
-                                + ". Supported types are: " + dataTypesString);
-                    }
-                } catch (NoSuchFieldException e) {
+        for (VectorStoreRecordDataField field : recordDefinition.dataFields) {
+            try {
+                Field declaredField = recordClass.getDeclaredField(field.getName());
+
+                if (!supportedTypes.contains(declaredField.getType())) {
                     throw new IllegalArgumentException(
-                        "Data field not found in record class: " + field.getName());
+                        "Unsupported data field type: " + declaredField.getType().getName()
+                            + ". Supported types are: " + supportedTypesString);
                 }
+            } catch (NoSuchFieldException e) {
+                throw new IllegalArgumentException(
+                    "Data field not found in record class: " + field.getName());
             }
+        }
+    }
 
-            if (field instanceof VectorStoreRecordVectorField) {
-                try {
-                    Field declaredField = recordClass.getDeclaredField(field.getName());
+    public static void validateSupportedVectorTypes(@Nonnull Class<?> recordClass,
+        @Nonnull VectorStoreRecordDefinition recordDefinition,
+        @Nonnull HashSet<Class<?>> supportedTypes) {
+        String supportedTypesString = getSupportedTypesString(supportedTypes);
 
-                    if (!vectorTypes.contains(declaredField.getType())) {
-                        throw new IllegalArgumentException(
-                            "Unsupported vector field type: " + declaredField.getType().getName()
-                                + ". Supported types are: " + vectorTypesString);
-                    }
-                } catch (NoSuchFieldException e) {
+        for (VectorStoreRecordVectorField field : recordDefinition.vectorFields) {
+            try {
+                Field declaredField = recordClass.getDeclaredField(field.getName());
+
+                if (!supportedTypes.contains(declaredField.getType())) {
                     throw new IllegalArgumentException(
-                        "Vector field not found in record class: " + field.getName());
+                        "Unsupported vector field type: " + declaredField.getType().getName()
+                            + ". Supported types are: " + supportedTypesString);
                 }
+            } catch (NoSuchFieldException e) {
+                throw new IllegalArgumentException(
+                    "Vector field not found in record class: " + field.getName());
             }
         }
     }
