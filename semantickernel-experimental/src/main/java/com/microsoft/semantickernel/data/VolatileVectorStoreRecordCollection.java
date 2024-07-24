@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.exceptions.SKException;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
@@ -143,11 +142,17 @@ public class VolatileVectorStoreRecordCollection<Record>
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
         return Mono.fromCallable(() -> {
-            ObjectNode objectNode = objectMapper.valueToTree(data);
-            String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
+            try {
+                ObjectNode objectNode = objectMapper.valueToTree(data);
+                String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
 
-            getCollection().put(key, data);
-            return key;
+                getCollection().put(key, data);
+                return key;
+            } catch (Exception e) {
+                throw new SKException(
+                    "Failure to serialize object. Ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
+                    e);
+            }
         });
     }
 
@@ -163,10 +168,17 @@ public class VolatileVectorStoreRecordCollection<Record>
         return Mono.fromCallable(() -> {
             Map<String, Record> collection = getCollection();
             return data.stream().map(record -> {
-                ObjectNode objectNode = objectMapper.valueToTree(record);
-                String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
-                collection.put(key, record);
-                return key;
+                try {
+                    ObjectNode objectNode = objectMapper.valueToTree(record);
+                    String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
+
+                    collection.put(key, record);
+                    return key;
+                } catch (Exception e) {
+                    throw new SKException(
+                        "Failure to serialize object. Ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
+                        e);
+                }
             }).collect(Collectors.toList());
         });
     }

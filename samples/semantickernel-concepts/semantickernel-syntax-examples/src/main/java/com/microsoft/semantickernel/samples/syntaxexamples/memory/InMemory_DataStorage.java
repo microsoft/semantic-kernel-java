@@ -52,10 +52,6 @@ public class InMemory_DataStorage {
         @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw")
         private final List<Float> embedding;
 
-        public GitHubFile() {
-            this(null, null, null, Collections.emptyList());
-        }
-
         public GitHubFile(
             String id,
             String description,
@@ -70,6 +66,7 @@ public class InMemory_DataStorage {
         public String getId() {
             return id;
         }
+
         public String getDescription() {
             return description;
         }
