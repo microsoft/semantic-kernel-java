@@ -83,13 +83,12 @@ public class RedisVectorStoreRecordMapper<Record>
 
             return new RedisVectorStoreRecordMapper<>(record -> {
                 try {
-                    String json = mapper.writeValueAsString(record);
-                    ObjectNode jsonNode = (ObjectNode) mapper.readTree(json);
+                    ObjectNode jsonNode = mapper.valueToTree(record);
                     String key = jsonNode.get(keyFieldName).asText();
                     jsonNode.remove(keyFieldName);
 
                     return new AbstractMap.SimpleEntry<>(key, jsonNode);
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
                     throw new SKException(
                         "Failure to serialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);

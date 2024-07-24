@@ -31,11 +31,11 @@ public class RedisVectorStoreTest {
 
     @Test
     public void getCollectionNamesAsync() {
-        RedisVectorStore<Hotel> vectorStore = new RedisVectorStore<>(jedis, new RedisVectorStoreOptions<>(Hotel.class, null));
+        RedisVectorStore vectorStore = new RedisVectorStore(jedis, new RedisVectorStoreOptions());
         List<String> collectionNames = Arrays.asList("collection1", "collection2", "collection3");
 
         for (String collectionName : collectionNames) {
-            vectorStore.getCollection(collectionName, VectorStoreRecordDefinition.fromRecordClass(Hotel.class)).createCollectionAsync().block();
+            vectorStore.getCollection(collectionName, Hotel.class, null).createCollectionAsync().block();
         }
 
         List<String> retrievedCollectionNames = vectorStore.getCollectionNamesAsync().block();

@@ -114,13 +114,13 @@ public class Redis_DataStorage {
 
         JedisPooled jedis = new JedisPooled(REDIS_URL);
 
-        RedisVectorStore<GitHubFile> vectorStore = RedisVectorStore.<GitHubFile>builder()
+        RedisVectorStore vectorStore = RedisVectorStore.builder()
             .withClient(jedis)
-            .withOptions(new RedisVectorStoreOptions<>(GitHubFile.class, null))
+            .withOptions(new RedisVectorStoreOptions())
             .build();
 
         String collectionName = "skgithubfiles";
-        var collection = vectorStore.getCollection(collectionName, null);
+        var collection = vectorStore.getCollection(collectionName, GitHubFile.class, null);
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

@@ -6,9 +6,8 @@ import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 /**
  * Factory for creating Azure AI Search vector store record collections.
  *
- * @param <Record> the record type
  */
-public interface AzureAISearchVectorStoreRecordCollectionFactory<Record> {
+public interface AzureAISearchVectorStoreRecordCollectionFactory {
 
     /**
      * Creates a new Azure AI Search vector store record collection.
@@ -18,7 +17,7 @@ public interface AzureAISearchVectorStoreRecordCollectionFactory<Record> {
      * @param options The options for the collection.
      * @return The new Azure AI Search vector store record collection.
      */
-    AzureAISearchVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(
+    <Record> AzureAISearchVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(
         SearchIndexAsyncClient client,
         String collectionName,
         AzureAISearchVectorStoreRecordCollectionOptions<Record> options);
