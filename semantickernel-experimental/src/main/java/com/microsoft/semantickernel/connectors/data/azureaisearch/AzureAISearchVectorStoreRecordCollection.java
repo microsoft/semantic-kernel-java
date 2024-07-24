@@ -90,9 +90,12 @@ public class AzureAISearchVectorStoreRecordCollection<Record>
             : options.getRecordDefinition();
 
         // Validate supported types
-        VectorStoreRecordDefinition.validateSupportedTypes(
-            this.options.getRecordClass(), this.recordDefinition, supportedKeyTypes,
-            supportedVectorTypes, supportedDataTypes);
+        VectorStoreRecordDefinition.validateSupportedKeyTypes(this.options.getRecordClass(),
+            this.recordDefinition, supportedKeyTypes);
+        VectorStoreRecordDefinition.validateSupportedDataTypes(this.options.getRecordClass(),
+            this.recordDefinition, supportedDataTypes);
+        VectorStoreRecordDefinition.validateSupportedVectorTypes(this.options.getRecordClass(),
+            this.recordDefinition, supportedVectorTypes);
 
         // Add non-vector fields to the list
         nonVectorFields.add(this.recordDefinition.getKeyField().getName());
