@@ -66,7 +66,7 @@ public class KernelHooks {
      *
      * @return an unmodifiable map of the hooks
      */
-    private Map<String, KernelHook<?>> getHooks() {
+    protected Map<String, KernelHook<?>> getHooks() {
         return Collections.unmodifiableMap(hooks);
     }
 
@@ -222,6 +222,31 @@ public class KernelHooks {
      */
     public boolean isEmpty() {
         return hooks.isEmpty();
+    }
+
+    /**
+     * Builds the list of hooks to be invoked for the given context, by merging the hooks in this
+     * collection with the hooks in the context. Duplicate hooks in b will override hooks in a.
+     *
+     * @param a hooks to merge
+     * @param b hooks to merge
+     * @return the list of hooks to be invoked
+     */
+    public static KernelHooks merge(@Nullable KernelHooks a, @Nullable KernelHooks b) {
+        KernelHooks hooks = a;
+        if (hooks == null) {
+            hooks = new KernelHooks();
+        }
+
+        if (b == null) {
+            return hooks;
+        } else if (hooks.isEmpty()) {
+            return b;
+        } else {
+            HashMap<String, KernelHook<?>> merged = new HashMap<>(hooks.getHooks());
+            merged.putAll(b.getHooks());
+            return new KernelHooks(merged);
+        }
     }
 
     /**

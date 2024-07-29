@@ -105,7 +105,8 @@ public class InMemory_DataStorage {
         inMemoryDataStorage(embeddingGeneration);
     }
 
-    public static void inMemoryDataStorage(OpenAITextEmbeddingGenerationService embeddingGeneration) {
+    public static void inMemoryDataStorage(
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
         // Create a new Volatile vector store
         var volatileVectorStore = new VolatileVectorStore();
 

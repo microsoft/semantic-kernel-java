@@ -157,10 +157,9 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             }
 
             // kernelHooks must be effectively final for lambda
-            KernelHooks kernelHooks = context.getKernelHooks() != null
-                ? context.getKernelHooks()
-                : kernel.getGlobalKernelHooks();
-            assert kernelHooks != null : "getGlobalKernelHooks() should never return null!";
+            KernelHooks kernelHooks = KernelHooks.merge(
+                kernel.getGlobalKernelHooks(),
+                context.getKernelHooks());
 
             FunctionInvokingEvent updatedState = kernelHooks
                 .executeHooks(
