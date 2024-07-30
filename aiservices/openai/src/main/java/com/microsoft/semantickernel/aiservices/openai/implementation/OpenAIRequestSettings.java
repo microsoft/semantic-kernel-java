@@ -8,7 +8,6 @@ import com.azure.core.util.Context;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 /**
@@ -21,36 +20,24 @@ public final class OpenAIRequestSettings {
 
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTY_NAME = "semantic-kernel.version";
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE = "semantic-kernel-version.properties";
-    @Nullable
-    private static final String useragent;
 
-    @Nullable
+    private static final String useragent;
     private static final String header;
 
     public static final String SEMANTIC_KERNEL_DISABLE_USERAGENT_PROPERTY = "semantic-kernel.useragent-disable";
 
-    static {
-        boolean disabled = isDisabled();
+    private static final boolean disabled;
 
-        if (!disabled) {
-            String version = loadVersion();
-            useragent = "semantic-kernel-java/" + version;
-            header = "java/" + version;
-        } else {
-            useragent = null;
-            header = null;
-        }
+    static {
+        disabled = isDisabled();
+        String version = loadVersion();
+        useragent = "semantic-kernel-java/" + version;
+        header = "java/" + version;
     }
 
     private static boolean isDisabled() {
-        boolean disable = false;
-        try {
-            disable = Boolean.parseBoolean(
-                System.getProperty(SEMANTIC_KERNEL_DISABLE_USERAGENT_PROPERTY, "false"));
-        } catch (Exception e) {
-            LOGGER.error("Failed to parse system property 'semantic-kernel.disable-useragent'.", e);
-        }
-        return disable;
+        return Boolean.parseBoolean(
+            System.getProperty(SEMANTIC_KERNEL_DISABLE_USERAGENT_PROPERTY, "false"));
     }
 
     private static String loadVersion() {
@@ -83,17 +70,12 @@ public final class OpenAIRequestSettings {
     public static RequestOptions getRequestOptions() {
         RequestOptions requestOptions = new RequestOptions();
 
-        if (header != null) {
-            requestOptions.setHeader(
-                HttpHeaderName.fromString("Semantic-Kernel-Version"), header);
+        if (disabled) {
+            return requestOptions;
         }
 
-        if (useragent != null) {
-            requestOptions.setContext(
-                new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY, useragent));
-        }
-
-        return requestOptions;
-
+        return requestOptions
+            .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), header)
+            .setContext(new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY, useragent));
     }
 }
