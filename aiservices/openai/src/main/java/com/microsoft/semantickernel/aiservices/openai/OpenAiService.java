@@ -1,23 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.services.AIService;
 import javax.annotation.Nullable;
 
 /**
  * Provides OpenAI service.
  */
-public abstract class OpenAiService implements AIService {
+public abstract class OpenAiService<Client> implements AIService {
 
-    private final OpenAIAsyncClient client;
+    private final Client client;
     @Nullable
     private final String serviceId;
     private final String modelId;
     private final String deploymentName;
 
     protected OpenAiService(
-        OpenAIAsyncClient client,
+        Client client,
         @Nullable String serviceId,
         String modelId,
         String deploymentName) {
@@ -39,7 +38,7 @@ public abstract class OpenAiService implements AIService {
         return serviceId;
     }
 
-    protected OpenAIAsyncClient getClient() {
+    protected Client getClient() {
         return client;
     }
 
