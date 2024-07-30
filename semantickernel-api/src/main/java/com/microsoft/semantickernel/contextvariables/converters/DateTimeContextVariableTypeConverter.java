@@ -33,9 +33,7 @@ public class DateTimeContextVariableTypeConverter extends
                 return null;
             },
             Object::toString,
-            o -> {
-                return ZonedDateTime.parse(o).toOffsetDateTime();
-            },
+            o -> ZonedDateTime.parse(o).toOffsetDateTime(),
             Arrays.asList(
                 new DefaultConverter<OffsetDateTime, Instant>(OffsetDateTime.class, Instant.class) {
                     @Override
