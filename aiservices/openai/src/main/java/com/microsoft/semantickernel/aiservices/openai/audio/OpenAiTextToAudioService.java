@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 /**
  * Provides OpenAi implementation of text to audio service.
  */
-public class OpenAiTextToAudioService extends OpenAiService implements TextToAudioService {
+public class OpenAiTextToAudioService extends OpenAiService<OpenAIAsyncClient> implements TextToAudioService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAiTextToAudioService.class);
 

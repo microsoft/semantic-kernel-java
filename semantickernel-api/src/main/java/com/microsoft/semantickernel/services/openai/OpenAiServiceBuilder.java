@@ -1,20 +1,24 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.openai;
 
-import com.azure.ai.openai.OpenAIAsyncClient;
+import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import javax.annotation.Nullable;
 
 /**
  * Builder for an OpenAI service.
- */
-public abstract class OpenAiServiceBuilder<T, U extends OpenAiServiceBuilder<T, U>> implements
+ * @param <C> The client type
+ * @param <T> The service type
+ * @param <U> The builder type
+*/
+public abstract class OpenAiServiceBuilder<C, T extends AIService, U extends OpenAiServiceBuilder<C, T, U>> implements
+ 
     SemanticKernelBuilder<T> {
 
     @Nullable
     protected String modelId;
     @Nullable
-    protected OpenAIAsyncClient client;
+    protected C client;
     @Nullable
     protected String serviceId;
     @Nullable
@@ -51,7 +55,7 @@ public abstract class OpenAiServiceBuilder<T, U extends OpenAiServiceBuilder<T, 
      * @param client The OpenAI client
      * @return The builder
      */
-    public U withOpenAIAsyncClient(OpenAIAsyncClient client) {
+    public U withOpenAIAsyncClient(C client) {
         this.client = client;
         return (U) this;
     }

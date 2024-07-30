@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.textcompletion;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -60,6 +61,6 @@ public interface TextGenerationService extends TextAIService {
     /**
      * Builder for a TextGenerationService
      */
-    abstract class Builder extends OpenAiServiceBuilder<TextGenerationService, Builder> {
+    abstract class Builder extends OpenAiServiceBuilder<OpenAIAsyncClient, TextGenerationService, Builder> {
     }
 }
