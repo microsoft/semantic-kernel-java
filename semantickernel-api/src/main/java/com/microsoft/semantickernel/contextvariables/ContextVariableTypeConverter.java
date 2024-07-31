@@ -309,9 +309,7 @@ public class ContextVariableTypeConverter<T> {
         @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
         public Builder(Class<T> clazz) {
             this.clazz = clazz;
-            fromObject = x -> {
-                throw new UnsupportedOperationException("fromObject not implemented");
-            };
+            fromObject = x -> ContextVariableTypes.convert(x, clazz);
             toPromptString = (a, b) -> {
                 throw new UnsupportedOperationException("toPromptString not implemented");
             };
