@@ -1,15 +1,14 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.exceptions.SKException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,14 +26,18 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      * @param connection the connection
      * @param options    the options
      */
-    public JDBCVectorStore(@Nonnull Connection connection, @Nullable JDBCVectorStoreOptions options) {
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    public JDBCVectorStore(@Nonnull Connection connection,
+        @Nullable JDBCVectorStoreOptions options) {
         this.connection = connection;
         this.options = options;
 
         if (this.options != null && this.options.getQueryProvider() != null) {
             this.queryProvider = this.options.getQueryProvider();
         } else {
-            this.queryProvider = new JDBCVectorStoreDefaultQueryProvider(connection);
+            this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
+                .withConnection(connection)
+                .build();
         }
     }
 
@@ -57,9 +60,9 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      */
     @Override
     public <Key, Record> JDBCVectorStoreRecordCollection<?> getCollection(
-            @Nonnull String collectionName,
-            @Nonnull Class<Record> recordClass,
-            @Nullable VectorStoreRecordDefinition recordDefinition) {
+        @Nonnull String collectionName,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
 
         if (this.options != null && this.options.getVectorStoreRecordCollectionFactory() != null) {
             return this.options.getVectorStoreRecordCollectionFactory()
@@ -67,20 +70,20 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
                     connection,
                     collectionName,
                     JDBCVectorStoreRecordCollectionOptions.<Record>builder()
-                            .withRecordClass(recordClass)
-                            .withRecordDefinition(recordDefinition)
-                            .withQueryProvider(this.queryProvider)
-                            .build());
-        }
-
-        return new JDBCVectorStoreRecordCollection<>(
-                connection,
-                collectionName,
-                JDBCVectorStoreRecordCollectionOptions.<Record>builder()
                         .withRecordClass(recordClass)
                         .withRecordDefinition(recordDefinition)
                         .withQueryProvider(this.queryProvider)
                         .build());
+        }
+
+        return new JDBCVectorStoreRecordCollection<>(
+            connection,
+            collectionName,
+            JDBCVectorStoreRecordCollectionOptions.<Record>builder()
+                .withRecordClass(recordClass)
+                .withRecordDefinition(recordDefinition)
+                .withQueryProvider(this.queryProvider)
+                .build());
     }
 
     /**
@@ -90,30 +93,17 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      */
     @Override
     public Mono<List<String>> getCollectionNamesAsync() {
-        return Mono.fromCallable(() -> {
-            List<String> collectionNames = new ArrayList<>();
-            try {
-                ResultSet resultSet = queryProvider.getCollectionNames();
-                while (resultSet.next()) {
-                    collectionNames.add(resultSet.getString(1));
-                }
-
-                return collectionNames;
-            } catch (SQLException e) {
-                throw new SKException("Failed to get collection names.", e);
-            }
-        });
+        return Mono.fromCallable(queryProvider::getCollectionNames)
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
+    /**
+     * Prepares the vector store.
+     */
     @Override
     public Mono<Void> prepareAsync() {
-        return Mono.fromRunnable(() -> {
-            try {
-                queryProvider.prepareVectorStore();
-            } catch (SQLException e) {
-                throw new SKException("Failed to prepare vector store.", e);
-            }
-        });
+        return Mono.fromRunnable(queryProvider::prepareVectorStore)
+            .subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     /**
@@ -129,6 +119,7 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
          * @param connection the connection
          * @return the builder
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withConnection(Connection connection) {
             this.connection = connection;
             return this;

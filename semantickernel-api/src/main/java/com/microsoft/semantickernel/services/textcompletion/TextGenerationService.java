@@ -61,6 +61,7 @@ public interface TextGenerationService extends TextAIService {
     /**
      * Builder for a TextGenerationService
      */
-    abstract class Builder extends OpenAiServiceBuilder<OpenAIAsyncClient, TextGenerationService, Builder> {
+    abstract class Builder
+        extends OpenAiServiceBuilder<OpenAIAsyncClient, TextGenerationService, Builder> {
     }
 }

@@ -7,8 +7,6 @@ import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -29,10 +27,8 @@ public interface JDBCVectorStoreQueryProvider {
     /**
      * Prepares the vector store.
      * Executes any necessary setup steps for the vector store.
-     *
-     * @throws SQLException if an error occurs
      */
-    void prepareVectorStore() throws SQLException;
+    void prepareVectorStore();
 
     /**
      * Checks if the types of the record class fields are supported.
@@ -47,9 +43,8 @@ public interface JDBCVectorStoreQueryProvider {
      *
      * @param collectionName the collection name
      * @return true if the collection exists, false otherwise
-     * @throws SQLException if an error occurs
      */
-    boolean collectionExists(String collectionName) throws SQLException;
+    boolean collectionExists(String collectionName);
 
     /**
      * Creates a collection.
@@ -57,37 +52,37 @@ public interface JDBCVectorStoreQueryProvider {
      * @param collectionName the collection name
      * @param recordClass the record class
      * @param recordDefinition the record definition
-     * @throws SQLException if an error occurs
      */
-    void createCollection(String collectionName, Class<?> recordClass, VectorStoreRecordDefinition recordDefinition) throws SQLException;
+    void createCollection(String collectionName, Class<?> recordClass,
+        VectorStoreRecordDefinition recordDefinition);
 
     /**
      * Deletes a collection.
      *
      * @param collectionName the collection name
-     * @throws SQLException if an error occurs
      */
-    void deleteCollection(String collectionName) throws SQLException;
+    void deleteCollection(String collectionName);
 
     /**
-     * Gets the names of the collections.
+     * Gets the collection names.
      *
-     * @return the result set
-     * @throws SQLException if an error occurs
+     * @return the collection names
      */
-    ResultSet getCollectionNames() throws SQLException;
+    List<String> getCollectionNames();
 
     /**
-     * Gets the records.
+     * Gets records.
      *
      * @param collectionName the collection name
      * @param keys the keys
      * @param recordDefinition the record definition
+     * @param mapper the mapper
      * @param options the options
-     * @return the result set
-     * @throws SQLException if an error occurs
+     * @return the records
      */
-    ResultSet getRecords(String collectionName, List<String> keys, VectorStoreRecordDefinition recordDefinition, GetRecordOptions options) throws SQLException;
+    <Record> List<Record> getRecords(String collectionName, List<String> keys,
+                                     VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+                                     GetRecordOptions options);
 
     /**
      * Upserts records.
@@ -96,9 +91,9 @@ public interface JDBCVectorStoreQueryProvider {
      * @param records the records
      * @param vectorStoreRecordDefinition the record definition
      * @param options the options
-     * @throws SQLException if an error occurs
      */
-    void upsertRecords(String collectionName, List<?> records, VectorStoreRecordDefinition vectorStoreRecordDefinition, UpsertRecordOptions options) throws SQLException;
+    void upsertRecords(String collectionName, List<?> records,
+        VectorStoreRecordDefinition vectorStoreRecordDefinition, UpsertRecordOptions options);
 
     /**
      * Deletes records.
@@ -107,9 +102,9 @@ public interface JDBCVectorStoreQueryProvider {
      * @param keys the keys
      * @param recordDefinition the record definition
      * @param options the options
-     * @throws SQLException if an error occurs
      */
-    void deleteRecords(String collectionName, List<String> keys, VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) throws SQLException;
+    void deleteRecords(String collectionName, List<String> keys,
+        VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options);
 
     /**
      * The builder for the JDBC vector store query provider.

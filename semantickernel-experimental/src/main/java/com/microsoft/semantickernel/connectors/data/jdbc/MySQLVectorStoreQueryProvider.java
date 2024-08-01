@@ -17,9 +17,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class MySQLVectorStoreQueryProvider extends
-        JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
+    JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
 
-    public MySQLVectorStoreQueryProvider(Connection connection, String collectionsTable, String prefixForCollectionTables) {
+    public MySQLVectorStoreQueryProvider(Connection connection, String collectionsTable,
+        String prefixForCollectionTables) {
         super(connection, collectionsTable, prefixForCollectionTables);
     }
 
@@ -31,7 +32,8 @@ public class MySQLVectorStoreQueryProvider extends
         return new Builder();
     }
 
-    private void setStatementValues(PreparedStatement statement, Object record, List<VectorStoreRecordField> fields) {
+    private void setStatementValues(PreparedStatement statement, Object record,
+        List<VectorStoreRecordField> fields) {
         for (int i = 0; i < fields.size(); ++i) {
             VectorStoreRecordField field = fields.get(i);
             try {
@@ -42,7 +44,8 @@ public class MySQLVectorStoreQueryProvider extends
                 if (field instanceof VectorStoreRecordKeyField) {
                     statement.setObject(i + 1, (String) value);
                 } else if (field instanceof VectorStoreRecordVectorField) {
-                    Class<?> vectorType = record.getClass().getDeclaredField(field.getName()).getType();
+                    Class<?> vectorType = record.getClass().getDeclaredField(field.getName())
+                        .getType();
 
                     // If the vector field is other than String, serialize it to JSON
                     if (vectorType.equals(String.class)) {
@@ -63,7 +66,10 @@ public class MySQLVectorStoreQueryProvider extends
     }
 
     @Override
-    public void upsertRecords(String collectionName, List<?> records, VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) throws SQLException {
+    public void upsertRecords(String collectionName, List<?> records,
+        VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
+        validateSQLidentifier(getCollectionTableName(collectionName));
+
         List<VectorStoreRecordField> fields = recordDefinition.getAllFields();
 
         StringBuilder onDuplicateKeyUpdate = new StringBuilder();
@@ -73,22 +79,25 @@ public class MySQLVectorStoreQueryProvider extends
                 onDuplicateKeyUpdate.append(", ");
             }
 
-            onDuplicateKeyUpdate.append(field.getName()).append(" = VALUES(").append(field.getName()).append(")");
+            onDuplicateKeyUpdate.append(field.getName()).append(" = VALUES(")
+                .append(field.getName()).append(")");
         }
 
         String query = "INSERT INTO " + getCollectionTableName(collectionName)
-                + " (" + getQueryColumnsFromFields(fields) + ")"
-                + " VALUES (" + getWildcardString(fields.size()) + ")"
-                + " ON DUPLICATE KEY UPDATE " + onDuplicateKeyUpdate;
+            + " (" + getQueryColumnsFromFields(fields) + ")"
+            + " VALUES (" + getWildcardString(fields.size()) + ")"
+            + " ON DUPLICATE KEY UPDATE " + onDuplicateKeyUpdate;
 
-        PreparedStatement statement = connection.prepareStatement(query);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            for (Object record : records) {
+                setStatementValues(statement, record, recordDefinition.getAllFields());
+                statement.addBatch();
+            }
 
-        for (Object record : records) {
-            setStatementValues(statement, record, recordDefinition.getAllFields());
-            statement.addBatch();
+            statement.executeBatch();
+        } catch (SQLException e) {
+            throw new SKException("Failed to upsert records", e);
         }
-
-        statement.executeBatch();
     }
 
     public static class Builder
@@ -98,7 +107,8 @@ public class MySQLVectorStoreQueryProvider extends
                 throw new IllegalArgumentException("connection is required");
             }
 
-            return new MySQLVectorStoreQueryProvider(connection, collectionsTable, prefixForCollectionTables);
+            return new MySQLVectorStoreQueryProvider(connection, collectionsTable,
+                prefixForCollectionTables);
         }
     }
 }

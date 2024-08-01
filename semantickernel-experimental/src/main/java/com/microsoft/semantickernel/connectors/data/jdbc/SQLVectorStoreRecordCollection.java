@@ -1,9 +1,11 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import reactor.core.publisher.Mono;
 
-public interface SQLVectorStoreRecordCollection<Key, Record> extends VectorStoreRecordCollection<Key, Record> {
+public interface SQLVectorStoreRecordCollection<Key, Record>
+    extends VectorStoreRecordCollection<Key, Record> {
 
     /**
      * Prepares the vector store record collection.

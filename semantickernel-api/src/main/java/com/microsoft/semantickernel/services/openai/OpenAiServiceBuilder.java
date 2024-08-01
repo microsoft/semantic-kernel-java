@@ -11,8 +11,9 @@ import javax.annotation.Nullable;
  * @param <T> The service type
  * @param <U> The builder type
 */
-public abstract class OpenAiServiceBuilder<C, T extends AIService, U extends OpenAiServiceBuilder<C, T, U>> implements
- 
+public abstract class OpenAiServiceBuilder<C, T extends AIService, U extends OpenAiServiceBuilder<C, T, U>>
+    implements
+
     SemanticKernelBuilder<T> {
 
     @Nullable

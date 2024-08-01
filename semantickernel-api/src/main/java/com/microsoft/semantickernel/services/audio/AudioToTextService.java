@@ -33,7 +33,8 @@ public interface AudioToTextService extends AIService {
     /**
      * Builder for the AudioToTextService.
      */
-    abstract class Builder extends OpenAiServiceBuilder<OpenAIAsyncClient, AudioToTextService, Builder> {
+    abstract class Builder
+        extends OpenAiServiceBuilder<OpenAIAsyncClient, AudioToTextService, Builder> {
 
     }
 }

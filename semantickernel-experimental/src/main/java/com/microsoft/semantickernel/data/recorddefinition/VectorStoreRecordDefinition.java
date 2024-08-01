@@ -56,7 +56,8 @@ public class VectorStoreRecordDefinition {
         return fields;
     }
 
-    private List<Field> getDeclaredFields(Class<?> recordClass, List<VectorStoreRecordField> fields, String fieldType) {
+    private List<Field> getDeclaredFields(Class<?> recordClass, List<VectorStoreRecordField> fields,
+        String fieldType) {
         List<Field> declaredFields = new ArrayList<>();
         for (VectorStoreRecordField field : fields) {
             try {
@@ -64,7 +65,8 @@ public class VectorStoreRecordDefinition {
                 declaredFields.add(declaredField);
             } catch (NoSuchFieldException e) {
                 throw new IllegalArgumentException(
-                        String.format("%s field not found in record class: %s", fieldType, field.getName()));
+                    String.format("%s field not found in record class: %s", fieldType,
+                        field.getName()));
             }
         }
         return declaredFields;
@@ -75,22 +77,22 @@ public class VectorStoreRecordDefinition {
             return recordClass.getDeclaredField(keyField.getName());
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException(
-                    "Key field not found in record class: " + keyField.getName());
+                "Key field not found in record class: " + keyField.getName());
         }
     }
 
     public List<Field> getDataDeclaredFields(Class<?> recordClass) {
         return getDeclaredFields(
-                recordClass,
-                dataFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
-                "Data");
+            recordClass,
+            dataFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
+            "Data");
     }
 
     public List<Field> getVectorDeclaredFields(Class<?> recordClass) {
         return getDeclaredFields(
-                recordClass,
-                vectorFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
-                "Vector");
+            recordClass,
+            vectorFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
+            "Vector");
     }
 
     private VectorStoreRecordDefinition(
@@ -191,8 +193,8 @@ public class VectorStoreRecordDefinition {
         return checkFields(keyFields, dataFields, vectorFields);
     }
 
-
-    public static void validateSupportedTypes(List<Field> declaredFields, Set<Class<?>> supportedTypes) {
+    public static void validateSupportedTypes(List<Field> declaredFields,
+        Set<Class<?>> supportedTypes) {
         Set<Class<?>> unsupportedTypes = new HashSet<>();
         for (Field declaredField : declaredFields) {
             if (!supportedTypes.contains(declaredField.getType())) {
@@ -201,9 +203,10 @@ public class VectorStoreRecordDefinition {
         }
         if (!unsupportedTypes.isEmpty()) {
             throw new IllegalArgumentException(
-                    String.format("Unsupported field types found in record class: %s. Supported types: %s",
-                            unsupportedTypes.stream().map(Class::getName).collect(Collectors.joining(", ")),
-                            supportedTypes.stream().map(Class::getName).collect(Collectors.joining(", "))));
+                String.format(
+                    "Unsupported field types found in record class: %s. Supported types: %s",
+                    unsupportedTypes.stream().map(Class::getName).collect(Collectors.joining(", ")),
+                    supportedTypes.stream().map(Class::getName).collect(Collectors.joining(", "))));
         }
     }
 }

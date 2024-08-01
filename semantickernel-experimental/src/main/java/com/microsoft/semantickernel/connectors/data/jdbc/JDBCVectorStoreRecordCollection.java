@@ -14,9 +14,6 @@ import reactor.core.scheduler.Schedulers;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,30 +35,32 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public JDBCVectorStoreRecordCollection(
-            @Nonnull Connection connection,
-            @Nonnull String collectionName,
-            @Nonnull JDBCVectorStoreRecordCollectionOptions<Record> options) {
+        @Nonnull Connection connection,
+        @Nonnull String collectionName,
+        @Nonnull JDBCVectorStoreRecordCollectionOptions<Record> options) {
         this.collectionName = collectionName;
         this.options = options;
 
         // If record definition is not provided, create one from the record class
         recordDefinition = options.getRecordDefinition() == null
-                ? VectorStoreRecordDefinition.fromRecordClass(options.getRecordClass())
-                : options.getRecordDefinition();
+            ? VectorStoreRecordDefinition.fromRecordClass(options.getRecordClass())
+            : options.getRecordDefinition();
 
         // If mapper is not provided, set a default one
         if (options.getVectorStoreRecordMapper() == null) {
             vectorStoreRecordMapper = JDBCVectorStoreRecordMapper.<Record>builder()
-                    .withRecordClass(options.getRecordClass())
-                    .withVectorStoreRecordDefinition(recordDefinition)
-                    .build();
+                .withRecordClass(options.getRecordClass())
+                .withVectorStoreRecordDefinition(recordDefinition)
+                .build();
         } else {
             vectorStoreRecordMapper = options.getVectorStoreRecordMapper();
         }
-        
+
         // If the query provider is not provided, set a default one
         if (options.getQueryProvider() == null) {
-            this.queryProvider = new JDBCVectorStoreDefaultQueryProvider(connection);
+            this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
+                .withConnection(connection)
+                .build();
         } else {
             this.queryProvider = options.getQueryProvider();
         }
@@ -88,14 +87,8 @@ public class JDBCVectorStoreRecordCollection<Record>
     @Override
     public Mono<Boolean> collectionExistsAsync() {
         return Mono.fromCallable(
-            () -> {
-                try {
-                    return queryProvider.collectionExists(this.collectionName);
-                } catch (SQLException e) {
-                    throw new SKException("Failed to check if collection exists", e);
-                }
-            })
-        .subscribeOn(Schedulers.boundedElastic());
+            () -> queryProvider.collectionExists(this.collectionName))
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
     /**
@@ -106,15 +99,10 @@ public class JDBCVectorStoreRecordCollection<Record>
     @Override
     public Mono<Void> createCollectionAsync() {
         return Mono.fromRunnable(
-            () -> {
-                try {
-                    queryProvider.createCollection(this.collectionName, options.getRecordClass(), recordDefinition);
-                } catch (SQLException e) {
-                    throw new SKException("Failed to create collection", e);
-                }
-            })
-        .subscribeOn(Schedulers.boundedElastic())
-        .then();
+            () -> queryProvider.createCollection(this.collectionName, options.getRecordClass(),
+                recordDefinition))
+            .subscribeOn(Schedulers.boundedElastic())
+            .then();
     }
 
     /**
@@ -144,11 +132,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     public Mono<Void> deleteCollectionAsync() {
         return Mono.fromRunnable(
             () -> {
-                try {
-                    queryProvider.deleteCollection(this.collectionName);
-                } catch (SQLException e) {
-                    throw new SKException("Failed to delete collection", e);
-                }
+                queryProvider.deleteCollection(this.collectionName);
             }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
@@ -181,24 +165,15 @@ public class JDBCVectorStoreRecordCollection<Record>
     public Mono<List<Record>> getBatchAsync(List<String> keys, GetRecordOptions options) {
         return Mono.fromCallable(
             () -> {
-                List<Record> records = new ArrayList<>();
-
-                try {
-                    ResultSet resultSet = queryProvider.getRecords(this.collectionName, keys, recordDefinition, options);
-                    while (resultSet.next()) {
-                        records.add(vectorStoreRecordMapper.mapStorageModeltoRecord(resultSet));
-                    }
-                } catch (SQLException e) {
-                    throw new SKException("Failed to get records", e);
-                }
-
-                return records;
+                return queryProvider.getRecords(this.collectionName, keys, recordDefinition,
+                    vectorStoreRecordMapper, options);
             }).subscribeOn(Schedulers.boundedElastic());
     }
 
     protected String getKeyFromRecord(Record data) {
         try {
-            Field keyField = data.getClass().getDeclaredField(recordDefinition.getKeyField().getName());
+            Field keyField = data.getClass()
+                .getDeclaredField(recordDefinition.getKeyField().getName());
             keyField.setAccessible(true);
             return (String) keyField.get(data);
         } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -235,13 +210,8 @@ public class JDBCVectorStoreRecordCollection<Record>
     public Mono<List<String>> upsertBatchAsync(List<Record> data, UpsertRecordOptions options) {
         return Mono.fromCallable(
             () -> {
-                try {
-                    queryProvider.upsertRecords(this.collectionName, data, recordDefinition, options);
-
-                    return data.stream().map(this::getKeyFromRecord).collect(Collectors.toList());
-                } catch (SQLException e) {
-                    throw new SKException("Failed to upsert records", e);
-                }
+                queryProvider.upsertRecords(this.collectionName, data, recordDefinition, options);
+                return data.stream().map(this::getKeyFromRecord).collect(Collectors.toList());
             })
             .subscribeOn(Schedulers.boundedElastic());
     }
@@ -269,11 +239,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     public Mono<Void> deleteBatchAsync(List<String> keys, DeleteRecordOptions options) {
         return Mono.fromRunnable(
             () -> {
-                try {
-                    queryProvider.deleteRecords(this.collectionName, keys, recordDefinition, options);
-                } catch (SQLException e) {
-                    throw new SKException("Failed to delete records", e);
-                }
+                queryProvider.deleteRecords(this.collectionName, keys, recordDefinition, options);
             }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
@@ -284,20 +250,17 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Void> prepareAsync() {
-        return Mono.fromRunnable(() -> {
-            try {
-                queryProvider.prepareVectorStore();
-            } catch (SQLException e) {
-                throw new SKException("Failed to prepare vector store record collection", e);
-            }
-        }).subscribeOn(Schedulers.boundedElastic()).then();
+        return Mono.fromRunnable(queryProvider::prepareVectorStore)
+            .subscribeOn(Schedulers.boundedElastic()).then();
     }
 
-    public static class Builder<Record> implements SemanticKernelBuilder<JDBCVectorStoreRecordCollection<Record>> {
+    public static class Builder<Record>
+        implements SemanticKernelBuilder<JDBCVectorStoreRecordCollection<Record>> {
         private Connection connection;
         private String collectionName;
         private JDBCVectorStoreRecordCollectionOptions<Record> options;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder<Record> withConnection(Connection connection) {
             this.connection = connection;
             return this;

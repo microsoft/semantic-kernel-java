@@ -44,7 +44,8 @@ public class VolatileVectorStoreRecordCollection<Record>
 
         // Validate the key type
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections.singletonList(recordDefinition.getKeyDeclaredField(options.getRecordClass())),
+            Collections
+                .singletonList(recordDefinition.getKeyDeclaredField(options.getRecordClass())),
             supportedKeyTypes);
     }
 

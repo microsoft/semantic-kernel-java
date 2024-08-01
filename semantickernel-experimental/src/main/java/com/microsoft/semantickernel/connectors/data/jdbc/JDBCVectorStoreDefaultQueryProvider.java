@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,32 +53,18 @@ public class JDBCVectorStoreDefaultQueryProvider
         supportedVectorTypes.put(List.class, "TEXT");
         supportedVectorTypes.put(Collection.class, "TEXT");
     }
-
     protected final Connection connection;
     protected final String collectionsTable;
     protected final String prefixForCollectionTables;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public JDBCVectorStoreDefaultQueryProvider(
-            @Nonnull Connection connection,
-            @Nonnull String collectionsTable,
-            @Nonnull String prefixForCollectionTables) {
+    protected JDBCVectorStoreDefaultQueryProvider(
+        @Nonnull Connection connection,
+        @Nonnull String collectionsTable,
+        @Nonnull String prefixForCollectionTables) {
         this.connection = connection;
-        // Validate table name
-        if (!isValidSQLIdentifier(collectionsTable)) {
-            throw new IllegalArgumentException("Invalid collections table name: " + collectionsTable);
-        }
-        if (!isValidSQLIdentifier(prefixForCollectionTables)) {
-            throw new IllegalArgumentException("Invalid prefix for collection tables: " + prefixForCollectionTables);
-        }
-
         this.collectionsTable = collectionsTable;
         this.prefixForCollectionTables = prefixForCollectionTables;
-    }
-
-    public JDBCVectorStoreDefaultQueryProvider(
-            @Nonnull Connection connection) {
-        this(connection, DEFAULT_COLLECTIONS_TABLE, DEFAULT_PREFIX_FOR_COLLECTION_TABLES);
     }
 
     /**
@@ -116,8 +103,8 @@ public class JDBCVectorStoreDefaultQueryProvider
 
     protected String getColumnNamesAndTypes(List<Field> fields, Map<Class<?>, String> types) {
         List<String> columns = fields.stream()
-                .map(field -> field.getName() + " " + types.get(field.getType()))
-                .collect(Collectors.toList());
+            .map(field -> field.getName() + " " + types.get(field.getType()))
+            .collect(Collectors.toList());
 
         return String.join(", ", columns);
     }
@@ -127,80 +114,126 @@ public class JDBCVectorStoreDefaultQueryProvider
     }
 
     @Override
-    public void prepareVectorStore() throws SQLException {
-        String createCollectionsTable =
-                "CREATE TABLE IF NOT EXISTS " + collectionsTable
-                        + " (collectionId VARCHAR(255) PRIMARY KEY);";
+    public void prepareVectorStore() {
+        String createCollectionsTable = "CREATE TABLE IF NOT EXISTS " + collectionsTable
+            + " (collectionId VARCHAR(255) PRIMARY KEY);";
 
-        PreparedStatement createTable = connection.prepareStatement(createCollectionsTable);
-        createTable.execute();
+        try (PreparedStatement createTable = connection.prepareStatement(createCollectionsTable)) {
+            createTable.execute();
+        } catch (SQLException e) {
+            throw new SKException("Failed to prepare vector store", e);
+        }
     }
 
     @Override
-    public void validateSupportedTypes(Class<?> recordClass, VectorStoreRecordDefinition recordDefinition) {
+    public void validateSupportedTypes(Class<?> recordClass,
+        VectorStoreRecordDefinition recordDefinition) {
         VectorStoreRecordDefinition.validateSupportedTypes(
-                Collections.singletonList(recordDefinition.getKeyDeclaredField(recordClass)), supportedKeyTypes.keySet());
+            Collections.singletonList(recordDefinition.getKeyDeclaredField(recordClass)),
+            supportedKeyTypes.keySet());
         VectorStoreRecordDefinition.validateSupportedTypes(
-                recordDefinition.getDataDeclaredFields(recordClass), supportedDataTypes.keySet());
+            recordDefinition.getDataDeclaredFields(recordClass), supportedDataTypes.keySet());
         VectorStoreRecordDefinition.validateSupportedTypes(
-                recordDefinition.getVectorDeclaredFields(recordClass), supportedVectorTypes.keySet());
+            recordDefinition.getVectorDeclaredFields(recordClass), supportedVectorTypes.keySet());
     }
 
     @Override
-    public boolean collectionExists(String collectionName) throws SQLException {
+    public boolean collectionExists(String collectionName) {
+        validateSQLidentifier(collectionsTable);
+
         String query = "SELECT 1 FROM " + collectionsTable + " WHERE collectionId = ?";
 
-        PreparedStatement statement = connection.prepareStatement(query);
-        statement.setObject(1, collectionName);
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setObject(1, collectionName);
 
-        return statement.executeQuery().next();
+            return statement.executeQuery().next();
+        } catch (SQLException e) {
+            throw new SKException("Failed to check if collection exists", e);
+        }
     }
 
     @Override
-    public void createCollection(String collectionName, Class<?> recordClass, VectorStoreRecordDefinition recordDefinition) throws SQLException {
+    public void createCollection(String collectionName, Class<?> recordClass,
+        VectorStoreRecordDefinition recordDefinition) {
+        validateSQLidentifier(collectionName);
+
         Field keyDeclaredField = recordDefinition.getKeyDeclaredField(recordClass);
         List<Field> dataDeclaredFields = recordDefinition.getDataDeclaredFields(recordClass);
         List<Field> vectorDeclaredFields = recordDefinition.getVectorDeclaredFields(recordClass);
 
-        String createStorageTable =
-                "CREATE TABLE IF NOT EXISTS " + getCollectionTableName(collectionName)
-                        + " (" + keyDeclaredField.getName() + " VARCHAR(255) PRIMARY KEY, "
-                        + getColumnNamesAndTypes(dataDeclaredFields, supportedDataTypes) + ", "
-                        + getColumnNamesAndTypes(vectorDeclaredFields, supportedVectorTypes) + ");";
+        String createStorageTable = "CREATE TABLE IF NOT EXISTS "
+            + getCollectionTableName(collectionName)
+            + " (" + keyDeclaredField.getName() + " VARCHAR(255) PRIMARY KEY, "
+            + getColumnNamesAndTypes(dataDeclaredFields, supportedDataTypes) + ", "
+            + getColumnNamesAndTypes(vectorDeclaredFields, supportedVectorTypes) + ");";
 
-        PreparedStatement createTable = connection.prepareStatement(createStorageTable);
+        String insertCollectionQuery = "INSERT INTO " + collectionsTable
+            + " (collectionId) VALUES (?)";
 
-        String insertCollectionQuery = "INSERT INTO " + collectionsTable + " (collectionId) VALUES (?)";
-        PreparedStatement insert = connection.prepareStatement(insertCollectionQuery);
-        insert.setObject(1, collectionName);
+        try (PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
+            createTable.execute();
+        } catch (SQLException e) {
+            throw new SKException("Failed to create collection", e);
+        }
 
-        createTable.execute();
-        insert.execute();
+        try (PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
+            insert.setObject(1, collectionName);
+            insert.execute();
+        } catch (SQLException e) {
+            throw new SKException("Failed to insert collection", e);
+        }
     }
 
     @Override
-    public void deleteCollection(String collectionName) throws SQLException {
-        String deleteCollectionOperation = "DELETE FROM " + collectionsTable + " WHERE collectionId = ?";
+    public void deleteCollection(String collectionName) {
+        validateSQLidentifier(collectionsTable);
+        validateSQLidentifier(getCollectionTableName(collectionName));
+
+        String deleteCollectionOperation = "DELETE FROM " + collectionsTable
+            + " WHERE collectionId = ?";
         String dropTableOperation = "DROP TABLE " + getCollectionTableName(collectionName);
 
-        PreparedStatement deleteCollection = connection.prepareStatement(deleteCollectionOperation);
-        deleteCollection.setObject(1, collectionName);
+        try (PreparedStatement deleteCollection = connection
+            .prepareStatement(deleteCollectionOperation)) {
+            deleteCollection.setObject(1, collectionName);
+            deleteCollection.execute();
+        } catch (SQLException e) {
+            throw new SKException("Failed to delete collection", e);
+        }
 
-        PreparedStatement dropTable = connection.prepareStatement(dropTableOperation);
-
-        dropTable.execute();
-        deleteCollection.execute();
+        try (PreparedStatement dropTable = connection.prepareStatement(dropTableOperation)) {
+            dropTable.execute();
+        } catch (SQLException e) {
+            throw new SKException("Failed to drop table", e);
+        }
     }
 
     @Override
-    public ResultSet getCollectionNames() throws SQLException {
+    public List<String> getCollectionNames() {
+        validateSQLidentifier(collectionsTable);
+
         String query = "SELECT collectionId FROM " + collectionsTable;
 
-        return connection.prepareStatement(query).executeQuery();
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            List<String> collectionNames = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                collectionNames.add(resultSet.getString(1));
+            }
+
+            return Collections.unmodifiableList(collectionNames);
+        } catch (SQLException e) {
+            throw new SKException("Failed to get collection names", e);
+        }
     }
 
     @Override
-    public ResultSet getRecords(String collectionName, List<String> keys, VectorStoreRecordDefinition recordDefinition, GetRecordOptions options) throws SQLException {
+    public <Record> List<Record> getRecords(String collectionName, List<String> keys,
+                                            VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+                                            GetRecordOptions options) {
+        validateSQLidentifier(getCollectionTableName(collectionName));
+
         List<VectorStoreRecordField> fields;
         if (options == null || options.includeVectors()) {
             fields = recordDefinition.getAllFields();
@@ -209,48 +242,59 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
 
         String query = "SELECT " + getQueryColumnsFromFields(fields)
-                + " FROM " + getCollectionTableName(collectionName)
-                + " WHERE " + recordDefinition.getKeyField().getName()
-                + " IN (" + getWildcardString(keys.size()) + ")";
+            + " FROM " + getCollectionTableName(collectionName)
+            + " WHERE " + recordDefinition.getKeyField().getName()
+            + " IN (" + getWildcardString(keys.size()) + ")";
 
-        PreparedStatement statement = connection.prepareStatement(query);
-        for (int i = 0; i < keys.size(); ++i) {
-            try {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            for (int i = 0; i < keys.size(); ++i) {
                 statement.setObject(i + 1, keys.get(i));
-            } catch (SQLException e) {
-                throw new SKException("Failed to set statement values", e);
             }
-        }
 
-        return statement.executeQuery();
+            List<Record> records = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                records.add(mapper.mapStorageModeltoRecord(resultSet));
+            }
+
+            return Collections.unmodifiableList(records);
+        } catch (SQLException e) {
+            throw new SKException("Failed to set statement values", e);
+        }
     }
 
     @Override
-    public void upsertRecords(String collectionName, List<?> records, VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) throws SQLException {
+    public void upsertRecords(String collectionName, List<?> records,
+        VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
         throw new UnsupportedOperationException(
-                "Upsert is not supported. Try with a specific query provider.");
+            "Upsert is not supported. Try with a specific query provider.");
     }
 
     @Override
-    public void deleteRecords(String collectionName, List<String> keys, VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) throws SQLException {
+    public void deleteRecords(String collectionName, List<String> keys,
+        VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) {
+        validateSQLidentifier(getCollectionTableName(collectionName));
+
         String query = "DELETE FROM " + getCollectionTableName(collectionName)
-                + " WHERE " + recordDefinition.getKeyField().getName()
-                + " IN (" + getWildcardString(keys.size()) + ")";
+            + " WHERE " + recordDefinition.getKeyField().getName()
+            + " IN (" + getWildcardString(keys.size()) + ")";
 
-        PreparedStatement statement = connection.prepareStatement(query);
-        for (int i = 0; i < keys.size(); ++i) {
-            try {
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            for (int i = 0; i < keys.size(); ++i) {
                 statement.setObject(i + 1, keys.get(i));
-            } catch (SQLException e) {
-                throw new SKException("Failed to set statement values", e);
             }
-        }
 
-        statement.execute();
+            statement.execute();
+        } catch (SQLException e) {
+            throw new SKException("Failed to set statement values", e);
+        }
     }
 
-    public static boolean isValidSQLIdentifier(String identifier) {
-        return identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*");
+    public static void validateSQLidentifier(String identifier) {
+        if (!identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+            throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
+        }
     }
 
     /**
@@ -267,6 +311,7 @@ public class JDBCVectorStoreDefaultQueryProvider
          * @param connection the connection
          * @return the builder
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withConnection(Connection connection) {
             this.connection = connection;
             return this;
@@ -278,6 +323,7 @@ public class JDBCVectorStoreDefaultQueryProvider
          * @return the builder
          */
         public Builder withCollectionsTable(String collectionsTable) {
+            validateSQLidentifier(collectionsTable);
             this.collectionsTable = collectionsTable;
             return this;
         }
@@ -288,6 +334,7 @@ public class JDBCVectorStoreDefaultQueryProvider
          * @return the builder
          */
         public Builder withPrefixForCollectionTables(String prefixForCollectionTables) {
+            validateSQLidentifier(prefixForCollectionTables);
             this.prefixForCollectionTables = prefixForCollectionTables;
             return this;
         }
@@ -298,7 +345,8 @@ public class JDBCVectorStoreDefaultQueryProvider
                 throw new IllegalArgumentException("connection is required");
             }
 
-            return new JDBCVectorStoreDefaultQueryProvider(connection, collectionsTable, prefixForCollectionTables);
+            return new JDBCVectorStoreDefaultQueryProvider(connection, collectionsTable,
+                prefixForCollectionTables);
         }
     }
 }
