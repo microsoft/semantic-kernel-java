@@ -20,14 +20,24 @@ public final class OpenAIRequestSettings {
 
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTY_NAME = "semantic-kernel.version";
     private static final String SEMANTIC_KERNEL_VERSION_PROPERTIES_FILE = "semantic-kernel-version.properties";
-    private static final String useragent;
 
+    private static final String useragent;
     private static final String header;
 
+    public static final String SEMANTIC_KERNEL_DISABLE_USERAGENT_PROPERTY = "semantic-kernel.useragent-disable";
+
+    private static final boolean disabled;
+
     static {
+        disabled = isDisabled();
         String version = loadVersion();
         useragent = "semantic-kernel-java/" + version;
         header = "java/" + version;
+    }
+
+    private static boolean isDisabled() {
+        return Boolean.parseBoolean(
+            System.getProperty(SEMANTIC_KERNEL_DISABLE_USERAGENT_PROPERTY, "false"));
     }
 
     private static String loadVersion() {
@@ -58,9 +68,14 @@ public final class OpenAIRequestSettings {
      * @return The request options
      */
     public static RequestOptions getRequestOptions() {
-        return new RequestOptions()
+        RequestOptions requestOptions = new RequestOptions();
+
+        if (disabled) {
+            return requestOptions;
+        }
+
+        return requestOptions
             .setHeader(HttpHeaderName.fromString("Semantic-Kernel-Version"), header)
-            .setContext(
-                new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY, useragent));
+            .setContext(new Context(UserAgentPolicy.APPEND_USER_AGENT_CONTEXT_KEY, useragent));
     }
 }

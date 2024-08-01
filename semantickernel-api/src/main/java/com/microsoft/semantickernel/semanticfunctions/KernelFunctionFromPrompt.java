@@ -102,10 +102,9 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             : InvocationContext.builder().build();
 
         // must be effectively final for lambda
-        KernelHooks kernelHooks = context.getKernelHooks() != null
-            ? context.getKernelHooks()
-            : kernel.getGlobalKernelHooks();
-        assert kernelHooks != null : "getGlobalKernelHooks() should never return null";
+        KernelHooks kernelHooks = KernelHooks.merge(
+            kernel.getGlobalKernelHooks(),
+            context.getKernelHooks());
 
         PromptRenderingEvent preRenderingHookResult = kernelHooks
             .executeHooks(new PromptRenderingEvent(this, argumentsIn));

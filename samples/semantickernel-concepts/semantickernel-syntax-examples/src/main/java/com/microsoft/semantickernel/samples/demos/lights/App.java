@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationContext.Builder;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
@@ -72,6 +73,27 @@ public class App {
             .addGlobalConverter(ContextVariableTypeConverter.builder(LightModel.class)
                 .toPromptString(new Gson()::toJson)
                 .build());
+
+        KernelHooks hook = new KernelHooks();
+
+        hook.addPreToolCallHook((context) -> {
+            System.out.println("Pre-tool call hook");
+            return context;
+        });
+
+        hook.addPreChatCompletionHook(
+            (context) -> {
+                System.out.println("Pre-chat completion hook");
+                return context;
+            });
+
+        hook.addPostChatCompletionHook(
+            (context) -> {
+                System.out.println("Post-chat completion hook");
+                return context;
+            });
+
+        kernel.getGlobalKernelHooks().addHooks(hook);
 
         // Enable planning
         InvocationContext invocationContext = new Builder()

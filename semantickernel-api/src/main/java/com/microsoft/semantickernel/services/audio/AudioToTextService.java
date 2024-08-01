@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.audio;
 
+import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
@@ -32,7 +33,7 @@ public interface AudioToTextService extends AIService {
     /**
      * Builder for the AudioToTextService.
      */
-    abstract class Builder extends OpenAiServiceBuilder<AudioToTextService, Builder> {
+    abstract class Builder extends OpenAiServiceBuilder<OpenAIAsyncClient, AudioToTextService, Builder> {
 
     }
 }

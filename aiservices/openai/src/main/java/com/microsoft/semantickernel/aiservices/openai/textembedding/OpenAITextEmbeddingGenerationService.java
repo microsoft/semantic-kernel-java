@@ -23,7 +23,7 @@ import java.util.List;
  * An OpenAI implementation of a {@link TextEmbeddingGenerationService}.
  *
  */
-public class OpenAITextEmbeddingGenerationService extends OpenAiService
+public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAsyncClient>
     implements TextEmbeddingGenerationService {
     private static final Logger LOGGER = LoggerFactory
         .getLogger(OpenAITextEmbeddingGenerationService.class);
@@ -87,7 +87,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService
      * A builder for creating a {@link OpenAITextEmbeddingGenerationService}.
      */
     public static class Builder extends
-        OpenAiServiceBuilder<OpenAITextEmbeddingGenerationService, OpenAITextEmbeddingGenerationService.Builder> {
+        OpenAiServiceBuilder<OpenAIAsyncClient, OpenAITextEmbeddingGenerationService, OpenAITextEmbeddingGenerationService.Builder> {
         private int dimensions = DEFAULT_DIMENSIONS;
 
         /**

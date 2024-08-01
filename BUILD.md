@@ -36,11 +36,11 @@ To build the Semantic Kernel for Java, you will need:
 
 1. Clone this repository
 
-        git clone -b java-v1 https://github.com/microsoft/semantic-kernel/
+        git clone https://github.com/microsoft/semantic-kernel-java
 
 2. Build the project with the Maven Wrapper
 
-        cd semantic-kernel/java
+        cd semantic-kernel
         ./mvnw install
 
 3. (Optional) To run a FULL build including static analysis and end-to-end tests that might require a valid OpenAI key,
@@ -104,8 +104,7 @@ Also ensure that:
 - All new code is covered by unit tests
 - All new code is covered by integration tests
 
-Once your proposal is ready, submit a pull request to the `java-v1` branch. The pull request will be reviewed by the
-project maintainers.
+Once your proposal is ready, submit a pull request. The pull request will be reviewed by the project maintainers.
 
 Make sure your pull request has an objective title and a clear description explaining the problem and solution.
 
