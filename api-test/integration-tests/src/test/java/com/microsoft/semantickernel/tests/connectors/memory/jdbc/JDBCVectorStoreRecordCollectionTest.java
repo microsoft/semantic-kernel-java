@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCo
 import com.microsoft.semantickernel.connectors.data.jdbc.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -12,6 +13,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,20 +31,23 @@ public class JDBCVectorStoreRecordCollectionTest {
     private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>("mysql:5.7.34");
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";
-    private static Connection connection;
+    private static MysqlDataSource dataSource;
     @BeforeAll
-    static void setup() throws SQLException {
-        connection = DriverManager.getConnection(CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD);
+    static void setup() {
+        dataSource = new MysqlDataSource();
+        dataSource.setUrl(CONTAINER.getJdbcUrl());
+        dataSource.setUser(MYSQL_USER);
+        dataSource.setPassword(MYSQL_PASSWORD);
     }
 
     private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(@Nonnull String collectionName) {
         JDBCVectorStoreRecordCollection<Hotel> recordCollection =  new JDBCVectorStoreRecordCollection<>(
-                connection,
+                dataSource,
                 collectionName,
                 JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
                         .withRecordClass(Hotel.class)
                         .withQueryProvider(MySQLVectorStoreQueryProvider.builder()
-                                .withConnection(connection)
+                                .withDataSource(dataSource)
                                 .build())
                         .build());
 

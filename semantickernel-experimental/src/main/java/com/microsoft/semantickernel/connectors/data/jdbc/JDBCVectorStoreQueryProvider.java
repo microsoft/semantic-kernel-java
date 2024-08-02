@@ -81,8 +81,8 @@ public interface JDBCVectorStoreQueryProvider {
      * @return the records
      */
     <Record> List<Record> getRecords(String collectionName, List<String> keys,
-                                     VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
-                                     GetRecordOptions options);
+        VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+        GetRecordOptions options);
 
     /**
      * Upserts records.

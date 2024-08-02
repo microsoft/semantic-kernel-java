@@ -8,14 +8,14 @@ import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.sql.Connection;
+import javax.sql.DataSource;
 import java.util.List;
 
 /**
  * A JDBC vector store.
  */
 public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordCollection<?>> {
-    private final Connection connection;
+    private final DataSource dataSource;
     private final JDBCVectorStoreOptions options;
     private final JDBCVectorStoreQueryProvider queryProvider;
 
@@ -23,20 +23,20 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      * Creates a new instance of the {@link JDBCVectorStore}.
      * If using this constructor, call {@link #prepareAsync()} before using the vector store.
      *
-     * @param connection the connection
+     * @param dataSource the connection
      * @param options    the options
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public JDBCVectorStore(@Nonnull Connection connection,
+    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
+    public JDBCVectorStore(@Nonnull DataSource dataSource,
         @Nullable JDBCVectorStoreOptions options) {
-        this.connection = connection;
+        this.dataSource = dataSource;
         this.options = options;
 
         if (this.options != null && this.options.getQueryProvider() != null) {
             this.queryProvider = this.options.getQueryProvider();
         } else {
             this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
-                .withConnection(connection)
+                .withDataSource(dataSource)
                 .build();
         }
     }
@@ -59,7 +59,7 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      * @return The collection.
      */
     @Override
-    public <Key, Record> JDBCVectorStoreRecordCollection<?> getCollection(
+    public <Key, Record> JDBCVectorStoreRecordCollection<Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordDefinition recordDefinition) {
@@ -67,7 +67,7 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
         if (this.options != null && this.options.getVectorStoreRecordCollectionFactory() != null) {
             return this.options.getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
-                    connection,
+                    dataSource,
                     collectionName,
                     JDBCVectorStoreRecordCollectionOptions.<Record>builder()
                         .withRecordClass(recordClass)
@@ -77,7 +77,7 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
         }
 
         return new JDBCVectorStoreRecordCollection<>(
-            connection,
+            dataSource,
             collectionName,
             JDBCVectorStoreRecordCollectionOptions.<Record>builder()
                 .withRecordClass(recordClass)
@@ -110,18 +110,18 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      * Builder for creating a {@link JDBCVectorStore}.
      */
     public static class Builder {
-        private Connection connection;
+        private DataSource dataSource;
         private JDBCVectorStoreOptions options;
 
         /**
-         * Sets the connection.
+         * Sets the data source.
          *
-         * @param connection the connection
+         * @param dataSource the data source
          * @return the builder
          */
         @SuppressFBWarnings("EI_EXPOSE_REP2")
-        public Builder withConnection(Connection connection) {
-            this.connection = connection;
+        public Builder withDataSource(DataSource dataSource) {
+            this.dataSource = dataSource;
             return this;
         }
 
@@ -151,11 +151,11 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
          * @return the {@link Mono} with the {@link JDBCVectorStore}
          */
         public Mono<JDBCVectorStore> buildAsync() {
-            if (connection == null) {
-                throw new IllegalArgumentException("connection is required");
+            if (dataSource == null) {
+                throw new IllegalArgumentException("dataSource is required");
             }
 
-            JDBCVectorStore vectorStore = new JDBCVectorStore(connection, options);
+            JDBCVectorStore vectorStore = new JDBCVectorStore(dataSource, options);
             return vectorStore.prepareAsync().thenReturn(vectorStore);
         }
     }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
@@ -14,7 +15,7 @@ public interface JDBCVectorStoreRecordCollectionFactory {
      * @return The new JDBC vector store record collection.
      */
     <Record> JDBCVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(
-        Connection connection,
+        DataSource dataSource,
         String collectionName,
         JDBCVectorStoreRecordCollectionOptions<Record> options);
 }

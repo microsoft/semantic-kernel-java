@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,16 +54,16 @@ public class JDBCVectorStoreDefaultQueryProvider
         supportedVectorTypes.put(List.class, "TEXT");
         supportedVectorTypes.put(Collection.class, "TEXT");
     }
-    protected final Connection connection;
-    protected final String collectionsTable;
-    protected final String prefixForCollectionTables;
+    private final DataSource dataSource;
+    private final String collectionsTable;
+    private final String prefixForCollectionTables;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
     protected JDBCVectorStoreDefaultQueryProvider(
-        @Nonnull Connection connection,
+        @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,
         @Nonnull String prefixForCollectionTables) {
-        this.connection = connection;
+        this.dataSource = dataSource;
         this.collectionsTable = collectionsTable;
         this.prefixForCollectionTables = prefixForCollectionTables;
     }
@@ -110,15 +111,17 @@ public class JDBCVectorStoreDefaultQueryProvider
     }
 
     protected String getCollectionTableName(String collectionName) {
-        return prefixForCollectionTables + collectionName;
+        return validateSQLidentifier(prefixForCollectionTables + collectionName);
     }
 
     @Override
     public void prepareVectorStore() {
-        String createCollectionsTable = "CREATE TABLE IF NOT EXISTS " + collectionsTable
+        String createCollectionsTable = "CREATE TABLE IF NOT EXISTS "
+            + validateSQLidentifier(collectionsTable)
             + " (collectionId VARCHAR(255) PRIMARY KEY);";
 
-        try (PreparedStatement createTable = connection.prepareStatement(createCollectionsTable)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement createTable = connection.prepareStatement(createCollectionsTable)) {
             createTable.execute();
         } catch (SQLException e) {
             throw new SKException("Failed to prepare vector store", e);
@@ -139,11 +142,11 @@ public class JDBCVectorStoreDefaultQueryProvider
 
     @Override
     public boolean collectionExists(String collectionName) {
-        validateSQLidentifier(collectionsTable);
+        String query = "SELECT 1 FROM " + validateSQLidentifier(collectionsTable)
+            + " WHERE collectionId = ?";
 
-        String query = "SELECT 1 FROM " + collectionsTable + " WHERE collectionId = ?";
-
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setObject(1, collectionName);
 
             return statement.executeQuery().next();
@@ -153,10 +156,9 @@ public class JDBCVectorStoreDefaultQueryProvider
     }
 
     @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
     public void createCollection(String collectionName, Class<?> recordClass,
         VectorStoreRecordDefinition recordDefinition) {
-        validateSQLidentifier(collectionName);
-
         Field keyDeclaredField = recordDefinition.getKeyDeclaredField(recordClass);
         List<Field> dataDeclaredFields = recordDefinition.getDataDeclaredFields(recordClass);
         List<Field> vectorDeclaredFields = recordDefinition.getVectorDeclaredFields(recordClass);
@@ -167,16 +169,18 @@ public class JDBCVectorStoreDefaultQueryProvider
             + getColumnNamesAndTypes(dataDeclaredFields, supportedDataTypes) + ", "
             + getColumnNamesAndTypes(vectorDeclaredFields, supportedVectorTypes) + ");";
 
-        String insertCollectionQuery = "INSERT INTO " + collectionsTable
+        String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
             + " (collectionId) VALUES (?)";
 
-        try (PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
             createTable.execute();
         } catch (SQLException e) {
             throw new SKException("Failed to create collection", e);
         }
 
-        try (PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
             insert.setObject(1, collectionName);
             insert.execute();
         } catch (SQLException e) {
@@ -186,22 +190,21 @@ public class JDBCVectorStoreDefaultQueryProvider
 
     @Override
     public void deleteCollection(String collectionName) {
-        validateSQLidentifier(collectionsTable);
-        validateSQLidentifier(getCollectionTableName(collectionName));
-
-        String deleteCollectionOperation = "DELETE FROM " + collectionsTable
+        String deleteCollectionOperation = "DELETE FROM " + validateSQLidentifier(collectionsTable)
             + " WHERE collectionId = ?";
         String dropTableOperation = "DROP TABLE " + getCollectionTableName(collectionName);
 
-        try (PreparedStatement deleteCollection = connection
-            .prepareStatement(deleteCollectionOperation)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement deleteCollection = connection
+                .prepareStatement(deleteCollectionOperation)) {
             deleteCollection.setObject(1, collectionName);
             deleteCollection.execute();
         } catch (SQLException e) {
             throw new SKException("Failed to delete collection", e);
         }
 
-        try (PreparedStatement dropTable = connection.prepareStatement(dropTableOperation)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement dropTable = connection.prepareStatement(dropTableOperation)) {
             dropTable.execute();
         } catch (SQLException e) {
             throw new SKException("Failed to drop table", e);
@@ -210,11 +213,10 @@ public class JDBCVectorStoreDefaultQueryProvider
 
     @Override
     public List<String> getCollectionNames() {
-        validateSQLidentifier(collectionsTable);
+        String query = "SELECT collectionId FROM " + validateSQLidentifier(collectionsTable);
 
-        String query = "SELECT collectionId FROM " + collectionsTable;
-
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
             List<String> collectionNames = new ArrayList<>();
             ResultSet resultSet = statement.executeQuery();
 
@@ -230,10 +232,8 @@ public class JDBCVectorStoreDefaultQueryProvider
 
     @Override
     public <Record> List<Record> getRecords(String collectionName, List<String> keys,
-                                            VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
-                                            GetRecordOptions options) {
-        validateSQLidentifier(getCollectionTableName(collectionName));
-
+        VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+        GetRecordOptions options) {
         List<VectorStoreRecordField> fields;
         if (options == null || options.includeVectors()) {
             fields = recordDefinition.getAllFields();
@@ -246,7 +246,8 @@ public class JDBCVectorStoreDefaultQueryProvider
             + " WHERE " + recordDefinition.getKeyField().getName()
             + " IN (" + getWildcardString(keys.size()) + ")";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
             for (int i = 0; i < keys.size(); ++i) {
                 statement.setObject(i + 1, keys.get(i));
             }
@@ -274,13 +275,12 @@ public class JDBCVectorStoreDefaultQueryProvider
     @Override
     public void deleteRecords(String collectionName, List<String> keys,
         VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) {
-        validateSQLidentifier(getCollectionTableName(collectionName));
-
         String query = "DELETE FROM " + getCollectionTableName(collectionName)
             + " WHERE " + recordDefinition.getKeyField().getName()
             + " IN (" + getWildcardString(keys.size()) + ")";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
             for (int i = 0; i < keys.size(); ++i) {
                 statement.setObject(i + 1, keys.get(i));
             }
@@ -291,10 +291,11 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
-    public static void validateSQLidentifier(String identifier) {
-        if (!identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
-            throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
+    public static String validateSQLidentifier(String identifier) {
+        if (identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+            return identifier;
         }
+        throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
     }
 
     /**
@@ -302,18 +303,18 @@ public class JDBCVectorStoreDefaultQueryProvider
      */
     public static class Builder
         implements JDBCVectorStoreQueryProvider.Builder {
-        protected Connection connection;
-        protected String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
-        protected String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
+        private DataSource dataSource;
+        private String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
+        private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
         /**
-         * Sets the connection.
-         * @param connection the connection
+         * Sets the data source.
+         * @param dataSource the data source
          * @return the builder
          */
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
-        public Builder withConnection(Connection connection) {
-            this.connection = connection;
+        @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
+        public Builder withDataSource(DataSource dataSource) {
+            this.dataSource = dataSource;
             return this;
         }
 
@@ -323,8 +324,7 @@ public class JDBCVectorStoreDefaultQueryProvider
          * @return the builder
          */
         public Builder withCollectionsTable(String collectionsTable) {
-            validateSQLidentifier(collectionsTable);
-            this.collectionsTable = collectionsTable;
+            this.collectionsTable = validateSQLidentifier(collectionsTable);
             return this;
         }
 
@@ -334,18 +334,17 @@ public class JDBCVectorStoreDefaultQueryProvider
          * @return the builder
          */
         public Builder withPrefixForCollectionTables(String prefixForCollectionTables) {
-            validateSQLidentifier(prefixForCollectionTables);
-            this.prefixForCollectionTables = prefixForCollectionTables;
+            this.prefixForCollectionTables = validateSQLidentifier(prefixForCollectionTables);
             return this;
         }
 
         @Override
         public JDBCVectorStoreDefaultQueryProvider build() {
-            if (connection == null) {
-                throw new IllegalArgumentException("connection is required");
+            if (dataSource == null) {
+                throw new IllegalArgumentException("DataSource is required");
             }
 
-            return new JDBCVectorStoreDefaultQueryProvider(connection, collectionsTable,
+            return new JDBCVectorStoreDefaultQueryProvider(dataSource, collectionsTable,
                 prefixForCollectionTables);
         }
     }

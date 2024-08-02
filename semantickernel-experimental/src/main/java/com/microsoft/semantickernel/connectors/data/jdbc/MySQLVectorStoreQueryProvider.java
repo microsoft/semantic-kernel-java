@@ -9,7 +9,9 @@ import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyFi
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,9 +21,13 @@ import java.util.List;
 public class MySQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
 
-    public MySQLVectorStoreQueryProvider(Connection connection, String collectionsTable,
+    private final DataSource dataSource;
+
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    private MySQLVectorStoreQueryProvider(DataSource dataSource, String collectionsTable,
         String prefixForCollectionTables) {
-        super(connection, collectionsTable, prefixForCollectionTables);
+        super(dataSource, collectionsTable, prefixForCollectionTables);
+        this.dataSource = dataSource;
     }
 
     /**
@@ -66,6 +72,7 @@ public class MySQLVectorStoreQueryProvider extends
     }
 
     @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
     public void upsertRecords(String collectionName, List<?> records,
         VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
         validateSQLidentifier(getCollectionTableName(collectionName));
@@ -88,7 +95,8 @@ public class MySQLVectorStoreQueryProvider extends
             + " VALUES (" + getWildcardString(fields.size()) + ")"
             + " ON DUPLICATE KEY UPDATE " + onDuplicateKeyUpdate;
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
             for (Object record : records) {
                 setStatementValues(statement, record, recordDefinition.getAllFields());
                 statement.addBatch();
@@ -102,12 +110,42 @@ public class MySQLVectorStoreQueryProvider extends
 
     public static class Builder
         extends JDBCVectorStoreDefaultQueryProvider.Builder {
+        private DataSource dataSource;
+        private String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
+        private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
+
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public Builder withDataSource(DataSource dataSource) {
+            this.dataSource = dataSource;
+            return this;
+        }
+
+        /**
+         * Sets the collections table name.
+         * @param collectionsTable the collections table name
+         * @return the builder
+         */
+        public Builder withCollectionsTable(String collectionsTable) {
+            this.collectionsTable = validateSQLidentifier(collectionsTable);
+            return this;
+        }
+
+        /**
+         * Sets the prefix for collection tables.
+         * @param prefixForCollectionTables the prefix for collection tables
+         * @return the builder
+         */
+        public Builder withPrefixForCollectionTables(String prefixForCollectionTables) {
+            this.prefixForCollectionTables = validateSQLidentifier(prefixForCollectionTables);
+            return this;
+        }
+
         public MySQLVectorStoreQueryProvider build() {
-            if (connection == null) {
-                throw new IllegalArgumentException("connection is required");
+            if (dataSource == null) {
+                throw new SKException("DataSource is required");
             }
 
-            return new MySQLVectorStoreQueryProvider(connection, collectionsTable,
+            return new MySQLVectorStoreQueryProvider(dataSource, collectionsTable,
                 prefixForCollectionTables);
         }
     }

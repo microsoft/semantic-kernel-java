@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.annotation.Nullable;
 
 public class JDBCVectorStoreOptions {
@@ -14,6 +16,7 @@ public class JDBCVectorStoreOptions {
      *
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
     public JDBCVectorStoreOptions(
         @Nullable JDBCVectorStoreQueryProvider queryProvider,
         @Nullable JDBCVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory) {
@@ -34,6 +37,7 @@ public class JDBCVectorStoreOptions {
      * @return the query provider
      */
     @Nullable
+    @SuppressFBWarnings("EI_EXPOSE_REP") // DataSource in queryProvider is not exposed
     public JDBCVectorStoreQueryProvider getQueryProvider() {
         return queryProvider;
     }
@@ -73,6 +77,7 @@ public class JDBCVectorStoreOptions {
          * @param queryProvider The query provider.
          * @return The updated builder instance.
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
         public Builder withQueryProvider(JDBCVectorStoreQueryProvider queryProvider) {
             this.queryProvider = queryProvider;
             return this;

@@ -4,6 +4,7 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
@@ -26,24 +27,29 @@ public class JDBCVectorStoreTest {
     private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>("mysql:5.7.34");
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";
-    private static Connection connection;
+    private static MysqlDataSource dataSource;
 
     @BeforeAll
-    static void setup() throws SQLException {
-        connection = DriverManager.getConnection(CONTAINER.getJdbcUrl(), MYSQL_USER, MYSQL_PASSWORD);
+    static void setup() {
+        dataSource = new MysqlDataSource();
+        dataSource.setUrl(CONTAINER.getJdbcUrl());
+        dataSource.setUser(MYSQL_USER);
+        dataSource.setPassword(MYSQL_PASSWORD);
     }
 
     @Test
     public void getCollectionNamesAsync() {
-        JDBCVectorStoreOptions options = JDBCVectorStoreOptions.builder()
-                .withQueryProvider(MySQLVectorStoreQueryProvider.builder()
-                        .withConnection(connection)
-                        .build())
+        MySQLVectorStoreQueryProvider queryProvider = MySQLVectorStoreQueryProvider.builder()
+                .withDataSource(dataSource)
                 .build();
 
         JDBCVectorStore vectorStore = JDBCVectorStore.builder()
-                .withConnection(connection)
-                .withOptions(options)
+                .withDataSource(dataSource)
+                .withOptions(
+                        JDBCVectorStoreOptions.builder()
+                                .withQueryProvider(queryProvider)
+                                .build()
+                )
                 .build();
 
         vectorStore.getCollectionNamesAsync().block();

@@ -2,19 +2,13 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreDefaultQueryProvider.validateSQLidentifier;
+import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_COLLECTIONS_TABLE;
+import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
 public class JDBCVectorStoreRecordCollectionOptions<Record> {
-
-    /**
-     * The default name for the collections table.
-     */
-    public static final String DEFAULT_COLLECTIONS_TABLE = "SKCollections";
-
-    /**
-     * The prefix for collection tables.
-     */
-    public static final String DEFAULT_PREFIX_FOR_COLLECTION_TABLES = "SKCollection_";
-
     private final Class<Record> recordClass;
     private final JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
@@ -90,14 +84,9 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
      * Gets the query provider.
      * @return the query provider
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP") // DataSource in queryProvider is not exposed
     public JDBCVectorStoreQueryProvider getQueryProvider() {
         return queryProvider;
-    }
-
-    public static void validateSQLidentifier(String identifier) {
-        if (!identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
-            throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
-        }
     }
 
     public static class Builder<Record> {
@@ -144,6 +133,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
          * @param queryProvider the query provider
          * @return the builder
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
         public Builder<Record> withQueryProvider(JDBCVectorStoreQueryProvider queryProvider) {
             this.queryProvider = queryProvider;
             return this;
@@ -155,8 +145,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
          * @return the builder
          */
         public Builder<Record> withCollectionsTableName(String collectionsTableName) {
-            validateSQLidentifier(collectionsTableName);
-            this.collectionsTableName = collectionsTableName;
+            this.collectionsTableName = validateSQLidentifier(collectionsTableName);
             return this;
         }
 
@@ -166,8 +155,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
          * @return the builder
          */
         public Builder<Record> withPrefixForCollectionTables(String prefixForCollectionTables) {
-            validateSQLidentifier(prefixForCollectionTables);
-            this.prefixForCollectionTables = prefixForCollectionTables;
+            this.prefixForCollectionTables = validateSQLidentifier(prefixForCollectionTables);
             return this;
         }
 

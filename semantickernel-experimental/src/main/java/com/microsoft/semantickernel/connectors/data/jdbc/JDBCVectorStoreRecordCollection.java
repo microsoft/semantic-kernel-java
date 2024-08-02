@@ -12,8 +12,8 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 import java.lang.reflect.Field;
-import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,15 +27,15 @@ public class JDBCVectorStoreRecordCollection<Record>
     private final JDBCVectorStoreQueryProvider queryProvider;
 
     /**
-     * Creates a new instance of the JDBCVectorRecordStore.
-     * If using this constructor, call {@link #prepareAsync()} before using the record collection.
+     * Creates a new instance of the {@link JDBCVectorStoreRecordCollection}.
      *
-     * @param connection The JDBC connection.
-     * @param options    The options for the store.
+     * @param dataSource the data source
+     * @param collectionName the name of the collection
+     * @param options the options
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
+    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
     public JDBCVectorStoreRecordCollection(
-        @Nonnull Connection connection,
+        @Nonnull DataSource dataSource,
         @Nonnull String collectionName,
         @Nonnull JDBCVectorStoreRecordCollectionOptions<Record> options) {
         this.collectionName = collectionName;
@@ -59,7 +59,7 @@ public class JDBCVectorStoreRecordCollection<Record>
         // If the query provider is not provided, set a default one
         if (options.getQueryProvider() == null) {
             this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
-                .withConnection(connection)
+                .withDataSource(dataSource)
                 .build();
         } else {
             this.queryProvider = options.getQueryProvider();
@@ -256,21 +256,39 @@ public class JDBCVectorStoreRecordCollection<Record>
 
     public static class Builder<Record>
         implements SemanticKernelBuilder<JDBCVectorStoreRecordCollection<Record>> {
-        private Connection connection;
+        private DataSource dataSource;
         private String collectionName;
         private JDBCVectorStoreRecordCollectionOptions<Record> options;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
-        public Builder<Record> withConnection(Connection connection) {
-            this.connection = connection;
+        /**
+         * Sets the data source.
+         *
+         * @param dataSource the data source
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
+        public Builder<Record> withDataSource(DataSource dataSource) {
+            this.dataSource = dataSource;
             return this;
         }
 
+        /**
+         * Sets the collection name.
+         *
+         * @param collectionName the collection name
+         * @return the builder
+         */
         public Builder<Record> withCollectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Sets the options.
+         *
+         * @param options the options
+         * @return the builder
+         */
         public Builder<Record> withOptions(JDBCVectorStoreRecordCollectionOptions<Record> options) {
             this.options = options;
             return this;
@@ -278,8 +296,8 @@ public class JDBCVectorStoreRecordCollection<Record>
 
         @Override
         public JDBCVectorStoreRecordCollection<Record> build() {
-            if (connection == null) {
-                throw new IllegalArgumentException("connection is required");
+            if (dataSource == null) {
+                throw new IllegalArgumentException("dataSource is required");
             }
             if (collectionName == null) {
                 throw new IllegalArgumentException("collectionName is required");
@@ -288,7 +306,7 @@ public class JDBCVectorStoreRecordCollection<Record>
                 throw new IllegalArgumentException("options is required");
             }
 
-            return new JDBCVectorStoreRecordCollection<>(connection, collectionName, options);
+            return new JDBCVectorStoreRecordCollection<>(dataSource, collectionName, options);
         }
     }
 }
