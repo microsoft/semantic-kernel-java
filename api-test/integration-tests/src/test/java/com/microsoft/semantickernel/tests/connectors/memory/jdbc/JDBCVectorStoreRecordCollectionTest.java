@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @Testcontainers
 public class JDBCVectorStoreRecordCollectionTest {
     @Container
-    private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>("mysql:latest");
+    private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>("mysql:5.7.34");
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";
     private static MysqlDataSource dataSource;
