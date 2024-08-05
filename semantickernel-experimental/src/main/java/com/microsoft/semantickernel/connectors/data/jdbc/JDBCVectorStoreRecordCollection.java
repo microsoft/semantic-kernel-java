@@ -83,6 +83,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * Checks if the collection exists in the store.
      *
      * @return A Mono emitting a boolean indicating if the collection exists.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Boolean> collectionExistsAsync() {
@@ -95,6 +96,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * Creates the collection in the store.
      *
      * @return A Mono representing the completion of the creation operation.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Void> createCollectionAsync() {
@@ -109,6 +111,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * Creates the collection in the store if it does not exist.
      *
      * @return A Mono representing the completion of the creation operation.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Void> createCollectionIfNotExistsAsync() {
@@ -127,6 +130,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * Deletes the collection from the store.
      *
      * @return A Mono representing the completion of the deletion operation.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Void> deleteCollectionAsync() {
@@ -142,6 +146,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param key       The key of the record to get.
      * @param options The options for getting the record.
      * @return A Mono emitting the record.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Record> getAsync(String key, GetRecordOptions options) {
@@ -160,6 +165,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param keys The keys of the records to get.
      * @param options The options for getting the records.
      * @return A Mono emitting a collection of records.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<List<Record>> getBatchAsync(List<String> keys, GetRecordOptions options) {
@@ -187,6 +193,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param data    The record to upsert.
      * @param options The options for upserting the record.
      * @return A Mono emitting the key of the upserted record.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
@@ -205,6 +212,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param data    The records to upsert.
      * @param options The options for upserting the records.
      * @return A Mono emitting a collection of keys of the upserted records.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<List<String>> upsertBatchAsync(List<Record> data, UpsertRecordOptions options) {
@@ -222,6 +230,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param key       The key of the record to delete.
      * @param options The options for deleting the record.
      * @return A Mono representing the completion of the deletion operation.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Void> deleteAsync(String key, DeleteRecordOptions options) {
@@ -234,6 +243,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param keys The keys of the records to delete.
      * @param options The options for deleting the records.
      * @return A Mono representing the completion of the deletion operation.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Void> deleteBatchAsync(List<String> keys, DeleteRecordOptions options) {
@@ -247,6 +257,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * Prepares the collection for use.
      *
      * @return A Mono representing the completion of the preparation operation.
+     * @throws SKException if the operation fails
      */
     @Override
     public Mono<Void> prepareAsync() {

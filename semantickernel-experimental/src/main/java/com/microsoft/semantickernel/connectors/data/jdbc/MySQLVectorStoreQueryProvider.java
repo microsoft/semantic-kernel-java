@@ -71,6 +71,14 @@ public class MySQLVectorStoreQueryProvider extends
         }
     }
 
+    /**
+     * Upserts records into the collection.
+     * @param collectionName the collection name
+     * @param records the records to upsert
+     * @param recordDefinition the record definition
+     * @param options the upsert options
+     * @throws SKException if the upsert fails
+     */
     @Override
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
     public void upsertRecords(String collectionName, List<?> records,

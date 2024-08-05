@@ -114,6 +114,12 @@ public class JDBCVectorStoreDefaultQueryProvider
         return validateSQLidentifier(prefixForCollectionTables + collectionName);
     }
 
+    /**
+     * Prepares the vector store.
+     * Executes any necessary setup steps for the vector store.
+     *
+     * @throws SKException if an error occurs while preparing the vector store
+     */
     @Override
     public void prepareVectorStore() {
         String createCollectionsTable = "CREATE TABLE IF NOT EXISTS "
@@ -128,6 +134,13 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
+    /**
+     * Checks if the types of the record class fields are supported.
+     *
+     * @param recordClass the record class
+     * @param recordDefinition the record definition
+     * @throws IllegalArgumentException if the types are not supported
+     */
     @Override
     public void validateSupportedTypes(Class<?> recordClass,
         VectorStoreRecordDefinition recordDefinition) {
@@ -140,6 +153,13 @@ public class JDBCVectorStoreDefaultQueryProvider
             recordDefinition.getVectorDeclaredFields(recordClass), supportedVectorTypes.keySet());
     }
 
+    /**
+     * Checks if a collection exists.
+     *
+     * @param collectionName the collection name
+     * @return true if the collection exists, false otherwise
+     * @throws SKException if an error occurs while checking if the collection exists
+     */
     @Override
     public boolean collectionExists(String collectionName) {
         String query = "SELECT 1 FROM " + validateSQLidentifier(collectionsTable)
@@ -155,6 +175,14 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
+    /**
+     * Creates a collection.
+     *
+     * @param collectionName the collection name
+     * @param recordClass the record class
+     * @param recordDefinition the record definition
+     * @throws SKException if an error occurs while creating the collection
+     */
     @Override
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
     public void createCollection(String collectionName, Class<?> recordClass,
@@ -188,6 +216,12 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
+    /**
+     * Deletes a collection.
+     *
+     * @param collectionName the collection name
+     * @throws SKException if an error occurs while deleting the collection
+     */
     @Override
     public void deleteCollection(String collectionName) {
         String deleteCollectionOperation = "DELETE FROM " + validateSQLidentifier(collectionsTable)
@@ -211,6 +245,12 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
+    /**
+     * Gets the collection names.
+     *
+     * @return the collection names
+     * @throws SKException if an error occurs while getting the collection names
+     */
     @Override
     public List<String> getCollectionNames() {
         String query = "SELECT collectionId FROM " + validateSQLidentifier(collectionsTable);
@@ -230,6 +270,18 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
+    /**
+     * Gets a list of records from the store.
+     *
+     * @param collectionName the collection name
+     * @param keys the keys
+     * @param recordDefinition the record definition
+     * @param mapper the mapper
+     * @param options the options
+     * @return the records
+     * @param <Record> the record type
+     * @throws SKException if an error occurs while getting the records
+     */
     @Override
     public <Record> List<Record> getRecords(String collectionName, List<String> keys,
         VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
@@ -272,6 +324,15 @@ public class JDBCVectorStoreDefaultQueryProvider
             "Upsert is not supported. Try with a specific query provider.");
     }
 
+    /**
+     * Deletes records.
+     *
+     * @param collectionName the collection name
+     * @param keys the keys
+     * @param recordDefinition the record definition
+     * @param options the options
+     * @throws SKException if an error occurs while deleting the records
+     */
     @Override
     public void deleteRecords(String collectionName, List<String> keys,
         VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) {
@@ -291,6 +352,13 @@ public class JDBCVectorStoreDefaultQueryProvider
         }
     }
 
+    /**
+     * Validates an SQL identifier.
+     *
+     * @param identifier the identifier
+     * @return the identifier if it is valid
+     * @throws IllegalArgumentException if the identifier is invalid
+     */
     public static String validateSQLidentifier(String identifier) {
         if (identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
             return identifier;

@@ -56,8 +56,12 @@ public class VectorStoreRecordDefinition {
         return fields;
     }
 
+    private enum DeclaredFieldType {
+        KEY, DATA, VECTOR
+    }
+
     private List<Field> getDeclaredFields(Class<?> recordClass, List<VectorStoreRecordField> fields,
-        String fieldType) {
+        DeclaredFieldType fieldType) {
         List<Field> declaredFields = new ArrayList<>();
         for (VectorStoreRecordField field : fields) {
             try {
@@ -85,14 +89,14 @@ public class VectorStoreRecordDefinition {
         return getDeclaredFields(
             recordClass,
             dataFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
-            "Data");
+            DeclaredFieldType.DATA);
     }
 
     public List<Field> getVectorDeclaredFields(Class<?> recordClass) {
         return getDeclaredFields(
             recordClass,
             vectorFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
-            "Vector");
+            DeclaredFieldType.VECTOR);
     }
 
     private VectorStoreRecordDefinition(
