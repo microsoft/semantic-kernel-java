@@ -30,7 +30,8 @@ import reactor.core.publisher.Mono;
 /**
  * An OpenAI implementation of a {@link TextGenerationService}.
  */
-public class OpenAITextGenerationService extends OpenAiService<OpenAIAsyncClient> implements TextGenerationService {
+public class OpenAITextGenerationService extends OpenAiService<OpenAIAsyncClient>
+    implements TextGenerationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAITextGenerationService.class);
 

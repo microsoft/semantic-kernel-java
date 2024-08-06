@@ -79,7 +79,8 @@ import reactor.core.publisher.Mono;
 /**
  * OpenAI chat completion service.
  */
-public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient> implements ChatCompletionService {
+public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
+    implements ChatCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
 
@@ -1055,7 +1056,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient> imple
     /**
      * Builder for creating a new instance of {@link OpenAIChatCompletion}.
      */
-    public static class Builder extends OpenAiServiceBuilder<OpenAIAsyncClient, OpenAIChatCompletion, Builder> {
+    public static class Builder
+        extends OpenAiServiceBuilder<OpenAIAsyncClient, OpenAIChatCompletion, Builder> {
 
         @Override
         public OpenAIChatCompletion build() {
