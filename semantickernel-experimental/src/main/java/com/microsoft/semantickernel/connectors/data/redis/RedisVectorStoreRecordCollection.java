@@ -81,10 +81,13 @@ public class RedisVectorStoreRecordCollection<Record>
         }
 
         // Validate supported types
-        VectorStoreRecordDefinition.validateSupportedKeyTypes(options.getRecordClass(),
-            recordDefinition, supportedKeyTypes);
-        VectorStoreRecordDefinition.validateSupportedVectorTypes(options.getRecordClass(),
-            recordDefinition, supportedVectorTypes);
+        VectorStoreRecordDefinition.validateSupportedTypes(
+            Collections
+                .singletonList(recordDefinition.getKeyDeclaredField(this.options.getRecordClass())),
+            supportedKeyTypes);
+        VectorStoreRecordDefinition.validateSupportedTypes(
+            recordDefinition.getVectorDeclaredFields(this.options.getRecordClass()),
+            supportedVectorTypes);
 
         // If mapper is not provided, set a default one
         if (options.getVectorStoreRecordMapper() == null) {

@@ -133,7 +133,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 } catch (Exception e) {
                     sink.error(new SKException(
                         "Failed to convert result to requested type: "
-                            + variableType.getClazz().getName(),
+                            + variableType.getClazz().getName() + " " + result.getResult(),
                         e));
                 }
             } else {
@@ -196,7 +196,11 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return A new {@code FunctionInvocation} for fluent chaining.
      */
     public <U> FunctionInvocation<U> withResultType(Class<U> resultType) {
-        return withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(resultType));
+        try {
+            return withResultType(contextVariableTypes.getVariableTypeForSuperClass(resultType));
+        } catch (SKException e) {
+            return withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(resultType));
+        }
     }
 
     /**

@@ -79,7 +79,8 @@ import reactor.core.publisher.Mono;
 /**
  * OpenAI chat completion service.
  */
-public class OpenAIChatCompletion extends OpenAiService implements ChatCompletionService {
+public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
+    implements ChatCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenAIChatCompletion.class);
 
@@ -311,6 +312,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
         ChatCompletionsOptions options = executeHook(
             invocationContext,
+            kernel,
             new PreChatCompletionEvent(
                 getCompletionsOptions(
                     this,
@@ -349,7 +351,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                     .collect(Collectors.toList());
 
                 // execute post chat completion hook
-                executeHook(invocationContext, new PostChatCompletionEvent(completions));
+                executeHook(invocationContext, kernel, new PostChatCompletionEvent(completions));
 
                 // Just return the result:
                 // If we don't want to attempt to invoke any functions
@@ -517,11 +519,12 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
                 pluginName,
                 openAIFunctionToolCall.getFunctionName());
 
-            PreToolCallEvent hookResult = executeHook(invocationContext, new PreToolCallEvent(
-                openAIFunctionToolCall.getFunctionName(),
-                openAIFunctionToolCall.getArguments(),
-                function,
-                contextVariableTypes));
+            PreToolCallEvent hookResult = executeHook(invocationContext, kernel,
+                new PreToolCallEvent(
+                    openAIFunctionToolCall.getFunctionName(),
+                    openAIFunctionToolCall.getArguments(),
+                    function,
+                    contextVariableTypes));
 
             function = hookResult.getFunction();
             KernelFunctionArguments arguments = hookResult.getArguments();
@@ -537,12 +540,21 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
     private static <T extends KernelHookEvent> T executeHook(
         @Nullable InvocationContext invocationContext,
+        @Nullable Kernel kernel,
         T event) {
-        KernelHooks kernelHooks = invocationContext != null
-            && invocationContext.getKernelHooks() != null
-                ? invocationContext.getKernelHooks()
-                : new KernelHooks();
-
+        KernelHooks kernelHooks = null;
+        if (kernel == null) {
+            if (invocationContext != null) {
+                kernelHooks = invocationContext.getKernelHooks();
+            }
+        } else {
+            kernelHooks = KernelHooks.merge(
+                kernel.getGlobalKernelHooks(),
+                invocationContext != null ? invocationContext.getKernelHooks() : null);
+        }
+        if (kernelHooks == null) {
+            return event;
+        }
         return kernelHooks.executeHooks(event);
     }
 
@@ -1049,7 +1061,8 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
     /**
      * Builder for creating a new instance of {@link OpenAIChatCompletion}.
      */
-    public static class Builder extends OpenAiServiceBuilder<OpenAIChatCompletion, Builder> {
+    public static class Builder
+        extends OpenAiServiceBuilder<OpenAIAsyncClient, OpenAIChatCompletion, Builder> {
 
         @Override
         public OpenAIChatCompletion build() {

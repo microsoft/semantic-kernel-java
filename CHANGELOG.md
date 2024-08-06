@@ -1,3 +1,15 @@
+# 1.2.1
+
+- Fix bug in `FunctionInvocation` not using per-invocation type conversion when calling `withResultType`.
+- Fix bug in Global Hooks not being invoked under certain circumstances.
+- Add fluent returns to `ChatHistory` `addXMessage` methods.
+- Add user agent opt-out for OpenAI requests by setting the property `semantic-kernel.useragent-disable` to `true`.
+- Add several convenience `invokePromptAsync` methods to `Kernel`.
+
+#### Non-API Changes
+
+- Add custom type Conversion example, CustomTypes_Example
+
 # 1.2.0
 
 - Add ability to use image_url as content for a OpenAi chat completion

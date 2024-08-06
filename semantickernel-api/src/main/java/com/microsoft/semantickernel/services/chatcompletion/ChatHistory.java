@@ -115,7 +115,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * @param encoding   The encoding of the message
      * @param metadata   The metadata of the message
      */
-    public void addMessage(AuthorRole authorRole, String content, Charset encoding,
+    public ChatHistory addMessage(AuthorRole authorRole, String content, Charset encoding,
         FunctionResultMetadata<?> metadata) {
         chatMessageContents.add(
             ChatMessageTextContent.builder()
@@ -124,6 +124,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
                 .withEncoding(encoding)
                 .withMetadata(metadata)
                 .build());
+        return this;
     }
 
     /**
@@ -132,12 +133,13 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * @param authorRole The role of the author of the message
      * @param content    The content of the message
      */
-    public void addMessage(AuthorRole authorRole, String content) {
+    public ChatHistory addMessage(AuthorRole authorRole, String content) {
         chatMessageContents.add(
             ChatMessageTextContent.builder()
                 .withAuthorRole(authorRole)
                 .withContent(content)
                 .build());
+        return this;
     }
 
     /**
@@ -145,8 +147,9 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param content The content of the message
      */
-    public void addMessage(ChatMessageContent<?> content) {
+    public ChatHistory addMessage(ChatMessageContent<?> content) {
         chatMessageContents.add(content);
+        return this;
     }
 
     /**
@@ -154,8 +157,8 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param content The content of the user message
      */
-    public void addUserMessage(String content) {
-        addMessage(AuthorRole.USER, content);
+    public ChatHistory addUserMessage(String content) {
+        return addMessage(AuthorRole.USER, content);
     }
 
     /**
@@ -163,8 +166,8 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param content The content of the assistant message
      */
-    public void addAssistantMessage(String content) {
-        addMessage(AuthorRole.ASSISTANT, content);
+    public ChatHistory addAssistantMessage(String content) {
+        return addMessage(AuthorRole.ASSISTANT, content);
     }
 
     /**
@@ -172,11 +175,12 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param content The content of the system message
      */
-    public void addSystemMessage(String content) {
-        addMessage(AuthorRole.SYSTEM, content);
+    public ChatHistory addSystemMessage(String content) {
+        return addMessage(AuthorRole.SYSTEM, content);
     }
 
-    public void addAll(List<ChatMessageContent<?>> messages) {
+    public ChatHistory addAll(List<ChatMessageContent<?>> messages) {
         chatMessageContents.addAll(messages);
+        return this;
     }
 }
