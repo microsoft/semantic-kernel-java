@@ -36,7 +36,7 @@ public class OpenAIChatMessageContent<T> extends ChatMessageContent<T> {
         @Nullable String modelId,
         @Nullable T innerContent,
         @Nullable Charset encoding,
-        @Nullable FunctionResultMetadata metadata,
+        @Nullable FunctionResultMetadata<?> metadata,
         @Nullable List<OpenAIFunctionToolCall> toolCall) {
         super(authorRole, content, modelId, innerContent, encoding, metadata);
 

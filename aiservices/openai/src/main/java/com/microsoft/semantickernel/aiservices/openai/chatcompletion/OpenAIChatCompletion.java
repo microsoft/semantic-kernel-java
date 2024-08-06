@@ -183,7 +183,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
 
         private final List<ChatRequestMessage> newMessages;
         private final List<ChatRequestMessage> allMessages;
-        private final List<OpenAIChatMessageContent> newChatMessageContent;
+        private final List<OpenAIChatMessageContent<?>> newChatMessageContent;
 
         public ChatMessages(List<ChatRequestMessage> allMessages) {
             this.allMessages = Collections.unmodifiableList(allMessages);
@@ -194,7 +194,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         private ChatMessages(
             List<ChatRequestMessage> allMessages,
             List<ChatRequestMessage> newMessages,
-            List<OpenAIChatMessageContent> newChatMessageContent) {
+            List<OpenAIChatMessageContent<?>> newChatMessageContent) {
             this.allMessages = Collections.unmodifiableList(allMessages);
             this.newMessages = Collections.unmodifiableList(newMessages);
             this.newChatMessageContent = Collections.unmodifiableList(newChatMessageContent);
@@ -218,8 +218,8 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
         }
 
         @CheckReturnValue
-        public ChatMessages addChatMessage(List<OpenAIChatMessageContent> chatMessageContent) {
-            ArrayList<OpenAIChatMessageContent> tmpChatMessageContent = new ArrayList<>(
+        public ChatMessages addChatMessage(List<OpenAIChatMessageContent<?>> chatMessageContent) {
+            ArrayList<OpenAIChatMessageContent<?>> tmpChatMessageContent = new ArrayList<>(
                 newChatMessageContent);
             tmpChatMessageContent.addAll(chatMessageContent);
 
@@ -580,7 +580,7 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             arguments);
     }
 
-    private Mono<List<OpenAIChatMessageContent>> getChatMessageContentsAsync(
+    private Mono<List<OpenAIChatMessageContent<?>>> getChatMessageContentsAsync(
         ChatCompletions completions) {
         FunctionResultMetadata<CompletionsUsage> completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
@@ -594,22 +594,27 @@ public class OpenAIChatCompletion extends OpenAiService implements ChatCompletio
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        return Flux.fromIterable(responseMessages)
-            .flatMap(response -> {
+        List<OpenAIChatMessageContent<?>> chatMessageContent = 
+            responseMessages
+            .stream()
+            .map(response -> {
                 try {
-                    return Mono.just(new OpenAIChatMessageContent(
+                    return new OpenAIChatMessageContent<>(
                         AuthorRole.ASSISTANT,
                         response.getContent(),
                         this.getModelId(),
                         null,
                         null,
                         completionMetadata,
-                        formOpenAiToolCalls(response)));
+                        formOpenAiToolCalls(response));
                 } catch (Exception e) {
-                    return Mono.error(e);
+                    return null;
                 }
             })
-            .collectList();
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        return Mono.just(chatMessageContent);
     }
 
     private List<ChatMessageContent<?>> toOpenAIChatMessageContent(
