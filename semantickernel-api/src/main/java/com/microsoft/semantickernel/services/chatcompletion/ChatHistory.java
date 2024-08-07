@@ -5,11 +5,13 @@ import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageTextContent;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
@@ -18,7 +20,7 @@ import javax.annotation.Nullable;
  */
 public class ChatHistory implements Iterable<ChatMessageContent<?>> {
 
-    private final List<ChatMessageContent<?>> chatMessageContents;
+    private final Collection<ChatMessageContent<?>> chatMessageContents;
 
     /**
      * The default constructor
@@ -33,7 +35,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * @param instructions The instructions to add to the chat history
      */
     public ChatHistory(@Nullable String instructions) {
-        this.chatMessageContents = new ArrayList<>();
+        this.chatMessageContents = new ConcurrentLinkedQueue<>();
         if (instructions != null) {
             this.chatMessageContents.add(
                 ChatMessageTextContent.systemMessage(instructions));
@@ -45,8 +47,8 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      *
      * @param chatMessageContents The chat message contents to add to the chat history
      */
-    public ChatHistory(List<? extends ChatMessageContent> chatMessageContents) {
-        this.chatMessageContents = new ArrayList(chatMessageContents);
+    public ChatHistory(List<? extends ChatMessageContent<?>> chatMessageContents) {
+        this.chatMessageContents = new ConcurrentLinkedQueue<>(chatMessageContents);
     }
 
     /**
@@ -55,7 +57,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * @return List of messages in the chat
      */
     public List<ChatMessageContent<?>> getMessages() {
-        return Collections.unmodifiableList(chatMessageContents);
+        return Collections.unmodifiableList(new ArrayList<>(chatMessageContents));
     }
 
     /**
@@ -67,7 +69,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
         if (chatMessageContents.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(chatMessageContents.get(chatMessageContents.size() - 1));
+        return Optional.of(((ConcurrentLinkedQueue<ChatMessageContent<?>>)chatMessageContents).peek());
     }
 
     /**
@@ -114,7 +116,7 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
      * @param metadata   The metadata of the message
      */
     public ChatHistory addMessage(AuthorRole authorRole, String content, Charset encoding,
-        FunctionResultMetadata metadata) {
+        FunctionResultMetadata<?> metadata) {
         chatMessageContents.add(
             ChatMessageTextContent.builder()
                 .withAuthorRole(authorRole)

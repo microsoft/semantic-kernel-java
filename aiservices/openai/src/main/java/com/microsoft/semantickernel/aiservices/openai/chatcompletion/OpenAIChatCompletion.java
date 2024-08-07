@@ -184,7 +184,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
         private final List<ChatRequestMessage> newMessages;
         private final List<ChatRequestMessage> allMessages;
-        private final List<OpenAIChatMessageContent> newChatMessageContent;
+        private final List<OpenAIChatMessageContent<?>> newChatMessageContent;
 
         public ChatMessages(List<ChatRequestMessage> allMessages) {
             this.allMessages = Collections.unmodifiableList(allMessages);
@@ -195,7 +195,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         private ChatMessages(
             List<ChatRequestMessage> allMessages,
             List<ChatRequestMessage> newMessages,
-            List<OpenAIChatMessageContent> newChatMessageContent) {
+            List<OpenAIChatMessageContent<?>> newChatMessageContent) {
             this.allMessages = Collections.unmodifiableList(allMessages);
             this.newMessages = Collections.unmodifiableList(newMessages);
             this.newChatMessageContent = Collections.unmodifiableList(newChatMessageContent);
@@ -219,8 +219,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         }
 
         @CheckReturnValue
-        public ChatMessages addChatMessage(List<OpenAIChatMessageContent> chatMessageContent) {
-            ArrayList<OpenAIChatMessageContent> tmpChatMessageContent = new ArrayList<>(
+        public ChatMessages addChatMessage(List<OpenAIChatMessageContent<?>> chatMessageContent) {
+            ArrayList<OpenAIChatMessageContent<?>> tmpChatMessageContent = new ArrayList<>(
                 newChatMessageContent);
             tmpChatMessageContent.addAll(chatMessageContent);
 
@@ -357,19 +357,16 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 // If we don't want to attempt to invoke any functions
                 // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
                 if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
-                    return getChatMessageContentsAsync(completions)
-                        .flatMap(m -> {
-                            return Mono.just(messages.addChatMessage(m));
-                        });
+                    List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(completions);
+                    return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
                 // Or if there are no tool calls to be done
                 ChatResponseMessage response = responseMessages.get(0);
                 List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
                 if (toolCalls == null || toolCalls.isEmpty()) {
-                    return getChatMessageContentsAsync(completions)
-                        .flatMap(m -> {
-                            return Mono.just(messages.addChatMessage(m));
-                        });
+                    List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(
+                            completions);
+                    return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
 
                 ChatRequestAssistantMessage requestMessage = new ChatRequestAssistantMessage(
@@ -592,7 +589,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             arguments);
     }
 
-    private Mono<List<OpenAIChatMessageContent>> getChatMessageContentsAsync(
+    private List<OpenAIChatMessageContent<?>> getChatMessageContentsAsync(
         ChatCompletions completions) {
         FunctionResultMetadata<CompletionsUsage> completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
@@ -606,22 +603,28 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        return Flux.fromIterable(responseMessages)
-            .flatMap(response -> {
+        List<OpenAIChatMessageContent<?>> chatMessageContent = 
+            responseMessages
+            .stream()
+            .map(response -> {
                 try {
-                    return Mono.just(new OpenAIChatMessageContent(
+                    return new OpenAIChatMessageContent<>(
                         AuthorRole.ASSISTANT,
                         response.getContent(),
                         this.getModelId(),
                         null,
                         null,
                         completionMetadata,
-                        formOpenAiToolCalls(response)));
-                } catch (Exception e) {
-                    return Mono.error(e);
+                        formOpenAiToolCalls(response));
+                } catch (SKCheckedException e) {
+                    LOGGER.warn("Failed to form chat message content", e);
+                    return null;
                 }
             })
-            .collectList();
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        return chatMessageContent;
     }
 
     private List<ChatMessageContent<?>> toOpenAIChatMessageContent(
@@ -931,7 +934,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(
-        List<? extends ChatMessageContent> messages) {
+        List<? extends ChatMessageContent<?>> messages) {
         if (messages == null || messages.isEmpty()) {
             return new ArrayList<>();
         }
