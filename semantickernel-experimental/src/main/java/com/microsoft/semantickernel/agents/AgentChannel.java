@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Defines the communication protocol for a particular {@code Agent} type.
@@ -27,11 +27,11 @@ public interface AgentChannel<TAgent extends Agent<? extends AgentChannel<TAgent
      * @param agent The agent actively interacting with the chat.
      * @return Asynchronous enumeration of messages.
      */
-    Flux<ChatMessageContent<?>> invokeAsync(TAgent agent);
+    Mono<List<ChatMessageContent<?>>> invokeAsync(TAgent agent);
 
     /**
      * Retrieve the message history specific to this channel.
      * @return Asynchronous enumeration of messages.
      */
-    Flux<ChatMessageContent<?>> getHistoryAsync();
+    Mono<List<ChatMessageContent<?>>> getHistoryAsync();
 }

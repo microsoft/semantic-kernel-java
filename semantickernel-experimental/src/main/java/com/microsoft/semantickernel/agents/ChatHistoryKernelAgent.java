@@ -10,7 +10,6 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -53,7 +52,7 @@ public abstract class ChatHistoryKernelAgent extends KernelAgent<ChatHistoryChan
      * @param history  The chat history.
      * @return An asynchronous sequence of {@link ChatMessageContent}.
      */
-    public abstract Flux<ChatMessageContent<?>> invokeAsync(ChatHistory history);
+    public abstract Mono<List<ChatMessageContent<?>>> invokeAsync(ChatHistory history);
 
     public static abstract class Builder extends KernelAgent.Builder {
         // No additional properties.

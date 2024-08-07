@@ -2,10 +2,11 @@
 package com.microsoft.semantickernel.agents;
 
 import java.util.List;
+
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Point of interaction for one or more agents.
@@ -40,7 +41,7 @@ public abstract class AgentChat {
      * 
      * @return The message history
      */
-    public Flux<ChatMessageContent<?>> getChatMessagesAsync() {
+    public Mono<List<ChatMessageContent<?>>> getChatMessagesAsync() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -54,7 +55,7 @@ public abstract class AgentChat {
      * Any AgentChat instance does not support concurrent invocation and
      * will throw exception if concurrent activity is attempted.
      */
-    public Flux<ChatMessageContent<?>> getChatMessagesAsync(Agent<?> agent) {
+    public Mono<List<ChatMessageContent<?>>> getChatMessagesAsync(Agent<?> agent) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -86,7 +87,7 @@ public abstract class AgentChat {
      * @param agent The agent actively interacting with the chat.
      * @return Asynchronous enumeration of messages.
      */
-    protected Flux<ChatMessageContent<?>> invokeAgentAsync(Agent<?> agent) {
+    protected Mono<List<ChatMessageContent<?>>> invokeAgentAsync(Agent<?> agent) {
         throw new UnsupportedOperationException("Not implemented");
     }
 

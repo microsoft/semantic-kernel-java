@@ -2,10 +2,11 @@
 package com.microsoft.semantickernel.agents;
 
 import java.util.List;
+
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * A {@link AgentChannel} specialization that acts upon a {@link ChatHistoryHandler}.
@@ -25,8 +26,8 @@ public class ChatHistoryChannel implements AgentChannel<ChatHistoryKernelAgent> 
      * @return An asynchronous stream of chat messages.
      */
     @Override
-    public Flux<ChatMessageContent<?>> invokeAsync(ChatHistoryKernelAgent agent) {
-        return Flux.error(new UnsupportedOperationException("Not implemented"));
+    public Mono<List<ChatMessageContent<?>>> invokeAsync(ChatHistoryKernelAgent agent) {
+        return Mono.error(new UnsupportedOperationException("Not implemented"));
     }
 
     /**
@@ -45,8 +46,8 @@ public class ChatHistoryChannel implements AgentChannel<ChatHistoryKernelAgent> 
      * @return An asynchronous stream of chat messages.
      */
     @Override
-    public Flux<ChatMessageContent<?>> getHistoryAsync() {
-        return Flux.fromIterable(this.history.getMessages());
+    public Mono<List<ChatMessageContent<?>>> getHistoryAsync() {
+        return Mono.just(this.history.getMessages());
     }
 
     /**
