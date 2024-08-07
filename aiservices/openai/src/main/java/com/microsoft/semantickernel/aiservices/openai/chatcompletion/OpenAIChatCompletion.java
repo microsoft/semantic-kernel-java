@@ -357,19 +357,16 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 // If we don't want to attempt to invoke any functions
                 // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
                 if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
-                    return getChatMessageContentsAsync(completions)
-                        .flatMap(m -> {
-                            return Mono.just(messages.addChatMessage(m));
-                        });
+                    List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(completions);
+                    return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
                 // Or if there are no tool calls to be done
                 ChatResponseMessage response = responseMessages.get(0);
                 List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
                 if (toolCalls == null || toolCalls.isEmpty()) {
-                    return getChatMessageContentsAsync(completions)
-                        .flatMap(m -> {
-                            return Mono.just(messages.addChatMessage(m));
-                        });
+                    List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(
+                            completions);
+                    return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
 
                 ChatRequestAssistantMessage requestMessage = new ChatRequestAssistantMessage(
@@ -592,7 +589,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             arguments);
     }
 
-    private Mono<List<OpenAIChatMessageContent<?>>> getChatMessageContentsAsync(
+    private List<OpenAIChatMessageContent<?>> getChatMessageContentsAsync(
         ChatCompletions completions) {
         FunctionResultMetadata<CompletionsUsage> completionMetadata = FunctionResultMetadata.build(
             completions.getId(),
@@ -619,14 +616,15 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                         null,
                         completionMetadata,
                         formOpenAiToolCalls(response));
-                } catch (Exception e) {
+                } catch (SKCheckedException e) {
+                    LOGGER.warn("Failed to form chat message content", e);
                     return null;
                 }
             })
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        return Mono.just(chatMessageContent);
+        return chatMessageContent;
     }
 
     private List<ChatMessageContent<?>> toOpenAIChatMessageContent(
@@ -936,7 +934,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(
-        List<? extends ChatMessageContent> messages) {
+        List<? extends ChatMessageContent<?>> messages) {
         if (messages == null || messages.isEmpty()) {
             return new ArrayList<>();
         }
