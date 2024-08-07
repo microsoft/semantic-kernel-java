@@ -619,7 +619,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                         null,
                         completionMetadata,
                         formOpenAiToolCalls(response));
-                } catch (Exception e) {
+                } catch (SKCheckedException e) {
+                    LOGGER.warn("Failed to form chat message content", e);
                     return null;
                 }
             })
@@ -936,7 +937,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
     }
 
     private static List<ChatRequestMessage> getChatRequestMessages(
-        List<? extends ChatMessageContent> messages) {
+        List<? extends ChatMessageContent<?>> messages) {
         if (messages == null || messages.isEmpty()) {
             return new ArrayList<>();
         }
