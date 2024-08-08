@@ -2,21 +2,26 @@ package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
-import com.microsoft.semantickernel.connectors.data.jdbc.MySQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.mysql.cj.jdbc.MysqlDataSource;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
 
+import com.microsoft.semantickernel.tests.connectors.memory.jdbc.JDBCVectorStoreRecordCollectionTest.QueryProvider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,24 +29,41 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Testcontainers
 public class JDBCVectorStoreTest {
     @Container
-    private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>("mysql:5.7.34");
-    private static final String MYSQL_USER = "test";
-    private static final String MYSQL_PASSWORD = "test";
-    private static MysqlDataSource dataSource;
+    private static final MySQLContainer<?> MYSQL_CONTAINER = new MySQLContainer<>("mysql:5.7.34");
 
-    @BeforeAll
-    static void setup() {
-        dataSource = new MysqlDataSource();
-        dataSource.setUrl(CONTAINER.getJdbcUrl());
-        dataSource.setUser(MYSQL_USER);
-        dataSource.setPassword(MYSQL_PASSWORD);
-    }
+    private static final DockerImageName PGVECTOR = DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres");
+    @Container
+    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(PGVECTOR);
 
-    @Test
-    public void getCollectionNamesAsync() {
-        MySQLVectorStoreQueryProvider queryProvider = MySQLVectorStoreQueryProvider.builder()
-                .withDataSource(dataSource)
-                .build();
+    private JDBCVectorStore buildVectorStore(QueryProvider provider) {
+        JDBCVectorStoreQueryProvider queryProvider;
+        DataSource dataSource;
+
+        switch (provider) {
+            case MySQL:
+                MysqlDataSource mysqlDataSource = new MysqlDataSource();
+                mysqlDataSource.setUrl(MYSQL_CONTAINER.getJdbcUrl());
+                mysqlDataSource.setUser(MYSQL_CONTAINER.getUsername());
+                mysqlDataSource.setPassword(MYSQL_CONTAINER.getPassword());
+                dataSource = mysqlDataSource;
+                queryProvider = MySQLVectorStoreQueryProvider.builder()
+                        .withDataSource(dataSource)
+                        .build();
+                break;
+            case PostgreSQL:
+                PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
+                pgSimpleDataSource.setUrl(POSTGRESQL_CONTAINER.getJdbcUrl());
+                pgSimpleDataSource.setUser(POSTGRESQL_CONTAINER.getUsername());
+                pgSimpleDataSource.setPassword(POSTGRESQL_CONTAINER.getPassword());
+                dataSource = pgSimpleDataSource;
+                queryProvider = PostgreSQLVectorStoreQueryProvider.builder()
+                        .withDataSource(dataSource)
+                        .build();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown query provider: " + provider);
+        }
+
 
         JDBCVectorStore vectorStore = JDBCVectorStore.builder()
                 .withDataSource(dataSource)
@@ -51,6 +73,16 @@ public class JDBCVectorStoreTest {
                                 .build()
                 )
                 .build();
+
+        vectorStore.prepareAsync().block();
+        return vectorStore;
+    }
+
+
+    @ParameterizedTest
+    @EnumSource(QueryProvider.class)
+    public void getCollectionNamesAsync(QueryProvider provider) {
+        JDBCVectorStore vectorStore = buildVectorStore(provider);
 
         vectorStore.getCollectionNamesAsync().block();
 

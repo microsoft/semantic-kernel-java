@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import java.sql.ResultSet;
 
 import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreDefaultQueryProvider.validateSQLidentifier;
 import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_COLLECTIONS_TABLE;
@@ -10,7 +13,7 @@ import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQ
 
 public class JDBCVectorStoreRecordCollectionOptions<Record> {
     private final Class<Record> recordClass;
-    private final JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper;
+    private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
     private final JDBCVectorStoreQueryProvider queryProvider;
     private final String collectionsTableName;
@@ -19,7 +22,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
     private JDBCVectorStoreRecordCollectionOptions(
         Class<Record> recordClass,
         VectorStoreRecordDefinition recordDefinition,
-        JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper,
+        VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper,
         JDBCVectorStoreQueryProvider queryProvider,
         String collectionsTableName,
         String prefixForCollectionTables) {
@@ -60,7 +63,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
      * Gets the vector store record mapper.
      * @return the vector store record mapper
      */
-    public JDBCVectorStoreRecordMapper<Record> getVectorStoreRecordMapper() {
+    public VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper() {
         return vectorStoreRecordMapper;
     }
 
@@ -92,7 +95,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
     public static class Builder<Record> {
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;
-        private JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper;
+        private VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
         private JDBCVectorStoreQueryProvider queryProvider;
         private String collectionsTableName = DEFAULT_COLLECTIONS_TABLE;
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
@@ -123,7 +126,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
          * @return the builder
          */
         public Builder<Record> withVectorStoreRecordMapper(
-            JDBCVectorStoreRecordMapper<Record> vectorStoreRecordMapper) {
+            VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper) {
             this.vectorStoreRecordMapper = vectorStoreRecordMapper;
             return this;
         }

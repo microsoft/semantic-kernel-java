@@ -18,7 +18,7 @@ public class Hotel {
     @VectorStoreRecordVectorAttribute(dimensions = 3)
     private final List<Float> descriptionEmbedding;
     @VectorStoreRecordDataAttribute
-    private final double rating;
+    private double rating;
 
     public Hotel() {
         this(null, null, 0, null, null, 0.0);
@@ -55,5 +55,9 @@ public class Hotel {
 
     public double getRating() {
         return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 }

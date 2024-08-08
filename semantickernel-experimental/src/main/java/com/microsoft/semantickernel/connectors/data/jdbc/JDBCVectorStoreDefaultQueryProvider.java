@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
@@ -27,11 +28,36 @@ import java.util.stream.Collectors;
 
 public class JDBCVectorStoreDefaultQueryProvider
     implements JDBCVectorStoreQueryProvider {
-    private static final Map<Class<?>, String> supportedKeyTypes;
-    private static final Map<Class<?>, String> supportedDataTypes;
-    private static final Map<Class<?>, String> supportedVectorTypes;
+    /**
+     * Map of supported key types to their SQL types.
+     * Can be modified by subclasses.
+     */
+    protected Map<Class<?>, String> supportedKeyTypes;
 
-    static {
+    /**
+     * Map of supported data types to their SQL types.
+     * Can be modified by subclasses.
+     */
+    protected Map<Class<?>, String> supportedDataTypes;
+
+    /**
+     * Map of supported vector types to their SQL types.
+     * Can be modified by subclasses.
+     */
+    protected Map<Class<?>, String> supportedVectorTypes;
+    private final DataSource dataSource;
+    private final String collectionsTable;
+    private final String prefixForCollectionTables;
+
+    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
+    protected JDBCVectorStoreDefaultQueryProvider(
+        @Nonnull DataSource dataSource,
+        @Nonnull String collectionsTable,
+        @Nonnull String prefixForCollectionTables) {
+        this.dataSource = dataSource;
+        this.collectionsTable = collectionsTable;
+        this.prefixForCollectionTables = prefixForCollectionTables;
+
         supportedKeyTypes = new HashMap<>();
         supportedKeyTypes.put(String.class, "VARCHAR(255)");
 
@@ -53,19 +79,6 @@ public class JDBCVectorStoreDefaultQueryProvider
         supportedVectorTypes.put(String.class, "TEXT");
         supportedVectorTypes.put(List.class, "TEXT");
         supportedVectorTypes.put(Collection.class, "TEXT");
-    }
-    private final DataSource dataSource;
-    private final String collectionsTable;
-    private final String prefixForCollectionTables;
-
-    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
-    protected JDBCVectorStoreDefaultQueryProvider(
-        @Nonnull DataSource dataSource,
-        @Nonnull String collectionsTable,
-        @Nonnull String prefixForCollectionTables) {
-        this.dataSource = dataSource;
-        this.collectionsTable = collectionsTable;
-        this.prefixForCollectionTables = prefixForCollectionTables;
     }
 
     /**
@@ -102,6 +115,12 @@ public class JDBCVectorStoreDefaultQueryProvider
             .collect(Collectors.joining(", "));
     }
 
+    /**
+     * Formats the column names and types for a table.
+     * @param fields the fields
+     * @param types the types
+     * @return the formatted column names and types
+     */
     protected String getColumnNamesAndTypes(List<Field> fields, Map<Class<?>, String> types) {
         List<String> columns = fields.stream()
             .map(field -> field.getName() + " " + types.get(field.getType()))
@@ -284,7 +303,8 @@ public class JDBCVectorStoreDefaultQueryProvider
      */
     @Override
     public <Record> List<Record> getRecords(String collectionName, List<String> keys,
-        VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+        VectorStoreRecordDefinition recordDefinition,
+        VectorStoreRecordMapper<Record, ResultSet> mapper,
         GetRecordOptions options) {
         List<VectorStoreRecordField> fields;
         if (options == null || options.includeVectors()) {
