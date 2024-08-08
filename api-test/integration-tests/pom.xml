@@ -73,6 +73,11 @@
             <version>8.0.33</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.2</version> <!-- Use the latest version -->
+        </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -138,6 +143,31 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.45.0</version> <!-- Use the latest version -->
+                <executions>
+                    <execution>
+                        <id>build-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>pgvector:latest</name>
+                            <build>
+                                <dockerFile>${project.basedir}/api-test/integration-tests/src/test/java/com/microsoft/semantickernel/tests/jdbc/pgvector/Dockerfile</dockerFile>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
             </plugin>
         </plugins>
     </build>

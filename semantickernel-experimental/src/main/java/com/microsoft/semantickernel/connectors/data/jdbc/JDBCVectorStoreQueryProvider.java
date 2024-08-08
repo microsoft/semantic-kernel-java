@@ -2,11 +2,13 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 
+import java.sql.ResultSet;
 import java.util.List;
 
 /**
@@ -81,7 +83,8 @@ public interface JDBCVectorStoreQueryProvider {
      * @return the records
      */
     <Record> List<Record> getRecords(String collectionName, List<String> keys,
-        VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+        VectorStoreRecordDefinition recordDefinition,
+        VectorStoreRecordMapper<Record, ResultSet> mapper,
         GetRecordOptions options);
 
     /**

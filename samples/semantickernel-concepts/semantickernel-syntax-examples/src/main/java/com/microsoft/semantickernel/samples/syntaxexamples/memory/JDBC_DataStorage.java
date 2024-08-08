@@ -7,7 +7,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
-import com.microsoft.semantickernel.connectors.data.jdbc.MySQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
@@ -18,8 +18,6 @@ import reactor.core.publisher.Mono;
 
 import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Base64;

@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.data.jdbc;
+package com.microsoft.semantickernel.connectors.data.mysql;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreDefaultQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
