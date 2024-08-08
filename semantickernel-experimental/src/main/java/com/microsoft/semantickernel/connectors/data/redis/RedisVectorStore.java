@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStore;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
 
-public class RedisVectorStore implements VectorStore<RedisVectorStoreRecordCollection<?>> {
+public class RedisVectorStore implements VectorStore {
 
     private final JedisPooled client;
     private final RedisVectorStoreOptions options;
@@ -30,6 +31,22 @@ public class RedisVectorStore implements VectorStore<RedisVectorStoreRecordColle
         this.options = options;
     }
 
+    @Override
+    public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
+        @Nonnull String collectionName,
+        @Nonnull Class<Key> keyClass,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
+        if (keyClass != String.class) {
+            throw new IllegalArgumentException("Redis only supports string keys");
+        }
+
+        return (VectorStoreRecordCollection<Key, Record>) getCollection(
+            collectionName,
+            recordClass,
+            recordDefinition);
+    }
+
     /**
      * Gets a collection from the vector store.
      *
@@ -38,8 +55,7 @@ public class RedisVectorStore implements VectorStore<RedisVectorStoreRecordColle
      * @param recordDefinition The record definition.
      * @return The collection.
      */
-    @Override
-    public <Key, Record> RedisVectorStoreRecordCollection<Record> getCollection(
+    public <Record> RedisVectorStoreRecordCollection<Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordDefinition recordDefinition) {
@@ -74,7 +90,6 @@ public class RedisVectorStore implements VectorStore<RedisVectorStoreRecordColle
 
     /**
      * Builder for the Redis vector store.
-     *
      */
     public static Builder builder() {
         return new Builder();

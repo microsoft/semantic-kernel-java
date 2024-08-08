@@ -13,12 +13,9 @@ import com.azure.search.documents.indexes.models.VectorSearchProfile;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
+import javax.annotation.Nonnull;
 
 public class AzureAISearchVectorStoreCollectionCreateMapping {
 

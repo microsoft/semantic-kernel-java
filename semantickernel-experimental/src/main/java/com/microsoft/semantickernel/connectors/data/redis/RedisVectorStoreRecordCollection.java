@@ -12,6 +12,17 @@ import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import reactor.core.publisher.Mono;
@@ -24,18 +35,6 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.IndexDefinition;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.stream.Collectors;
 
 public class RedisVectorStoreRecordCollection<Record>
     implements VectorStoreRecordCollection<String, Record> {
@@ -143,7 +142,7 @@ public class RedisVectorStoreRecordCollection<Record>
      * @return A Mono representing the completion of the creation operation.
      */
     @Override
-    public Mono<Void> createCollectionAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(() -> {
             Schema schema = RedisVectorStoreCollectionCreateMapping
                 .mapToSchema(recordDefinition.getAllFields());
@@ -155,17 +154,19 @@ public class RedisVectorStoreRecordCollection<Record>
                 collectionName,
                 IndexOptions.defaultOptions().setDefinition(indexDefinition),
                 schema);
-        }).subscribeOn(Schedulers.boundedElastic()).then();
+        })
+            .subscribeOn(Schedulers.boundedElastic())
+            .then(Mono.just(this));
     }
 
     @Override
-    public Mono<Void> createCollectionIfNotExistsAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionIfNotExistsAsync() {
         return collectionExistsAsync().flatMap(exists -> {
             if (!exists) {
                 return createCollectionAsync();
             }
 
-            return Mono.empty();
+            return Mono.just(this);
         });
     }
 
@@ -203,7 +204,7 @@ public class RedisVectorStoreRecordCollection<Record>
     /**
      * Gets a record from the store.
      *
-     * @param key       The key of the record to get.
+     * @param key     The key of the record to get.
      * @param options The options for getting the record.
      * @return A Mono emitting the record.
      */
@@ -243,7 +244,7 @@ public class RedisVectorStoreRecordCollection<Record>
     /**
      * Gets a batch of records from the store.
      *
-     * @param keys The keys of the records to get.
+     * @param keys    The keys of the records to get.
      * @param options The options for getting the records.
      * @return A Mono emitting a list of records.
      */
@@ -336,7 +337,7 @@ public class RedisVectorStoreRecordCollection<Record>
     /**
      * Deletes a record from the store.
      *
-     * @param key       The key of the record to delete.
+     * @param key     The key of the record to delete.
      * @param options The options for deleting the record.
      * @return A Mono representing the completion of the deletion operation.
      */

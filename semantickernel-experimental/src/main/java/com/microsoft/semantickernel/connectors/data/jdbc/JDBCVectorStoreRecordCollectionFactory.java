@@ -2,7 +2,6 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 
 /**
  * Factory for creating JDBC vector store record collections.

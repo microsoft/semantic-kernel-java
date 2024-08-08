@@ -4,16 +4,15 @@ package com.microsoft.semantickernel.connectors.data.azureaisearch;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.models.SearchIndex;
 import com.microsoft.semantickernel.data.VectorStore;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import reactor.core.publisher.Mono;
-
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
+import reactor.core.publisher.Mono;
 
-public class AzureAISearchVectorStore
-    implements VectorStore<AzureAISearchVectorStoreRecordCollection<?>> {
+public class AzureAISearchVectorStore implements VectorStore {
 
     private final SearchIndexAsyncClient client;
     private final AzureAISearchVectorStoreOptions options;
@@ -21,7 +20,7 @@ public class AzureAISearchVectorStore
     /**
      * Creates a new instance of {@link AzureAISearchVectorStore}.
      *
-     * @param client The Azure AI Search client.
+     * @param client  The Azure AI Search client.
      * @param options The options for the vector store.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -34,17 +33,29 @@ public class AzureAISearchVectorStore
     /**
      * Gets a new instance of {@link AzureAISearchVectorStoreRecordCollection}
      *
-     * @param collectionName The name of the collection.
-     * @param recordClass The class type of the record.
+     * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the record.
      * @param recordDefinition The record definition.
      * @return The collection.
      */
     @Override
-    public <Key, Record> AzureAISearchVectorStoreRecordCollection<Record> getCollection(
+    public final <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
+        @Nonnull String collectionName,
+        @Nonnull Class<Key> keyClass,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
+        if (!keyClass.equals(String.class)) {
+            throw new IllegalArgumentException("Azure AI Search only supports string keys");
+        }
+
+        return (VectorStoreRecordCollection<Key, Record>) getCollection(
+            collectionName, recordClass, recordDefinition);
+    }
+
+    public <Record> AzureAISearchVectorStoreRecordCollection<Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,
-        VectorStoreRecordDefinition recordDefinition) {
-
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
         if (options.getVectorStoreRecordCollectionFactory() != null) {
             return options.getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
@@ -56,7 +67,9 @@ public class AzureAISearchVectorStore
                         .build());
         }
 
-        return new AzureAISearchVectorStoreRecordCollection<>(client, collectionName,
+        return new AzureAISearchVectorStoreRecordCollection<>(
+            client,
+            collectionName,
             AzureAISearchVectorStoreRecordCollectionOptions.<Record>builder()
                 .withRecordClass(recordClass)
                 .withRecordDefinition(recordDefinition)
@@ -86,6 +99,7 @@ public class AzureAISearchVectorStore
      * Builder for {@link AzureAISearchVectorStore}.
      */
     public static class Builder {
+
         @Nullable
         private SearchIndexAsyncClient client;
         @Nullable
@@ -109,7 +123,8 @@ public class AzureAISearchVectorStore
          * @param options The options for the Azure AI Search vector store.
          * @return The updated builder instance.
          */
-        public Builder withOptions(@Nonnull AzureAISearchVectorStoreOptions options) {
+        public Builder withOptions(
+            @Nonnull AzureAISearchVectorStoreOptions options) {
             this.options = options;
             return this;
         }

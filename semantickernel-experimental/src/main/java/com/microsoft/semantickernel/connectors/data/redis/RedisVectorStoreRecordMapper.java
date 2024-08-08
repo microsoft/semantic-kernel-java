@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
-
-import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 public class RedisVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, Entry<String, Object>> {

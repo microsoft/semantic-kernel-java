@@ -5,32 +5,22 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.azure.core.util.ClientOptions;
-import com.azure.core.util.MetricsOptions;
-import com.azure.core.util.TracingOptions;
-import com.azure.search.documents.indexes.SearchIndexAsyncClient;
-import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
-import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore;
-import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
-import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStore;
-import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class InMemory_DataStorage {
+
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -43,6 +33,7 @@ public class InMemory_DataStorage {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
+
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
@@ -72,8 +63,7 @@ public class InMemory_DataStorage {
         }
 
         static String encodeId(String realId) {
-            byte[] bytes = Base64.getUrlEncoder().encode(realId.getBytes(StandardCharsets.UTF_8));
-            return new String(bytes, StandardCharsets.UTF_8);
+            return AzureAISearch_DataStorage.GitHubFile.encodeId(realId);
         }
     }
 
@@ -126,7 +116,7 @@ public class InMemory_DataStorage {
     }
 
     private static Mono<List<String>> storeData(
-        VolatileVectorStoreRecordCollection<GitHubFile> recordCollection,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
         OpenAITextEmbeddingGenerationService embeddingGeneration,
         Map<String, String> data) {
 

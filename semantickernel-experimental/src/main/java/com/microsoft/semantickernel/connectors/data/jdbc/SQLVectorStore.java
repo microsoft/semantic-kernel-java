@@ -2,11 +2,10 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.VectorStore;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import reactor.core.publisher.Mono;
 
-public interface SQLVectorStore<RecordCollection extends VectorStoreRecordCollection<?, ?>>
-    extends VectorStore<RecordCollection> {
+public interface SQLVectorStore
+    extends VectorStore {
 
     /**
      * Prepares the vector store.
