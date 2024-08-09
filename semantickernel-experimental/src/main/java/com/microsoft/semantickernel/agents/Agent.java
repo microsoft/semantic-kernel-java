@@ -15,9 +15,9 @@ import reactor.core.publisher.Mono;
  * In addition to identity and descriptive meta-data, an {@link Agent}
  * must define its communication protocol, or {@link AgentChannel}.
  * 
- * @param <TChannel> The type of {@code AgentChannel} associated with the agent.
+ * @param  The type of {@code AgentChannel} associated with the agent.
  */
-public abstract class Agent<TChannel extends AgentChannel<? extends Agent<TChannel>>> {
+public abstract class Agent {
     
     /**
      * The description of the agent (optional)
@@ -90,28 +90,28 @@ public abstract class Agent<TChannel extends AgentChannel<? extends Agent<TChann
      * 
      * @return An {@link AgentChannel} appropriate for the agent type.
      */
-    protected abstract Mono<TChannel> createChannelAsync();
+    protected abstract Mono<AgentChannel> createChannelAsync();
 
     /** 
      * Base class for agent builders.
      */
-    public abstract static class Builder<TAgent extends Agent<?>> {
+    public abstract static class Builder<TAgent extends Agent> {
         
         protected String id;
         protected String name;
         protected String description;
 
-        public Builder<TAgent> withId(String id) {
+        public Builder<? extends Agent> withId(String id) {
             this.id = id;
             return this;
         }
 
-        public Builder<TAgent> withName(String name) {
+        public Builder<? extends Agent> withName(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder<TAgent> withDescription(String description) {
+        public Builder<? extends Agent> withDescription(String description) {
             this.description = description;
             return this;
         }

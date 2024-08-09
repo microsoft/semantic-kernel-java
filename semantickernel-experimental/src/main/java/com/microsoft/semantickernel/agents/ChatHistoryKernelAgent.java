@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 /**
  * A {@link KernelAgent} specialization bound to a {@link ChatHistoryChannel}.
  */
-public abstract class ChatHistoryKernelAgent extends KernelAgent<ChatHistoryChannel> implements ChatHistoryHandler {
+public abstract class ChatHistoryKernelAgent extends KernelAgent implements ChatHistoryHandler {
 
     /**
      * Construct a new {@link ChatHistoryKernelAgent} instance.
@@ -42,7 +42,7 @@ public abstract class ChatHistoryKernelAgent extends KernelAgent<ChatHistoryChan
 
  
     @Override
-    public Mono<ChatHistoryChannel> createChannelAsync() {
+    public Mono<AgentChannel> createChannelAsync() {
         return Mono.just(new ChatHistoryChannel());
     }
 

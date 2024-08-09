@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 /**
  * A {@link AgentChannel} specialization that acts upon a {@link ChatHistoryHandler}.
  */
-public class ChatHistoryChannel implements AgentChannel<ChatHistoryKernelAgent> {
+public class ChatHistoryChannel implements AgentChannel {
     
     private final ChatHistory history;
 
@@ -26,7 +26,7 @@ public class ChatHistoryChannel implements AgentChannel<ChatHistoryKernelAgent> 
      * @return An asynchronous stream of chat messages.
      */
     @Override
-    public Mono<List<ChatMessageContent<?>>> invokeAsync(ChatHistoryKernelAgent agent) {
+    public Mono<List<ChatMessageContent<?>>> invokeAsync(Agent agent) {
         return Mono.error(new UnsupportedOperationException("Not implemented"));
     }
 
@@ -36,8 +36,8 @@ public class ChatHistoryChannel implements AgentChannel<ChatHistoryKernelAgent> 
      * @param history The chat message history.
      */
     @Override
-    public void receiveAsync(List<ChatMessageContent<?>> history) {
-        this.history.addAll(history);
+    public Mono<Void> receiveAsync(List<ChatMessageContent<?>> history) {
+        return null;
     }
 
     /**

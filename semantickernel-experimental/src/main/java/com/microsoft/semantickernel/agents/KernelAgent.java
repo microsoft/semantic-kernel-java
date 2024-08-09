@@ -7,9 +7,9 @@ import com.microsoft.semantickernel.Kernel;
 
 /**
  * Base class for agents utilizing {@link Microsoft.SemanticKernel.Kernel} plugins or services.
- * @param <TChannel> The type of {@code AgentChannel} associated with the agent.
+ * @param  The type of {@code AgentChannel} associated with the agent.
  */
-public abstract class KernelAgent<TChannel extends AgentChannel<? extends KernelAgent<TChannel>>> extends Agent<TChannel> {
+public abstract class KernelAgent extends Agent  {
     
     private final String instructions;
     private final Kernel kernel;
@@ -44,7 +44,7 @@ public abstract class KernelAgent<TChannel extends AgentChannel<? extends Kernel
     /**
      * Builder for {@link KernelAgent} instances.
      */
-    public abstract static class Builder extends Agent.Builder<KernelAgent<?>> {
+    public abstract static class Builder extends Agent.Builder<KernelAgent> {
        
         protected String instructions;
         protected Kernel kernel;

@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 /**
  * Contract for an agent that utilizes a {@link ChatHistoryChannel}.
  */
-public interface ChatHistoryHandler extends AgentChannel<ChatHistoryKernelAgent> {
+public interface ChatHistoryHandler extends AgentChannel {
     
     /**
      * Entry point for calling into an agent from a {@link ChatHistoryChannel}.
