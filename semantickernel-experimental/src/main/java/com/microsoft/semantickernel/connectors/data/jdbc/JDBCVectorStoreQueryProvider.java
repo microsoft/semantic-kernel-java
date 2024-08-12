@@ -2,12 +2,15 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 
+import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The JDBC vector store query provider.
@@ -23,6 +26,27 @@ public interface JDBCVectorStoreQueryProvider {
      * The prefix for collection tables.
      */
     String DEFAULT_PREFIX_FOR_COLLECTION_TABLES = "SKCollection_";
+
+    /**
+     * Gets the supported key types and their corresponding SQL types.
+     *
+     * @return the supported key types
+     */
+    Map<Class<?>, String> getSupportedKeyTypes();
+
+    /**
+     * Gets the supported data types and their corresponding SQL types.
+     *
+     * @return the supported data types
+     */
+    Map<Class<?>, String> getSupportedDataTypes();
+
+    /**
+     * Gets the supported vector types and their corresponding SQL types.
+     *
+     * @return the supported vector types
+     */
+    Map<Class<?>, String> getSupportedVectorTypes();
 
     /**
      * Prepares the vector store.
@@ -81,7 +105,8 @@ public interface JDBCVectorStoreQueryProvider {
      * @return the records
      */
     <Record> List<Record> getRecords(String collectionName, List<String> keys,
-        VectorStoreRecordDefinition recordDefinition, JDBCVectorStoreRecordMapper<Record> mapper,
+        VectorStoreRecordDefinition recordDefinition,
+        VectorStoreRecordMapper<Record, ResultSet> mapper,
         GetRecordOptions options);
 
     /**

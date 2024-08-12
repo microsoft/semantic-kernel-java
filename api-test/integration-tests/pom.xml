@@ -73,6 +73,11 @@
             <version>8.0.33</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.2</version> <!-- Use the latest version -->
+        </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
