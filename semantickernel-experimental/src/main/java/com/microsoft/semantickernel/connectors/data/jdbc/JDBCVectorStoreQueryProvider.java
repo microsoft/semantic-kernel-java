@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The JDBC vector store query provider.
@@ -25,6 +26,27 @@ public interface JDBCVectorStoreQueryProvider {
      * The prefix for collection tables.
      */
     String DEFAULT_PREFIX_FOR_COLLECTION_TABLES = "SKCollection_";
+
+    /**
+     * Gets the supported key types and their corresponding SQL types.
+     *
+     * @return the supported key types
+     */
+    Map<Class<?>, String> getSupportedKeyTypes();
+
+    /**
+     * Gets the supported data types and their corresponding SQL types.
+     *
+     * @return the supported data types
+     */
+    Map<Class<?>, String> getSupportedDataTypes();
+
+    /**
+     * Gets the supported vector types and their corresponding SQL types.
+     *
+     * @return the supported vector types
+     */
+    Map<Class<?>, String> getSupportedVectorTypes();
 
     /**
      * Prepares the vector store.

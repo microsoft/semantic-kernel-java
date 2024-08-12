@@ -25,26 +25,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JDBCVectorStoreDefaultQueryProvider
     implements JDBCVectorStoreQueryProvider {
-    /**
-     * Map of supported key types to their SQL types.
-     * Can be modified by subclasses.
-     */
-    protected Map<Class<?>, String> supportedKeyTypes;
 
-    /**
-     * Map of supported data types to their SQL types.
-     * Can be modified by subclasses.
-     */
-    protected Map<Class<?>, String> supportedDataTypes;
-
-    /**
-     * Map of supported vector types to their SQL types.
-     * Can be modified by subclasses.
-     */
-    protected Map<Class<?>, String> supportedVectorTypes;
+    private Map<Class<?>, String> supportedKeyTypes;
+    private Map<Class<?>, String> supportedDataTypes;
+    private Map<Class<?>, String> supportedVectorTypes;
     private final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
@@ -95,14 +83,9 @@ public class JDBCVectorStoreDefaultQueryProvider
      * @return the formatted wildcard string
      */
     protected String getWildcardString(int wildcards) {
-        StringBuilder wildcardString = new StringBuilder();
-        for (int i = 0; i < wildcards; ++i) {
-            wildcardString.append("?");
-            if (i < wildcards - 1) {
-                wildcardString.append(", ");
-            }
-        }
-        return wildcardString.toString();
+        return Stream.generate(() -> "?")
+            .limit(wildcards)
+            .collect(Collectors.joining(", "));
     }
 
     /**
@@ -131,6 +114,36 @@ public class JDBCVectorStoreDefaultQueryProvider
 
     protected String getCollectionTableName(String collectionName) {
         return validateSQLidentifier(prefixForCollectionTables + collectionName);
+    }
+
+    /**
+     * Gets the supported key types and their corresponding SQL types.
+     *
+     * @return the supported key types
+     */
+    @Override
+    public Map<Class<?>, String> getSupportedKeyTypes() {
+        return new HashMap<>(this.supportedKeyTypes);
+    }
+
+    /**
+     * Gets the supported data types and their corresponding SQL types.
+     *
+     * @return the supported data types
+     */
+    @Override
+    public Map<Class<?>, String> getSupportedDataTypes() {
+        return new HashMap<>(this.supportedDataTypes);
+    }
+
+    /**
+     * Gets the supported vector types and their corresponding SQL types.
+     *
+     * @return the supported vector types
+     */
+    @Override
+    public Map<Class<?>, String> getSupportedVectorTypes() {
+        return new HashMap<>(this.supportedVectorTypes);
     }
 
     /**
@@ -165,11 +178,12 @@ public class JDBCVectorStoreDefaultQueryProvider
         VectorStoreRecordDefinition recordDefinition) {
         VectorStoreRecordDefinition.validateSupportedTypes(
             Collections.singletonList(recordDefinition.getKeyDeclaredField(recordClass)),
-            supportedKeyTypes.keySet());
+            getSupportedKeyTypes().keySet());
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getDataDeclaredFields(recordClass), supportedDataTypes.keySet());
+            recordDefinition.getDataDeclaredFields(recordClass), getSupportedDataTypes().keySet());
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getVectorDeclaredFields(recordClass), supportedVectorTypes.keySet());
+            recordDefinition.getVectorDeclaredFields(recordClass),
+            getSupportedVectorTypes().keySet());
     }
 
     /**
@@ -213,8 +227,8 @@ public class JDBCVectorStoreDefaultQueryProvider
         String createStorageTable = "CREATE TABLE IF NOT EXISTS "
             + getCollectionTableName(collectionName)
             + " (" + keyDeclaredField.getName() + " VARCHAR(255) PRIMARY KEY, "
-            + getColumnNamesAndTypes(dataDeclaredFields, supportedDataTypes) + ", "
-            + getColumnNamesAndTypes(vectorDeclaredFields, supportedVectorTypes) + ");";
+            + getColumnNamesAndTypes(dataDeclaredFields, getSupportedDataTypes()) + ", "
+            + getColumnNamesAndTypes(vectorDeclaredFields, getSupportedVectorTypes()) + ");";
 
         String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
             + " (collectionId) VALUES (?)";

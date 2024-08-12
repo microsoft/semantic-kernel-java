@@ -25,9 +25,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostgreSQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
+
+    private Map<Class<?>, String> supportedKeyTypes;
+    private Map<Class<?>, String> supportedDataTypes;
+    private Map<Class<?>, String> supportedVectorTypes;
+
     private final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
@@ -61,6 +67,36 @@ public class PostgreSQLVectorStoreQueryProvider extends
         supportedDataTypes.put(String.class, "TEXT");
         supportedVectorTypes.put(List.class, "VECTOR(%d)");
         supportedVectorTypes.put(Collection.class, "VECTOR(%d)");
+    }
+
+    /**
+     * Gets the supported key types and their corresponding SQL types.
+     *
+     * @return the supported key types
+     */
+    @Override
+    public Map<Class<?>, String> getSupportedKeyTypes() {
+        return new HashMap<>(this.supportedKeyTypes);
+    }
+
+    /**
+     * Gets the supported data types and their corresponding SQL types.
+     *
+     * @return the supported data types
+     */
+    @Override
+    public Map<Class<?>, String> getSupportedDataTypes() {
+        return new HashMap<>(this.supportedDataTypes);
+    }
+
+    /**
+     * Gets the supported vector types and their corresponding SQL types.
+     *
+     * @return the supported vector types
+     */
+    @Override
+    public Map<Class<?>, String> getSupportedVectorTypes() {
+        return new HashMap<>(this.supportedVectorTypes);
     }
 
     /**
@@ -103,7 +139,7 @@ public class PostgreSQLVectorStoreQueryProvider extends
                 }
 
                 if (declaredField.getType().equals(String.class)) {
-                    columnNames.append(field.getName())
+                    columnNames.append(field.getName()).append(" ")
                         .append(supportedVectorTypes.get(String.class));
                 } else {
                     // Get the vector type and dimensions
