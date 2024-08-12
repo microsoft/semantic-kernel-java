@@ -4,11 +4,11 @@ package com.microsoft.semantickernel.data;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import java.util.List;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 public interface VectorStoreRecordCollection<Key, Record> {
+
     /**
      * Gets the name of the collection.
      *
@@ -28,14 +28,14 @@ public interface VectorStoreRecordCollection<Key, Record> {
      *
      * @return A Mono representing the completion of the creation operation.
      */
-    Mono<Void> createCollectionAsync();
+    Mono<VectorStoreRecordCollection<Key, Record>> createCollectionAsync();
 
     /**
      * Creates the collection in the store if it does not exist.
      *
      * @return A Mono representing the completion of the creation operation.
      */
-    Mono<Void> createCollectionIfNotExistsAsync();
+    Mono<VectorStoreRecordCollection<Key, Record>> createCollectionIfNotExistsAsync();
 
     /**
      * Deletes the collection from the store.
@@ -47,7 +47,7 @@ public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Gets a record from the store.
      *
-     * @param key The key of the record to get.
+     * @param key     The key of the record to get.
      * @param options The options for getting the record.
      * @return A Mono emitting the record.
      */
@@ -56,7 +56,7 @@ public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Gets a batch of records from the store.
      *
-     * @param keys The keys of the records to get.
+     * @param keys    The keys of the records to get.
      * @param options The options for getting the records.
      * @return A Mono emitting a list of records.
      */
@@ -65,7 +65,7 @@ public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Inserts or updates a record in the store.
      *
-     * @param data The record to upsert.
+     * @param data    The record to upsert.
      * @param options The options for upserting the record.
      * @return A Mono emitting the key of the upserted record.
      */
@@ -74,7 +74,7 @@ public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Inserts or updates a batch of records in the store.
      *
-     * @param data The records to upsert.
+     * @param data    The records to upsert.
      * @param options The options for upserting the records.
      * @return A Mono emitting a list of keys of the upserted records.
      */
@@ -83,7 +83,7 @@ public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Deletes a record from the store.
      *
-     * @param key The key of the record to delete.
+     * @param key     The key of the record to delete.
      * @param options The options for deleting the record.
      * @return A Mono representing the completion of the deletion operation.
      */
@@ -92,7 +92,7 @@ public interface VectorStoreRecordCollection<Key, Record> {
     /**
      * Deletes a batch of records from the store.
      *
-     * @param keys The keys of the records to delete.
+     * @param keys    The keys of the records to delete.
      * @param options The options for deleting the records.
      * @return A Mono representing the completion of the deletion operation.
      */

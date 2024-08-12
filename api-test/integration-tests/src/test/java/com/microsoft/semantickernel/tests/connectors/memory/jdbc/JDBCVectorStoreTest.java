@@ -1,25 +1,21 @@
 package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 public class JDBCVectorStoreTest {
@@ -43,7 +39,7 @@ public class JDBCVectorStoreTest {
                 .withDataSource(dataSource)
                 .build();
 
-        JDBCVectorStore vectorStore = JDBCVectorStore.builder()
+        JDBCVectorStore  vectorStore = JDBCVectorStore.builder()
                 .withDataSource(dataSource)
                 .withOptions(
                         JDBCVectorStoreOptions.builder()

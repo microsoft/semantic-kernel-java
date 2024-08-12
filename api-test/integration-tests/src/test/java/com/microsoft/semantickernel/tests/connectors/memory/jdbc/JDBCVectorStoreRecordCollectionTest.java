@@ -1,37 +1,34 @@
 package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 @Testcontainers
 public class JDBCVectorStoreRecordCollectionTest {
+
     @Container
     private static final MySQLContainer<?> CONTAINER = new MySQLContainer<>("mysql:5.7.34");
     private static final String MYSQL_USER = "test";
     private static final String MYSQL_PASSWORD = "test";
     private static MysqlDataSource dataSource;
+
     @BeforeAll
     static void setup() {
         dataSource = new MysqlDataSource();
@@ -40,16 +37,17 @@ public class JDBCVectorStoreRecordCollectionTest {
         dataSource.setPassword(MYSQL_PASSWORD);
     }
 
-    private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(@Nonnull String collectionName) {
-        JDBCVectorStoreRecordCollection<Hotel> recordCollection =  new JDBCVectorStoreRecordCollection<>(
-                dataSource,
-                collectionName,
-                JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
-                        .withRecordClass(Hotel.class)
-                        .withQueryProvider(MySQLVectorStoreQueryProvider.builder()
-                                .withDataSource(dataSource)
-                                .build())
-                        .build());
+    private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(
+        @Nonnull String collectionName) {
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = new JDBCVectorStoreRecordCollection<>(
+            dataSource,
+            collectionName,
+            JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
+                .withRecordClass(Hotel.class)
+                .withQueryProvider(MySQLVectorStoreQueryProvider.builder()
+                    .withDataSource(dataSource)
+                    .build())
+                .build());
 
         recordCollection.prepareAsync().block();
         recordCollection.createCollectionIfNotExistsAsync().block();
@@ -63,11 +61,16 @@ public class JDBCVectorStoreRecordCollectionTest {
 
     private List<Hotel> getHotels() {
         return List.of(
-                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), 3.0),
-                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0),
-                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0)
+            new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f),
+                4.0),
+            new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f),
+                3.0),
+            new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f),
+                5.0),
+            new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f),
+                4.0),
+            new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f),
+                5.0)
         );
     }
 

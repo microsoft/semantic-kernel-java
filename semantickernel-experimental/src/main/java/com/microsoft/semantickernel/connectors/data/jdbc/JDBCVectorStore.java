@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
@@ -14,7 +16,7 @@ import java.util.List;
 /**
  * A JDBC vector store.
  */
-public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordCollection<?>> {
+public class JDBCVectorStore implements SQLVectorStore {
     private final DataSource dataSource;
     private final JDBCVectorStoreOptions options;
     private final JDBCVectorStoreQueryProvider queryProvider;
@@ -59,11 +61,32 @@ public class JDBCVectorStore implements SQLVectorStore<JDBCVectorStoreRecordColl
      * @return The collection.
      */
     @Override
-    public <Key, Record> JDBCVectorStoreRecordCollection<Record> getCollection(
+    public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
+        @Nonnull String collectionName, @Nonnull Class<Key> keyClass,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
+        if (keyClass != String.class) {
+            throw new IllegalArgumentException("Redis only supports string keys");
+        }
+
+        return (VectorStoreRecordCollection<Key, Record>) getCollection(
+            collectionName,
+            recordClass,
+            recordDefinition);
+    }
+
+    /**
+     * Gets a collection from the vector store.
+     *
+     * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the record.
+     * @param recordDefinition The record definition.
+     * @return The collection.
+     */
+    public <Record> JDBCVectorStoreRecordCollection<Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordDefinition recordDefinition) {
-
         if (this.options != null && this.options.getVectorStoreRecordCollectionFactory() != null) {
             return this.options.getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(

@@ -1,31 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import reactor.core.publisher.Mono;
-
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
+import reactor.core.publisher.Mono;
 
 /**
  * Represents a vector store.
- *
- * @param <RecordCollection> The type of the record collection.
  */
-public interface VectorStore<RecordCollection extends VectorStoreRecordCollection<?, ?>> {
+public interface VectorStore {
 
     /**
      * Gets a collection from the vector store.
      *
-     * @param collectionName The name of the collection.
-     * @param recordClass The class type of the record.
+     * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the record.
      * @param recordDefinition The record definition.
      * @return The collection.
      */
-    <Key, Record> RecordCollection getCollection(
+    <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
         @Nonnull String collectionName,
+        @Nonnull Class<Key> keyClass,
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordDefinition recordDefinition);
 

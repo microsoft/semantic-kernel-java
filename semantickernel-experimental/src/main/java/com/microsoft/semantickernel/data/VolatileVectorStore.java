@@ -2,15 +2,16 @@
 package com.microsoft.semantickernel.data;
 
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import reactor.core.publisher.Mono;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import reactor.core.publisher.Mono;
 
-public class VolatileVectorStore implements VectorStore<VolatileVectorStoreRecordCollection<?>> {
+public class VolatileVectorStore implements VectorStore {
+
     private final Map<String, Map<String, ?>> collections;
 
     public VolatileVectorStore() {
@@ -25,9 +26,25 @@ public class VolatileVectorStore implements VectorStore<VolatileVectorStoreRecor
      * @return The collection.
      */
     @Override
-    public <Key, Record> VolatileVectorStoreRecordCollection<Record> getCollection(
-        @Nonnull String collectionName, @Nonnull Class<Record> recordClass,
-        VectorStoreRecordDefinition recordDefinition) {
+    public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
+        @Nonnull String collectionName,
+        @Nonnull Class<Key> keyClass,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
+        if (keyClass != String.class) {
+            throw new IllegalArgumentException("Volatile only supports string keys");
+        }
+
+        return (VectorStoreRecordCollection<Key, Record>) getCollection(
+            collectionName,
+            recordClass,
+            recordDefinition);
+    }
+
+    public <Record> VectorStoreRecordCollection<String, Record> getCollection(
+        @Nonnull String collectionName,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
         return new VolatileVectorStoreRecordCollection<>(
             collectionName,
             collections,
