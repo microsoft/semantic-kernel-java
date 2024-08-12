@@ -13,13 +13,10 @@ import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
-import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -27,8 +24,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class AzureAISearch_DataStorage {
+
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -45,6 +45,7 @@ public class AzureAISearch_DataStorage {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
+
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
@@ -120,7 +121,9 @@ public class AzureAISearch_DataStorage {
             .build();
 
         String collectionName = "skgithubfiles";
-        var collection = azureAISearchVectorStore.getCollection(collectionName, GitHubFile.class,
+        var collection = azureAISearchVectorStore.getCollection(
+            collectionName,
+            GitHubFile.class,
             null);
 
         // Create collection if it does not exist and store data
@@ -140,7 +143,7 @@ public class AzureAISearch_DataStorage {
     }
 
     private static Mono<List<String>> storeData(
-        AzureAISearchVectorStoreRecordCollection<GitHubFile> recordStore,
+        VectorStoreRecordCollection<String, GitHubFile> recordStore,
         OpenAITextEmbeddingGenerationService embeddingGeneration,
         Map<String, String> data) {
 

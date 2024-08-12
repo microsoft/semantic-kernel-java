@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class AzureAISearchVectorStoreOptions {
+
     @Nullable
     private final AzureAISearchVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
 
@@ -49,6 +49,7 @@ public class AzureAISearchVectorStoreOptions {
      *
      */
     public static class Builder {
+
         @Nullable
         private AzureAISearchVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
 

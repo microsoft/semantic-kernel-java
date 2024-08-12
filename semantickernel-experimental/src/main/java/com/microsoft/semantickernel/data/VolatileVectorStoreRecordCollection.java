@@ -8,18 +8,17 @@ import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
-import reactor.core.publisher.Mono;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import reactor.core.publisher.Mono;
 
-public class VolatileVectorStoreRecordCollection<Record>
-    implements VectorStoreRecordCollection<String, Record> {
+public class VolatileVectorStoreRecordCollection<Record> implements
+    VectorStoreRecordCollection<String, Record> {
+
     private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
         Collections.singletonList(String.class));
     private Map<String, Map<String, ?>> collections;
@@ -82,8 +81,9 @@ public class VolatileVectorStoreRecordCollection<Record>
      * @return A Mono representing the completion of the creation operation.
      */
     @Override
-    public Mono<Void> createCollectionAsync() {
-        return Mono.fromRunnable(() -> collections.put(collectionName, new ConcurrentHashMap<>()));
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
+        return Mono.fromRunnable(() -> collections.put(collectionName, new ConcurrentHashMap<>()))
+            .then(Mono.just(this));
     }
 
     /**
@@ -92,9 +92,10 @@ public class VolatileVectorStoreRecordCollection<Record>
      * @return A Mono representing the completion of the creation operation.
      */
     @Override
-    public Mono<Void> createCollectionIfNotExistsAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionIfNotExistsAsync() {
         return Mono
-            .fromRunnable(() -> collections.putIfAbsent(collectionName, new ConcurrentHashMap<>()));
+            .fromRunnable(() -> collections.putIfAbsent(collectionName, new ConcurrentHashMap<>()))
+            .then(Mono.just(this));
     }
 
     /**
@@ -110,7 +111,7 @@ public class VolatileVectorStoreRecordCollection<Record>
     /**
      * Gets a record from the store.
      *
-     * @param key       The key of the record to get.
+     * @param key     The key of the record to get.
      * @param options The options for getting the record.
      * @return A Mono emitting the record.
      */
@@ -122,7 +123,7 @@ public class VolatileVectorStoreRecordCollection<Record>
     /**
      * Gets a batch of records from the store.
      *
-     * @param keys The keys of the records to get.
+     * @param keys    The keys of the records to get.
      * @param options The options for getting the records.
      * @return A Mono emitting a list of records.
      */
@@ -188,7 +189,7 @@ public class VolatileVectorStoreRecordCollection<Record>
     /**
      * Deletes a record from the store.
      *
-     * @param key       The key of the record to delete.
+     * @param key     The key of the record to delete.
      * @param options The options for deleting the record.
      * @return A Mono representing the completion of the deletion operation.
      */

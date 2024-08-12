@@ -6,25 +6,26 @@ import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryP
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class JDBCVectorStoreRecordCollection<Record>
     implements SQLVectorStoreRecordCollection<String, Record> {
+
     private final String collectionName;
     private final VectorStoreRecordDefinition recordDefinition;
     private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
@@ -34,9 +35,9 @@ public class JDBCVectorStoreRecordCollection<Record>
     /**
      * Creates a new instance of the {@link JDBCVectorStoreRecordCollection}.
      *
-     * @param dataSource the data source
+     * @param dataSource     the data source
      * @param collectionName the name of the collection
-     * @param options the options
+     * @param options        the options
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
     public JDBCVectorStoreRecordCollection(
@@ -119,12 +120,12 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @throws SKException if the operation fails
      */
     @Override
-    public Mono<Void> createCollectionAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(
             () -> queryProvider.createCollection(this.collectionName, options.getRecordClass(),
                 recordDefinition))
             .subscribeOn(Schedulers.boundedElastic())
-            .then();
+            .then(Mono.just(this));
     }
 
     /**
@@ -134,7 +135,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @throws SKException if the operation fails
      */
     @Override
-    public Mono<Void> createCollectionIfNotExistsAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionIfNotExistsAsync() {
         return collectionExistsAsync().map(
             exists -> {
                 if (!exists) {
@@ -143,7 +144,7 @@ public class JDBCVectorStoreRecordCollection<Record>
                 return Mono.empty();
             })
             .flatMap(mono -> mono)
-            .then();
+            .then(Mono.just(this));
     }
 
     /**
@@ -163,7 +164,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     /**
      * Gets a record from the store.
      *
-     * @param key       The key of the record to get.
+     * @param key     The key of the record to get.
      * @param options The options for getting the record.
      * @return A Mono emitting the record.
      * @throws SKException if the operation fails
@@ -182,7 +183,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     /**
      * Gets a batch of records from the store.
      *
-     * @param keys The keys of the records to get.
+     * @param keys    The keys of the records to get.
      * @param options The options for getting the records.
      * @return A Mono emitting a collection of records.
      * @throws SKException if the operation fails
@@ -247,7 +248,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     /**
      * Deletes a record from the store.
      *
-     * @param key       The key of the record to delete.
+     * @param key     The key of the record to delete.
      * @param options The options for deleting the record.
      * @return A Mono representing the completion of the deletion operation.
      * @throws SKException if the operation fails
@@ -260,7 +261,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     /**
      * Deletes a batch of records from the store.
      *
-     * @param keys The keys of the records to delete.
+     * @param keys    The keys of the records to delete.
      * @param options The options for deleting the records.
      * @return A Mono representing the completion of the deletion operation.
      * @throws SKException if the operation fails
@@ -287,6 +288,7 @@ public class JDBCVectorStoreRecordCollection<Record>
 
     public static class Builder<Record>
         implements SemanticKernelBuilder<JDBCVectorStoreRecordCollection<Record>> {
+
         private DataSource dataSource;
         private String collectionName;
         private JDBCVectorStoreRecordCollectionOptions<Record> options;

@@ -11,22 +11,18 @@ import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfigurat
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
 import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.IndexingResult;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import javax.annotation.Nonnull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +34,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-public class AzureAISearchVectorStoreRecordCollection<Record>
-    implements VectorStoreRecordCollection<String, Record> {
+public class AzureAISearchVectorStoreRecordCollection<Record> implements
+    VectorStoreRecordCollection<String, Record> {
 
     private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
         Collections.singletonList(
@@ -124,7 +123,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record>
     }
 
     @Override
-    public Mono<Void> createCollectionAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         List<SearchField> searchFields = new ArrayList<>();
         List<VectorSearchAlgorithmConfiguration> algorithms = new ArrayList<>();
         List<VectorSearchProfile> profiles = new ArrayList<>();
@@ -151,18 +150,19 @@ public class AzureAISearchVectorStoreRecordCollection<Record>
                 .setAlgorithms(algorithms)
                 .setProfiles(profiles));
 
-        return client.createIndex(newIndex).then();
+        return client.createIndex(newIndex).then(Mono.just(this));
     }
 
     @Override
-    public Mono<Void> createCollectionIfNotExistsAsync() {
+    public Mono<VectorStoreRecordCollection<String, Record>> createCollectionIfNotExistsAsync() {
         return collectionExistsAsync().flatMap(
             exists -> {
                 if (!exists) {
                     return createCollectionAsync();
                 }
                 return Mono.empty();
-            });
+            })
+            .then(Mono.just(this));
     }
 
     @Override
@@ -191,11 +191,11 @@ public class AzureAISearchVectorStoreRecordCollection<Record>
         }
 
         return client.getDocumentWithResponse(key, this.options.getRecordClass(), selectedFields)
-            .map(response -> {
+            .flatMap(response -> {
                 if (response.getStatusCode() == 404) {
-                    throw new SKException("Record not found: " + key);
+                    return Mono.error(new SKException("Record not found: " + key));
                 }
-                return response.getValue();
+                return Mono.just(response.getValue());
             });
 
     }

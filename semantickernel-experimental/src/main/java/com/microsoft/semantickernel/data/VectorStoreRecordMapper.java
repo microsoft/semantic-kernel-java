@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.data;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 
+import javax.annotation.Nullable;
 import java.util.function.Function;
 
 /**
@@ -12,6 +13,7 @@ import java.util.function.Function;
  * @param <StorageModel> the storage model type
  */
 public class VectorStoreRecordMapper<Record, StorageModel> {
+    @Nullable
     private final Function<Record, StorageModel> recordToStorageModelMapper;
     private final Function<StorageModel, Record> storageModelToRecordMapper;
 
@@ -22,7 +24,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      * @param storageModelToRecordMapper the function to convert a storage model to a record
      */
     protected VectorStoreRecordMapper(
-        Function<Record, StorageModel> recordToStorageModelMapper,
+        @Nullable Function<Record, StorageModel> recordToStorageModelMapper,
         Function<StorageModel, Record> storageModelToRecordMapper) {
         this.recordToStorageModelMapper = recordToStorageModelMapper;
         this.storageModelToRecordMapper = storageModelToRecordMapper;
@@ -33,6 +35,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      *
      * @return the function to convert a record to a storage model
      */
+    @Nullable
     public Function<Record, StorageModel> getRecordToStorageModelMapper() {
         return recordToStorageModelMapper;
     }

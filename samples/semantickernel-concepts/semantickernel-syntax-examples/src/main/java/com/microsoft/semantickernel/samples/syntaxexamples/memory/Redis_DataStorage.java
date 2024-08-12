@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.microsoft.semantickernel.samples.syntaxexamples.memory.AzureAISearch_DataStorage.GitHubFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
@@ -77,8 +78,7 @@ public class Redis_DataStorage {
         }
 
         static String encodeId(String realId) {
-            byte[] bytes = Base64.getUrlEncoder().encode(realId.getBytes(StandardCharsets.UTF_8));
-            return new String(bytes, StandardCharsets.UTF_8);
+            return AzureAISearch_DataStorage.GitHubFile.encodeId(realId);
         }
     }
 
