@@ -3,6 +3,8 @@ package com.microsoft.semantickernel.agents;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 
 import reactor.core.publisher.Mono;
@@ -29,7 +31,7 @@ public interface AgentChannel {
      * @param agent The agent actively interacting with the chat.
      * @return Asynchronous enumeration of messages.
      */
-    Mono<List<ChatMessageContent<?>>> invokeAsync(Agent agent);
+    Mono<List<ChatMessageContent<?>>> invokeAsync(@Nonnull Agent agent);
 
     /**
      * Retrieve the message history specific to this channel.
