@@ -20,6 +20,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -439,6 +440,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 name,
                 template,
                 templateFormat,
+                Collections.emptySet(),
                 description,
                 inputVariables,
                 outputVariable,
