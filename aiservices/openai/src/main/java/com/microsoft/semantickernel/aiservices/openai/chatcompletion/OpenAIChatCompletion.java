@@ -357,7 +357,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 // If we don't want to attempt to invoke any functions
                 // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
                 if (autoInvokeAttempts == 0 || responseMessages.size() != 1) {
-                    List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(completions);
+                    List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(
+                        completions);
                     return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
                 // Or if there are no tool calls to be done
@@ -365,7 +366,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
                 if (toolCalls == null || toolCalls.isEmpty()) {
                     List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(
-                            completions);
+                        completions);
                     return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
 
@@ -603,8 +604,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
-        List<OpenAIChatMessageContent<?>> chatMessageContent = 
-            responseMessages
+        List<OpenAIChatMessageContent<?>> chatMessageContent = responseMessages
             .stream()
             .map(response -> {
                 try {
