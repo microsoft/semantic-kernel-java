@@ -69,7 +69,8 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
         if (chatMessageContents.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(((ConcurrentLinkedQueue<ChatMessageContent<?>>)chatMessageContents).peek());
+        return Optional
+            .of(((ConcurrentLinkedQueue<ChatMessageContent<?>>) chatMessageContents).peek());
     }
 
     /**

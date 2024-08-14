@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map.Entry;
 
-public class RedisVectorStoreRecordCollectionOptions<Record> {
+public class RedisJsonVectorStoreRecordCollectionOptions<Record> {
     private final Class<Record> recordClass;
     @Nullable
     private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
@@ -16,7 +16,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
 
-    private RedisVectorStoreRecordCollectionOptions(
+    private RedisJsonVectorStoreRecordCollectionOptions(
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
         @Nullable VectorStoreRecordDefinition recordDefinition,
@@ -76,7 +76,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
     }
 
     /**
-     * Builder for {@link RedisVectorStoreRecordCollectionOptions}.
+     * Builder for {@link RedisJsonVectorStoreRecordCollectionOptions}.
      *
      * @param <Record> the record type
      */
@@ -140,12 +140,12 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
          *
          * @return the options
          */
-        public RedisVectorStoreRecordCollectionOptions<Record> build() {
+        public RedisJsonVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
                 throw new IllegalArgumentException("recordClass must be provided");
             }
 
-            return new RedisVectorStoreRecordCollectionOptions<>(
+            return new RedisJsonVectorStoreRecordCollectionOptions<>(
                 recordClass,
                 vectorStoreRecordMapper,
                 recordDefinition,

@@ -55,7 +55,7 @@ public class RedisVectorStore implements VectorStore {
      * @param recordDefinition The record definition.
      * @return The collection.
      */
-    public <Record> RedisVectorStoreRecordCollection<Record> getCollection(
+    public <Record> VectorStoreRecordCollection<String, Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordDefinition recordDefinition) {
@@ -65,17 +65,27 @@ public class RedisVectorStore implements VectorStore {
                 .createVectorStoreRecordCollection(
                     client,
                     collectionName,
-                    RedisVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(recordClass)
-                        .withRecordDefinition(recordDefinition)
-                        .build());
+                    recordClass,
+                    recordDefinition);
         }
 
-        return new RedisVectorStoreRecordCollection<>(client, collectionName,
-            RedisVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(recordClass)
-                .withRecordDefinition(recordDefinition)
-                .build());
+        if (options.getStorageType() == RedisStorageType.JSON) {
+            return new RedisJsonVectorStoreRecordCollection<>(
+                client,
+                collectionName,
+                RedisJsonVectorStoreRecordCollectionOptions.<Record>builder()
+                    .withRecordClass(recordClass)
+                    .withRecordDefinition(recordDefinition)
+                    .build());
+        } else {
+            return new RedisHashSetVectorStoreRecordCollection<>(
+                client,
+                collectionName,
+                RedisHashSetVectorStoreRecordCollectionOptions.<Record>builder()
+                    .withRecordClass(recordClass)
+                    .withRecordDefinition(recordDefinition)
+                    .build());
+        }
     }
 
     /**

@@ -11,10 +11,10 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
-public class RedisVectorStoreRecordMapper<Record>
+public class RedisJsonVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, Entry<String, Object>> {
 
-    private RedisVectorStoreRecordMapper(
+    private RedisJsonVectorStoreRecordMapper(
         Function<Record, Entry<String, Object>> toStorageModelMapper,
         Function<Entry<String, Object>, Record> toRecordMapper) {
         super(toStorageModelMapper, toRecordMapper);
@@ -36,7 +36,7 @@ public class RedisVectorStoreRecordMapper<Record>
      * @param <Record> the record type
      */
     public static class Builder<Record>
-        implements SemanticKernelBuilder<RedisVectorStoreRecordMapper<Record>> {
+        implements SemanticKernelBuilder<RedisJsonVectorStoreRecordMapper<Record>> {
         @Nullable
         private String keyFieldName;
         @Nullable
@@ -65,12 +65,12 @@ public class RedisVectorStoreRecordMapper<Record>
         }
 
         /**
-         * Builds the {@link RedisVectorStoreRecordMapper}.
+         * Builds the {@link RedisJsonVectorStoreRecordMapper}.
          *
-         * @return the {@link RedisVectorStoreRecordMapper}
+         * @return the {@link RedisJsonVectorStoreRecordMapper}
          */
         @Override
-        public RedisVectorStoreRecordMapper<Record> build() {
+        public RedisJsonVectorStoreRecordMapper<Record> build() {
             if (keyFieldName == null) {
                 throw new IllegalArgumentException("keyFieldName is required");
             }
@@ -79,7 +79,7 @@ public class RedisVectorStoreRecordMapper<Record>
             }
             ObjectMapper mapper = new ObjectMapper();
 
-            return new RedisVectorStoreRecordMapper<>(record -> {
+            return new RedisJsonVectorStoreRecordMapper<>(record -> {
                 try {
                     ObjectNode jsonNode = mapper.valueToTree(record);
                     String key = jsonNode.get(keyFieldName).asText();

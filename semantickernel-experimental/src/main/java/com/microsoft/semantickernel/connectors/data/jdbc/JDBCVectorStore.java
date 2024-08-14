@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
-import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -92,11 +91,8 @@ public class JDBCVectorStore implements SQLVectorStore {
                 .createVectorStoreRecordCollection(
                     dataSource,
                     collectionName,
-                    JDBCVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(recordClass)
-                        .withRecordDefinition(recordDefinition)
-                        .withQueryProvider(this.queryProvider)
-                        .build());
+                    recordClass,
+                    recordDefinition);
         }
 
         return new JDBCVectorStoreRecordCollection<>(

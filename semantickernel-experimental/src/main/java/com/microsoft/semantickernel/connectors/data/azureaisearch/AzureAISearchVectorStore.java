@@ -61,10 +61,8 @@ public class AzureAISearchVectorStore implements VectorStore {
                 .createVectorStoreRecordCollection(
                     client,
                     collectionName,
-                    AzureAISearchVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(recordClass)
-                        .withRecordDefinition(recordDefinition)
-                        .build());
+                    recordClass,
+                    recordDefinition);
         }
 
         return new AzureAISearchVectorStoreRecordCollection<>(
