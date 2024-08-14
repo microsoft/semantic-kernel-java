@@ -1,4 +1,4 @@
-# 1.2.1
+# 1.2.2
 
 - Fix bug in `FunctionInvocation` not using per-invocation type conversion when calling `withResultType`.
 - Fix bug in Global Hooks not being invoked under certain circumstances.
