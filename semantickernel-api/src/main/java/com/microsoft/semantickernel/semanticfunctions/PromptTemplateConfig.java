@@ -11,9 +11,11 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
@@ -43,6 +45,7 @@ public class PromptTemplateConfig {
     @Nullable
     private final String template;
     private final String templateFormat;
+    private final Set<PromptTemplateOption> promptTemplateOptions;
     @Nullable
     private final String description;
     private final List<InputVariable> inputVariables;
@@ -61,6 +64,7 @@ public class PromptTemplateConfig {
             DEFAULT_CONFIG_NAME,
             template,
             SEMANTIC_KERNEL_TEMPLATE_FORMAT,
+            Collections.emptySet(),
             "",
             Collections.emptyList(),
             new OutputVariable(String.class.getName(), "out"),
@@ -70,14 +74,15 @@ public class PromptTemplateConfig {
     /**
      * Constructor for a prompt template config
      *
-     * @param schema            Schema version
-     * @param name              Name of the template
-     * @param template          Template string
-     * @param templateFormat    Template format
-     * @param description       Description of the template
-     * @param inputVariables    Input variables
-     * @param outputVariable    Output variable
-     * @param executionSettings Execution settings
+     * @param schema                Schema version
+     * @param name                  Name of the template
+     * @param template              Template string
+     * @param templateFormat        Template format
+     * @param promptTemplateOptions Prompt template options
+     * @param description           Description of the template
+     * @param inputVariables        Input variables
+     * @param outputVariable        Output variable
+     * @param executionSettings     Execution settings
      */
     @JsonCreator
     public PromptTemplateConfig(
@@ -85,6 +90,7 @@ public class PromptTemplateConfig {
         @Nullable @JsonProperty("name") String name,
         @Nullable @JsonProperty("template") String template,
         @Nullable @JsonProperty(value = "template_format", defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT) String templateFormat,
+        @Nullable @JsonProperty(value = "prompt_template_options") Set<PromptTemplateOption> promptTemplateOptions,
         @Nullable @JsonProperty("description") String description,
         @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
         @Nullable @JsonProperty("output_variable") OutputVariable outputVariable,
@@ -96,6 +102,10 @@ public class PromptTemplateConfig {
             templateFormat = SEMANTIC_KERNEL_TEMPLATE_FORMAT;
         }
         this.templateFormat = templateFormat;
+        if (promptTemplateOptions == null) {
+            promptTemplateOptions = new HashSet<>();
+        }
+        this.promptTemplateOptions = promptTemplateOptions;
         this.description = description;
         if (inputVariables == null) {
             this.inputVariables = new ArrayList<>();
@@ -127,6 +137,7 @@ public class PromptTemplateConfig {
         @Nullable String name,
         @Nullable String template,
         @Nullable String templateFormat,
+        @Nullable Set<PromptTemplateOption> promptTemplateOptions,
         @Nullable String description,
         @Nullable List<InputVariable> inputVariables,
         @Nullable OutputVariable outputVariable,
@@ -136,6 +147,7 @@ public class PromptTemplateConfig {
             name,
             template,
             templateFormat,
+            promptTemplateOptions,
             description,
             inputVariables,
             outputVariable,
@@ -152,6 +164,7 @@ public class PromptTemplateConfig {
             promptTemplate.name,
             promptTemplate.template,
             promptTemplate.templateFormat,
+            promptTemplate.promptTemplateOptions,
             promptTemplate.description,
             promptTemplate.inputVariables,
             promptTemplate.outputVariable,
@@ -301,6 +314,15 @@ public class PromptTemplateConfig {
     }
 
     /**
+     * Get the prompt template options of the prompt template config.
+     *
+     * @return The prompt template options of the prompt template config.
+     */
+    public Set<PromptTemplateOption> getPromptTemplateOptions() {
+        return Collections.unmodifiableSet(promptTemplateOptions);
+    }
+
+    /**
      * Create a builder for a prompt template config which is a clone of the current object.
      *
      * @return The prompt template config builder.
@@ -358,6 +380,7 @@ public class PromptTemplateConfig {
         @Nullable
         private String template;
         private String templateFormat = SEMANTIC_KERNEL_TEMPLATE_FORMAT;
+        private final Set<PromptTemplateOption> promptTemplateOptions = new HashSet<>();
         @Nullable
         private String description = null;
         private List<InputVariable> inputVariables = new ArrayList<>();
@@ -433,6 +456,11 @@ public class PromptTemplateConfig {
             return this;
         }
 
+        public Builder addPromptTemplateOption(PromptTemplateOption option) {
+            promptTemplateOptions.add(option);
+            return this;
+        }
+
         /**
          * Set the inputVariables of the prompt template config.
          *
@@ -477,6 +505,7 @@ public class PromptTemplateConfig {
                 name,
                 template,
                 templateFormat,
+                promptTemplateOptions,
                 description,
                 inputVariables,
                 outputVariable,

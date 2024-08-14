@@ -9,6 +9,7 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.ValueResolver;
+import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
@@ -21,6 +22,7 @@ import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
+import com.microsoft.semantickernel.semanticfunctions.PromptTemplateOption;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
@@ -35,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.apache.commons.text.StringEscapeUtils;
 import reactor.core.publisher.Mono;
 
 /**
@@ -168,7 +169,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         }
     }
 
-    private static class HandleBarsPromptTemplateHandler {
+    private class HandleBarsPromptTemplateHandler {
 
         private final String template;
         private final Handlebars handlebars;
@@ -181,7 +182,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             this.template = template;
             this.handlebars = new Handlebars();
             this.handlebars
-                .registerHelper("message", HandleBarsPromptTemplateHandler::handleMessage)
+                .registerHelper("message", this::handleMessage)
                 .registerHelper("each", handleEach(context))
                 .with(EscapingStrategy.XML);
 
@@ -190,7 +191,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             // TODO: 1.0 Add more helpers
         }
 
-        private static Helper<Object> handleEach(InvocationContext invocationContext) {
+        private Helper<Object> handleEach(InvocationContext invocationContext) {
             return (context, options) -> {
                 if (context instanceof ContextVariable) {
                     return ((ContextVariable<?>) context)
@@ -227,7 +228,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         }
 
         @Nullable
-        private static CharSequence handleMessage(Object context, Options options)
+        private CharSequence handleMessage(Object context, Options options)
             throws IOException {
             String role = options.hash("role");
             String content = (String) options.fn(context);
@@ -258,7 +259,10 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 resolvers.add(new MessageResolver());
                 resolvers.add(new ContextVariableResolver());
 
-                // resolvers.addAll(ValueResolver.defaultValueResolvers());
+                if (promptTemplate.getPromptTemplateOptions()
+                    .contains(PromptTemplateOption.ALLOW_CONTEXT_VARIABLE_METHOD_CALLS_UNSAFE)) {
+                    resolvers.add(JavaBeanValueResolver.INSTANCE);
+                }
 
                 Context context = Context
                     .newBuilder(variables)

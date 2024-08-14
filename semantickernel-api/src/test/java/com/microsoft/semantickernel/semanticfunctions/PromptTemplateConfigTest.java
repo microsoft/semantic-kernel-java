@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ public class PromptTemplateConfigTest {
             name,
             template,
             "semantic-kernel",
+            Collections.emptySet(),
             description,
             inputVariables,
             outputVariable,
