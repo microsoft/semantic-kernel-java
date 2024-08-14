@@ -5,10 +5,18 @@
 - Add fluent returns to `ChatHistory` `addXMessage` methods.
 - Add user agent opt-out for OpenAI requests by setting the property `semantic-kernel.useragent-disable` to `true`.
 - Add several convenience `invokePromptAsync` methods to `Kernel`.
+- Allow Handlebars templates to call Javabean getters to extract data from invocation arguments.
+- Improve thread safety of `ChatHistory`.
+
+#### Experimental Changes
+
+- Add JDBC vector store
 
 #### Non-API Changes
 
-- Add custom type Conversion example, CustomTypes_Example
+- Add custom type Conversion example, `CustomTypes_Example`
+- Dependency updates and pom cleanup
+- Documentation updates
 
 # 1.2.0
 

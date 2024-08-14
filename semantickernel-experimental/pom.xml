@@ -64,7 +64,6 @@
         <dependency>
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock</artifactId>
-            <version>3.3.1</version>
             <scope>test</scope>
         </dependency>
         <!-- Required for Android -->
@@ -77,7 +76,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -112,7 +110,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.2</version> <!-- Use the latest version -->
+            <version>42.7.3</version> <!-- Use the latest version -->
         </dependency>
 
     </dependencies>
