@@ -2,7 +2,18 @@
 package com.microsoft.semantickernel.data.recorddefinition;
 
 public enum DistanceFunction {
-    COSINE_SIMILARITY("cosineSimilarity"), DOT_PRODUCT("dotProduct"), EUCLIDEAN("euclidean");
+    /**
+     * Cosine (angular) similarity function.
+     */
+    COSINE("cosine"),
+    /**
+     * Dot product between two vectors.
+     */
+    DOT_PRODUCT("dotProduct"),
+    /**
+     * Euclidean distance function. Also known as L2 norm.
+     */
+    EUCLIDEAN("euclidean");
 
     private final String value;
 
@@ -23,7 +34,7 @@ public enum DistanceFunction {
      */
     public static DistanceFunction fromString(String text) {
         if (text == null || text.isEmpty()) {
-            return COSINE_SIMILARITY;
+            return null;
         }
 
         for (DistanceFunction b : DistanceFunction.values()) {

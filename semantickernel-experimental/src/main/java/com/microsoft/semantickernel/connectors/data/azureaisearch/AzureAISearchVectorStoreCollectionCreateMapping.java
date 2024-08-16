@@ -34,7 +34,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
         }
 
         switch (vectorField.getDistanceFunction()) {
-            case COSINE_SIMILARITY:
+            case COSINE:
                 return VectorSearchAlgorithmMetric.COSINE;
             case DOT_PRODUCT:
                 return VectorSearchAlgorithmMetric.DOT_PRODUCT;

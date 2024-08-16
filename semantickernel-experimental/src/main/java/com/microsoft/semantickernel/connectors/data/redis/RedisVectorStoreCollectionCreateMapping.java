@@ -35,7 +35,7 @@ public class RedisVectorStoreCollectionCreateMapping {
         }
 
         switch (vectorField.getDistanceFunction()) {
-            case COSINE_SIMILARITY:
+            case COSINE:
                 return RedisVectorDistanceMetric.COSINE;
             case DOT_PRODUCT:
                 return RedisVectorDistanceMetric.DOT_PRODUCT;

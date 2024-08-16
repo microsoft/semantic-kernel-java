@@ -17,6 +17,8 @@ public class Hotel {
     private final String description;
     @VectorStoreRecordVectorAttribute(dimensions = 3)
     private final List<Float> descriptionEmbedding;
+    @VectorStoreRecordVectorAttribute(dimensions = 3, indexKind = "hnsw", distanceFunction = "cosine")
+    private final List<Float> additionalEmbedding;
     @VectorStoreRecordDataAttribute
     private double rating;
 
@@ -30,6 +32,7 @@ public class Hotel {
         this.code = code;
         this.description = description;
         this.descriptionEmbedding = descriptionEmbedding;
+        this.additionalEmbedding = descriptionEmbedding;
         this.rating = rating;
     }
 
@@ -51,6 +54,9 @@ public class Hotel {
 
     public List<Float> getDescriptionEmbedding() {
         return descriptionEmbedding;
+    }
+    public List<Float> getAdditionalEmbedding() {
+        return additionalEmbedding;
     }
 
     public double getRating() {
