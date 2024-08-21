@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -139,9 +141,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                             continue;
                         }
 
-                        Class<?> valueType = recordClass
-                            .getDeclaredField(field.getEffectiveStorageName())
-                            .getType();
+                        Class<?> valueType = field.getFieldType();
 
                         if (valueType.equals(String.class)) {
                             jsonNode.put(field.getEffectiveStorageName(), value);
@@ -153,7 +153,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                     }
 
                     return mapper.convertValue(jsonNode, recordClass);
-                } catch (Exception e) {
+                } catch (JsonProcessingException e) {
                     throw new SKException(
                         "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);

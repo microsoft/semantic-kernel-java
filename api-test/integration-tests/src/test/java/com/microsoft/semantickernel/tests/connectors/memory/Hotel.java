@@ -18,7 +18,7 @@ public class Hotel {
     @JsonProperty("summary")
     @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
     private final String description;
-    @JsonProperty("summaryVector")
+    @JsonProperty("summaryEmbedding")
     @VectorStoreRecordVectorAttribute(dimensions = 3)
     private final List<Float> descriptionEmbedding;
     @VectorStoreRecordDataAttribute
