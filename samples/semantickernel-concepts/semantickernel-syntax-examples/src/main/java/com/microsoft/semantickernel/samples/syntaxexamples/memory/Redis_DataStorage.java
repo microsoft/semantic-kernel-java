@@ -15,14 +15,13 @@ import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
-import java.nio.charset.StandardCharsets;
+
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.microsoft.semantickernel.samples.syntaxexamples.memory.AzureAISearch_DataStorage.GitHubFile;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
