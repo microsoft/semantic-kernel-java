@@ -13,6 +13,7 @@ import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -26,8 +27,11 @@ public class MySQLVectorStoreQueryProvider extends
     private final ObjectMapper objectMapper;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    private MySQLVectorStoreQueryProvider(DataSource dataSource, String collectionsTable,
-        String prefixForCollectionTables, ObjectMapper objectMapper) {
+    private MySQLVectorStoreQueryProvider(
+            @Nonnull DataSource dataSource,
+            @Nonnull String collectionsTable,
+            @Nonnull String prefixForCollectionTables,
+            @Nonnull ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
         this.dataSource = dataSource;
         this.objectMapper = objectMapper;

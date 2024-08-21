@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,6 +28,7 @@ import java.util.Map;
 
 public class PostgreSQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
+
     private final Map<Class<?>, String> supportedKeyTypes;
     private final Map<Class<?>, String> supportedDataTypes;
     private final Map<Class<?>, String> supportedVectorTypes;
@@ -37,8 +39,11 @@ public class PostgreSQLVectorStoreQueryProvider extends
     private final ObjectMapper objectMapper;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    private PostgreSQLVectorStoreQueryProvider(DataSource dataSource, String collectionsTable,
-        String prefixForCollectionTables, ObjectMapper objectMapper) {
+    private PostgreSQLVectorStoreQueryProvider(
+            @Nonnull DataSource dataSource,
+            @Nonnull String collectionsTable,
+            @Nonnull String prefixForCollectionTables,
+            @Nonnull ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
         this.dataSource = dataSource;
         this.collectionsTable = collectionsTable;
