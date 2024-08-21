@@ -1,5 +1,7 @@
 package com.microsoft.semantickernel.tests.connectors.memory;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
@@ -13,8 +15,10 @@ public class Hotel {
     private final String name;
     @VectorStoreRecordDataAttribute
     private final int code;
+    @JsonProperty("summary")
     @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
     private final String description;
+    @JsonProperty("summaryVector")
     @VectorStoreRecordVectorAttribute(dimensions = 3)
     private final List<Float> descriptionEmbedding;
     @VectorStoreRecordDataAttribute
@@ -24,7 +28,14 @@ public class Hotel {
         this(null, null, 0, null, null, 0.0);
     }
 
-    public Hotel(String id, String name, int code, String description, List<Float> descriptionEmbedding, double rating) {
+    @JsonCreator
+    public Hotel(
+            @JsonProperty("id") String id,
+            @JsonProperty("name") String name,
+            @JsonProperty("code") int code,
+            @JsonProperty("summary") String description,
+            @JsonProperty("summaryVector") List<Float> descriptionEmbedding,
+            @JsonProperty("rating") double rating) {
         this.id = id;
         this.name = name;
         this.code = code;

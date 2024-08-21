@@ -14,6 +14,8 @@ import java.lang.annotation.Target;
 public @interface VectorStoreRecordDataAttribute {
     /**
      * Storage name of the field.
+     * This value is only used when JSON Serialization using Jackson is not supported in a VectorStore.
+     * When Jackson is supported, @JsonProperty should be used to specify an alternate field name in the storage database.
      */
     String storageName() default "";
 

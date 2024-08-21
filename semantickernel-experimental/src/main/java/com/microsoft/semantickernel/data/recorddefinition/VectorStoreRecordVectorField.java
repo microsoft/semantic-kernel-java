@@ -23,6 +23,7 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
      *
      * @param name the name of the field
      * @param storageName the storage name of the field
+     * @param fieldType the field type
      * @param dimensions the number of dimensions in the vector
      * @param indexKind the index kind
      * @param distanceFunction the distance function
@@ -30,10 +31,11 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
     public VectorStoreRecordVectorField(
         @Nonnull String name,
         @Nullable String storageName,
+        @Nonnull Class<?> fieldType,
         int dimensions,
         @Nullable IndexKind indexKind,
         @Nullable DistanceFunction distanceFunction) {
-        super(name, storageName);
+        super(name, storageName, fieldType);
         this.dimensions = dimensions;
         this.indexKind = indexKind;
         this.distanceFunction = distanceFunction;
@@ -119,11 +121,15 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
             if (name == null) {
                 throw new IllegalArgumentException("name is required");
             }
+            if (fieldType == null) {
+                throw new IllegalArgumentException("fieldType is required");
+            }
             if (dimensions <= 0) {
                 throw new IllegalArgumentException("dimensions must be greater than 0");
             }
 
-            return new VectorStoreRecordVectorField(name, storageName, dimensions, indexKind,
+            return new VectorStoreRecordVectorField(name, storageName, fieldType, dimensions,
+                indexKind,
                 distanceFunction);
         }
     }

@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
@@ -12,15 +10,12 @@ import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.IndexDefinition;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
@@ -83,11 +78,10 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
 
         // Validate supported types
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections
-                .singletonList(recordDefinition.getKeyDeclaredField(this.options.getRecordClass())),
+            Collections.singletonList(recordDefinition.getKeyField()),
             supportedKeyTypes);
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getVectorDeclaredFields(this.options.getRecordClass()),
+            new ArrayList<>(recordDefinition.getVectorFields()),
             supportedVectorTypes);
 
         // If mapper is not provided, set a default one
@@ -103,7 +97,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
         // Creates a list of paths to retrieve from Redis when no vectors are requested
         // Paths are in the format of $.field
         this.dataFields = recordDefinition.getDataFields().stream()
-            .map(VectorStoreRecordDataField::getName)
+            .map(VectorStoreRecordDataField::getEffectiveStorageName)
             .toArray(String[]::new);
     }
 

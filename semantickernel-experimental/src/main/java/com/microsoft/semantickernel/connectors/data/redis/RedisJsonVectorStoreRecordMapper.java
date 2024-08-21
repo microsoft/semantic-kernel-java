@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.AbstractMap;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -41,6 +43,7 @@ public class RedisJsonVectorStoreRecordMapper<Record>
         private String keyFieldName;
         @Nullable
         private Class<Record> recordClass;
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         /**
          * Sets the key field name in the record.
@@ -65,6 +68,18 @@ public class RedisJsonVectorStoreRecordMapper<Record>
         }
 
         /**
+         * Sets the object mapper.
+         *
+         * @param objectMapper the object mapper
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public Builder<Record> withObjectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        /**
          * Builds the {@link RedisJsonVectorStoreRecordMapper}.
          *
          * @return the {@link RedisJsonVectorStoreRecordMapper}
@@ -77,11 +92,10 @@ public class RedisJsonVectorStoreRecordMapper<Record>
             if (recordClass == null) {
                 throw new IllegalArgumentException("recordClass is required");
             }
-            ObjectMapper mapper = new ObjectMapper();
 
             return new RedisJsonVectorStoreRecordMapper<>(record -> {
                 try {
-                    ObjectNode jsonNode = mapper.valueToTree(record);
+                    ObjectNode jsonNode = objectMapper.valueToTree(record);
                     String key = jsonNode.get(keyFieldName).asText();
                     jsonNode.remove(keyFieldName);
 
@@ -93,10 +107,10 @@ public class RedisJsonVectorStoreRecordMapper<Record>
                 }
             }, storageModel -> {
                 try {
-                    ObjectNode jsonNode = mapper.valueToTree(storageModel.getValue());
+                    ObjectNode jsonNode = objectMapper.valueToTree(storageModel.getValue());
                     // Add the key back to the record
                     jsonNode.put(keyFieldName, storageModel.getKey());
-                    return mapper.convertValue(jsonNode, recordClass);
+                    return objectMapper.convertValue(jsonNode, recordClass);
                 } catch (Exception e) {
                     throw new SKException(
                         "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",

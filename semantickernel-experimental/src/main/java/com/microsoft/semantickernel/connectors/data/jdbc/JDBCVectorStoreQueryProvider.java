@@ -57,10 +57,9 @@ public interface JDBCVectorStoreQueryProvider {
     /**
      * Checks if the types of the record class fields are supported.
      *
-     * @param recordClass the record class
      * @param recordDefinition the record definition
      */
-    void validateSupportedTypes(Class<?> recordClass, VectorStoreRecordDefinition recordDefinition);
+    void validateSupportedTypes(VectorStoreRecordDefinition recordDefinition);
 
     /**
      * Checks if a collection exists.
@@ -74,11 +73,9 @@ public interface JDBCVectorStoreQueryProvider {
      * Creates a collection.
      *
      * @param collectionName the collection name
-     * @param recordClass the record class
      * @param recordDefinition the record definition
      */
-    void createCollection(String collectionName, Class<?> recordClass,
-        VectorStoreRecordDefinition recordDefinition);
+    void createCollection(String collectionName, VectorStoreRecordDefinition recordDefinition);
 
     /**
      * Deletes a collection.

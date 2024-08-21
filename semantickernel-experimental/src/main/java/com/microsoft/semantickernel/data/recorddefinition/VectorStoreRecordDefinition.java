@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.recorddefinition;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
@@ -54,49 +55,6 @@ public class VectorStoreRecordDefinition {
         fields.add(keyField);
         fields.addAll(dataFields);
         return fields;
-    }
-
-    private enum DeclaredFieldType {
-        KEY, DATA, VECTOR
-    }
-
-    private List<Field> getDeclaredFields(Class<?> recordClass, List<VectorStoreRecordField> fields,
-        DeclaredFieldType fieldType) {
-        List<Field> declaredFields = new ArrayList<>();
-        for (VectorStoreRecordField field : fields) {
-            try {
-                Field declaredField = recordClass.getDeclaredField(field.getName());
-                declaredFields.add(declaredField);
-            } catch (NoSuchFieldException e) {
-                throw new IllegalArgumentException(
-                    String.format("%s field not found in record class: %s", fieldType,
-                        field.getName()));
-            }
-        }
-        return declaredFields;
-    }
-
-    public Field getKeyDeclaredField(Class<?> recordClass) {
-        try {
-            return recordClass.getDeclaredField(keyField.getName());
-        } catch (NoSuchFieldException e) {
-            throw new IllegalArgumentException(
-                "Key field not found in record class: " + keyField.getName());
-        }
-    }
-
-    public List<Field> getDataDeclaredFields(Class<?> recordClass) {
-        return getDeclaredFields(
-            recordClass,
-            dataFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
-            DeclaredFieldType.DATA);
-    }
-
-    public List<Field> getVectorDeclaredFields(Class<?> recordClass) {
-        return getDeclaredFields(
-            recordClass,
-            vectorFields.stream().map(f -> (VectorStoreRecordField) f).collect(Collectors.toList()),
-            DeclaredFieldType.VECTOR);
     }
 
     private VectorStoreRecordDefinition(
@@ -155,13 +113,23 @@ public class VectorStoreRecordDefinition {
         List<VectorStoreRecordVectorField> vectorFields = new ArrayList<>();
 
         for (Field field : recordClass.getDeclaredFields()) {
+            String storageName = null;
+            if (field.isAnnotationPresent(JsonProperty.class)) {
+                storageName = field.getAnnotation(JsonProperty.class).value();
+            }
+
             if (field.isAnnotationPresent(VectorStoreRecordKeyAttribute.class)) {
                 VectorStoreRecordKeyAttribute keyAttribute = field
                     .getAnnotation(VectorStoreRecordKeyAttribute.class);
 
+                if (storageName == null) {
+                    storageName = keyAttribute.storageName().isEmpty() ? field.getName()
+                        : keyAttribute.storageName();
+                }
                 keyFields.add(VectorStoreRecordKeyField.builder()
                     .withName(field.getName())
-                    .withStorageName(keyAttribute.storageName())
+                    .withStorageName(storageName)
+                    .withFieldType(field.getType())
                     .build());
             }
 
@@ -169,12 +137,16 @@ public class VectorStoreRecordDefinition {
                 VectorStoreRecordDataAttribute dataAttribute = field
                     .getAnnotation(VectorStoreRecordDataAttribute.class);
 
+                if (storageName == null) {
+                    storageName = dataAttribute.storageName().isEmpty() ? field.getName()
+                        : dataAttribute.storageName();
+                }
                 dataFields.add(VectorStoreRecordDataField.builder()
                     .withName(field.getName())
-                    .withStorageName(dataAttribute.storageName())
+                    .withStorageName(storageName)
+                    .withFieldType(field.getType())
                     .withHasEmbedding(dataAttribute.hasEmbedding())
                     .withEmbeddingFieldName(dataAttribute.embeddingFieldName())
-                    .withFieldType(field.getType())
                     .withIsFilterable(dataAttribute.isFilterable())
                     .build());
             }
@@ -183,9 +155,14 @@ public class VectorStoreRecordDefinition {
                 VectorStoreRecordVectorAttribute vectorAttribute = field
                     .getAnnotation(VectorStoreRecordVectorAttribute.class);
 
+                if (storageName == null) {
+                    storageName = vectorAttribute.storageName().isEmpty() ? field.getName()
+                        : vectorAttribute.storageName();
+                }
                 vectorFields.add(VectorStoreRecordVectorField.builder()
                     .withName(field.getName())
-                    .withStorageName(vectorAttribute.storageName())
+                    .withStorageName(storageName)
+                    .withFieldType(field.getType())
                     .withDimensions(vectorAttribute.dimensions())
                     .withIndexKind(IndexKind.fromString(vectorAttribute.indexKind()))
                     .withDistanceFunction(
@@ -197,12 +174,12 @@ public class VectorStoreRecordDefinition {
         return checkFields(keyFields, dataFields, vectorFields);
     }
 
-    public static void validateSupportedTypes(List<Field> declaredFields,
+    public static void validateSupportedTypes(List<VectorStoreRecordField> fields,
         Set<Class<?>> supportedTypes) {
         Set<Class<?>> unsupportedTypes = new HashSet<>();
-        for (Field declaredField : declaredFields) {
-            if (!supportedTypes.contains(declaredField.getType())) {
-                unsupportedTypes.add(declaredField.getType());
+        for (VectorStoreRecordField field : fields) {
+            if (!supportedTypes.contains(field.getFieldType())) {
+                unsupportedTypes.add(field.getFieldType());
             }
         }
         if (!unsupportedTypes.isEmpty()) {
