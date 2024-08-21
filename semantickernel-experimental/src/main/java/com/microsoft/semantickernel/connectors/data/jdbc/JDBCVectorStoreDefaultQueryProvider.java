@@ -88,12 +88,23 @@ public class JDBCVectorStoreDefaultQueryProvider
     }
 
     /**
+     * Gets the key column name from a key field.
+     * @param keyField the key field
+     * @return the key column name
+     */
+    protected String getKeyColumnName(VectorStoreRecordField keyField) {
+        return validateSQLidentifier(keyField.getEffectiveStorageName());
+    }
+
+    /**
      * Formats the query columns from a record definition.
      * @param fields the fields to get the columns from
      * @return the formatted query columns
      */
     protected String getQueryColumnsFromFields(List<VectorStoreRecordField> fields) {
-        return fields.stream().map(VectorStoreRecordField::getEffectiveStorageName)
+        return fields.stream()
+            .map(VectorStoreRecordField::getEffectiveStorageName)
+            .map(JDBCVectorStoreDefaultQueryProvider::validateSQLidentifier)
             .collect(Collectors.joining(", "));
     }
 
@@ -106,7 +117,8 @@ public class JDBCVectorStoreDefaultQueryProvider
     protected String getColumnNamesAndTypes(List<VectorStoreRecordField> fields,
         Map<Class<?>, String> types) {
         List<String> columns = fields.stream()
-            .map(field -> field.getEffectiveStorageName() + " " + types.get(field.getFieldType()))
+            .map(field -> validateSQLidentifier(field.getEffectiveStorageName()) + " "
+                + types.get(field.getFieldType()))
             .collect(Collectors.toList());
 
         return String.join(", ", columns);
@@ -221,9 +233,8 @@ public class JDBCVectorStoreDefaultQueryProvider
         VectorStoreRecordDefinition recordDefinition) {
 
         String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-            + getCollectionTableName(collectionName)
-            + " (" + recordDefinition.getKeyField().getEffectiveStorageName()
-            + " VARCHAR(255) PRIMARY KEY, "
+            + getCollectionTableName(collectionName) + " ("
+            + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
             + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
                 getSupportedDataTypes())
             + ", "
@@ -330,7 +341,7 @@ public class JDBCVectorStoreDefaultQueryProvider
 
         String query = "SELECT " + getQueryColumnsFromFields(fields)
             + " FROM " + getCollectionTableName(collectionName)
-            + " WHERE " + recordDefinition.getKeyField().getEffectiveStorageName()
+            + " WHERE " + getKeyColumnName(recordDefinition.getKeyField())
             + " IN (" + getWildcardString(keys.size()) + ")";
 
         try (Connection connection = dataSource.getConnection();
@@ -372,7 +383,7 @@ public class JDBCVectorStoreDefaultQueryProvider
     public void deleteRecords(String collectionName, List<String> keys,
         VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) {
         String query = "DELETE FROM " + getCollectionTableName(collectionName)
-            + " WHERE " + recordDefinition.getKeyField().getEffectiveStorageName()
+            + " WHERE " + getKeyColumnName(recordDefinition.getKeyField())
             + " IN (" + getWildcardString(keys.size()) + ")";
 
         try (Connection connection = dataSource.getConnection();

@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PostgreSQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
@@ -40,10 +41,10 @@ public class PostgreSQLVectorStoreQueryProvider extends
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     private PostgreSQLVectorStoreQueryProvider(
-            @Nonnull DataSource dataSource,
-            @Nonnull String collectionsTable,
-            @Nonnull String prefixForCollectionTables,
-            @Nonnull ObjectMapper objectMapper) {
+        @Nonnull DataSource dataSource,
+        @Nonnull String collectionsTable,
+        @Nonnull String prefixForCollectionTables,
+        @Nonnull ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
         this.dataSource = dataSource;
         this.collectionsTable = collectionsTable;
@@ -134,24 +135,19 @@ public class PostgreSQLVectorStoreQueryProvider extends
 
     private String getColumnNamesAndTypesForVectorFields(
         List<VectorStoreRecordVectorField> fields) {
-        StringBuilder columnNames = new StringBuilder();
-        for (VectorStoreRecordVectorField field : fields) {
-            if (columnNames.length() > 0) {
-                columnNames.append(", ");
-            }
-
-            if (field.getFieldType().equals(String.class)) {
-                columnNames.append(field.getEffectiveStorageName()).append(" ")
-                    .append(supportedVectorTypes.get(String.class));
-            } else {
-                // Get the vector type and dimensions
-                String type = String.format(supportedVectorTypes.get(field.getFieldType()),
-                    field.getDimensions());
-                columnNames.append(field.getEffectiveStorageName()).append(" ").append(type);
-            }
-        }
-
-        return columnNames.toString();
+        return fields.stream()
+            .map(field -> {
+                String columnType;
+                if (field.getFieldType().equals(String.class)) {
+                    columnType = supportedVectorTypes.get(String.class);
+                } else {
+                    // Get the vector type and dimensions
+                    columnType = String.format(supportedVectorTypes.get(field.getFieldType()),
+                        field.getDimensions());
+                }
+                return validateSQLidentifier(field.getEffectiveStorageName()) + " " + columnType;
+            })
+            .collect(Collectors.joining(", "));
     }
 
     /**
@@ -167,8 +163,8 @@ public class PostgreSQLVectorStoreQueryProvider extends
         VectorStoreRecordDefinition recordDefinition) {
 
         String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-            + getCollectionTableName(collectionName)
-            + " (" + recordDefinition.getKeyField().getStorageName() + " VARCHAR(255) PRIMARY KEY, "
+            + getCollectionTableName(collectionName) + " ("
+            + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
             + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
                 supportedDataTypes)
             + ", "
@@ -194,7 +190,7 @@ public class PostgreSQLVectorStoreQueryProvider extends
         }
     }
 
-    private void setStatementValues(PreparedStatement statement, Object record,
+    private void setUpsertStatementValues(PreparedStatement statement, Object record,
         List<VectorStoreRecordField> fields) {
         JsonNode jsonNode = objectMapper.valueToTree(record);
 
@@ -220,19 +216,16 @@ public class PostgreSQLVectorStoreQueryProvider extends
     }
 
     private String getWildcardStringWithCast(List<VectorStoreRecordField> fields) {
-        StringBuilder wildcardString = new StringBuilder();
-        int wildcards = fields.size();
-        for (int i = 0; i < wildcards; ++i) {
-            if (i > 0) {
-                wildcardString.append(", ");
-            }
-            wildcardString.append("?");
-            // Add casting for vector fields
-            if (fields.get(i) instanceof VectorStoreRecordVectorField) {
-                wildcardString.append("::vector");
-            }
-        }
-        return wildcardString.toString();
+        return fields.stream()
+            .map(field -> {
+                String wildcard = "?";
+                // Add casting for vector fields
+                if (field instanceof VectorStoreRecordVectorField) {
+                    wildcard += "::vector";
+                }
+                return wildcard;
+            })
+            .collect(Collectors.joining(", "));
     }
 
     /**
@@ -250,30 +243,23 @@ public class PostgreSQLVectorStoreQueryProvider extends
         validateSQLidentifier(getCollectionTableName(collectionName));
         List<VectorStoreRecordField> fields = recordDefinition.getAllFields();
 
-        StringBuilder onDuplicateKeyUpdate = new StringBuilder();
-        for (VectorStoreRecordField field : fields) {
-            if (field instanceof VectorStoreRecordKeyField) {
-                continue;
-            }
-            if (onDuplicateKeyUpdate.length() > 0) {
-                onDuplicateKeyUpdate.append(", ");
-            }
-            onDuplicateKeyUpdate.append(field.getEffectiveStorageName())
-                .append(" = EXCLUDED.")
-                .append(field.getEffectiveStorageName());
-        }
+        String onDuplicateKeyUpdate = fields.stream()
+            .filter(field -> !(field instanceof VectorStoreRecordKeyField)) // Exclude key fields
+            .map(field -> validateSQLidentifier(field.getEffectiveStorageName())
+                + " = EXCLUDED." + validateSQLidentifier(field.getEffectiveStorageName()))
+            .collect(Collectors.joining(", "));
 
         String query = "INSERT INTO " + getCollectionTableName(collectionName)
             + " (" + getQueryColumnsFromFields(fields) + ")"
             + " VALUES (" + getWildcardStringWithCast(fields) + ")"
-            + " ON CONFLICT (" + recordDefinition.getKeyField().getEffectiveStorageName()
+            + " ON CONFLICT (" + getKeyColumnName(recordDefinition.getKeyField())
             + ") DO UPDATE SET "
             + onDuplicateKeyUpdate;
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
             for (Object record : records) {
-                setStatementValues(statement, record, recordDefinition.getAllFields());
+                setUpsertStatementValues(statement, record, recordDefinition.getAllFields());
                 statement.addBatch();
             }
 

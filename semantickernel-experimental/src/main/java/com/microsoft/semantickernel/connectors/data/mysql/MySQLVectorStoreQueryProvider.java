@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MySQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
@@ -28,10 +29,10 @@ public class MySQLVectorStoreQueryProvider extends
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     private MySQLVectorStoreQueryProvider(
-            @Nonnull DataSource dataSource,
-            @Nonnull String collectionsTable,
-            @Nonnull String prefixForCollectionTables,
-            @Nonnull ObjectMapper objectMapper) {
+        @Nonnull DataSource dataSource,
+        @Nonnull String collectionsTable,
+        @Nonnull String prefixForCollectionTables,
+        @Nonnull ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
         this.dataSource = dataSource;
         this.objectMapper = objectMapper;
@@ -45,7 +46,7 @@ public class MySQLVectorStoreQueryProvider extends
         return new Builder();
     }
 
-    private void setStatementValues(PreparedStatement statement, Object record,
+    private void setUpsertStatementValues(PreparedStatement statement, Object record,
         List<VectorStoreRecordField> fields) {
         JsonNode jsonNode = objectMapper.valueToTree(record);
 
@@ -82,20 +83,12 @@ public class MySQLVectorStoreQueryProvider extends
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
     public void upsertRecords(String collectionName, List<?> records,
         VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
-        validateSQLidentifier(getCollectionTableName(collectionName));
-
         List<VectorStoreRecordField> fields = recordDefinition.getAllFields();
 
-        StringBuilder onDuplicateKeyUpdate = new StringBuilder();
-        for (int i = 0; i < fields.size(); ++i) {
-            VectorStoreRecordField field = fields.get(i);
-            if (i > 0) {
-                onDuplicateKeyUpdate.append(", ");
-            }
-
-            onDuplicateKeyUpdate.append(field.getEffectiveStorageName()).append(" = VALUES(")
-                .append(field.getEffectiveStorageName()).append(")");
-        }
+        String onDuplicateKeyUpdate = fields.stream()
+            .map(field -> validateSQLidentifier(field.getEffectiveStorageName())
+                + " = VALUES(" + validateSQLidentifier(field.getEffectiveStorageName()) + ")")
+            .collect(Collectors.joining(", "));
 
         String query = "INSERT INTO " + getCollectionTableName(collectionName)
             + " (" + getQueryColumnsFromFields(fields) + ")"
@@ -105,7 +98,7 @@ public class MySQLVectorStoreQueryProvider extends
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
             for (Object record : records) {
-                setStatementValues(statement, record, recordDefinition.getAllFields());
+                setUpsertStatementValues(statement, record, recordDefinition.getAllFields());
                 statement.addBatch();
             }
 
