@@ -47,7 +47,7 @@ public class AzureAISearch_DataStorage {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
-        @JsonProperty("StorageId") // Set a different name for the storage field
+        @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
@@ -62,7 +62,7 @@ public class AzureAISearch_DataStorage {
         }
 
         public GitHubFile(
-            @JsonProperty("StorageId") String id,
+            @JsonProperty("fileId") String id,
             @JsonProperty("description") String description,
             @JsonProperty("link") String link,
             @JsonProperty("embedding") List<Float> embedding) {
@@ -122,7 +122,7 @@ public class AzureAISearch_DataStorage {
             .withOptions(new AzureAISearchVectorStoreOptions())
             .build();
 
-        String collectionName = "skgithubfiles2";
+        String collectionName = "skgithubfiles";
         var collection = azureAISearchVectorStore.getCollection(
             collectionName,
             GitHubFile.class,
