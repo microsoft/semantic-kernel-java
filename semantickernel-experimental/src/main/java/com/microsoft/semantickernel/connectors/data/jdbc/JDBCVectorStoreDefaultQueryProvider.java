@@ -182,7 +182,7 @@ public class JDBCVectorStoreDefaultQueryProvider
      * Checks if the types of the record class fields are supported.
      *
      * @param recordDefinition the record definition
-     * @throws IllegalArgumentException if the types are not supported
+     * @throws SKException if the types are not supported
      */
     @Override
     public void validateSupportedTypes(VectorStoreRecordDefinition recordDefinition) {
@@ -403,13 +403,13 @@ public class JDBCVectorStoreDefaultQueryProvider
      *
      * @param identifier the identifier
      * @return the identifier if it is valid
-     * @throws IllegalArgumentException if the identifier is invalid
+     * @throws SKException if the identifier is invalid
      */
     public static String validateSQLidentifier(String identifier) {
         if (identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
             return identifier;
         }
-        throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
+        throw new SKException("Invalid SQL identifier: " + identifier);
     }
 
     /**
@@ -455,7 +455,7 @@ public class JDBCVectorStoreDefaultQueryProvider
         @Override
         public JDBCVectorStoreDefaultQueryProvider build() {
             if (dataSource == null) {
-                throw new IllegalArgumentException("DataSource is required");
+                throw new SKException("DataSource is required");
             }
 
             return new JDBCVectorStoreDefaultQueryProvider(dataSource, collectionsTable,

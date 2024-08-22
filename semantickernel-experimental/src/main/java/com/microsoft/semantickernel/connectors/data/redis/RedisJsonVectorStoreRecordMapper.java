@@ -87,10 +87,10 @@ public class RedisJsonVectorStoreRecordMapper<Record>
         @Override
         public RedisJsonVectorStoreRecordMapper<Record> build() {
             if (keyFieldName == null) {
-                throw new IllegalArgumentException("keyFieldName is required");
+                throw new SKException("keyFieldName is required");
             }
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
 
             return new RedisJsonVectorStoreRecordMapper<>(record -> {

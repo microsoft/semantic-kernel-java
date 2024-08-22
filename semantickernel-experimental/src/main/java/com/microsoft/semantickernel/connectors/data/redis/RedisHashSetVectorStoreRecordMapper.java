@@ -84,10 +84,10 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
         @Override
         public RedisHashSetVectorStoreRecordMapper<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
             if (recordDefinition == null) {
-                throw new IllegalArgumentException("vectorStoreRecordDefinition is required");
+                throw new SKException("vectorStoreRecordDefinition is required");
             }
 
             ObjectMapper mapper = new ObjectMapper();

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.sql.ResultSet;
@@ -180,7 +181,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record>
          */
         public JDBCVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
 
             return new JDBCVectorStoreRecordCollectionOptions<>(
