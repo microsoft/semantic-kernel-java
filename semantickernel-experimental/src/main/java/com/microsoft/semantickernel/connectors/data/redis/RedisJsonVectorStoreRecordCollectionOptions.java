@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 
@@ -8,7 +9,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map.Entry;
 
-public class RedisJsonVectorStoreRecordCollectionOptions<Record> {
+public class RedisJsonVectorStoreRecordCollectionOptions<Record>
+    implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     @Nullable
     private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
@@ -35,6 +37,16 @@ public class RedisJsonVectorStoreRecordCollectionOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Gets the key class.
+     *
+     * @return the key class
+     */
+    @Override
+    public Class<String> getKeyClass() {
+        return String.class;
     }
 
     /**

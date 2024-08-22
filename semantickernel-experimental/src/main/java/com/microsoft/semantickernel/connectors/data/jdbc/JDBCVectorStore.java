@@ -2,7 +2,9 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -55,53 +57,42 @@ public class JDBCVectorStore implements SQLVectorStore {
      * Gets a collection from the vector store.
      *
      * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
+     * @param options          The options for the collection.
      * @return The collection.
      */
     @Override
     public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
-        @Nonnull String collectionName, @Nonnull Class<Key> keyClass,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (keyClass != String.class) {
-            throw new IllegalArgumentException("Redis only supports string keys");
+        @Nonnull String collectionName,
+        @Nonnull VectorStoreRecordCollectionOptions<Key, Record> options) {
+        if (!options.getKeyClass().equals(String.class)) {
+            throw new SKException("JDBC only supports string keys");
+        }
+        if (options.getRecordClass() == null) {
+            throw new SKException("Record class is required");
         }
 
-        return (VectorStoreRecordCollection<Key, Record>) getCollection(
-            collectionName,
-            recordClass,
-            recordDefinition);
-    }
-
-    /**
-     * Gets a collection from the vector store.
-     *
-     * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
-     * @return The collection.
-     */
-    public <Record> JDBCVectorStoreRecordCollection<Record> getCollection(
-        @Nonnull String collectionName,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
         if (this.options != null && this.options.getVectorStoreRecordCollectionFactory() != null) {
-            return this.options.getVectorStoreRecordCollectionFactory()
+            return (VectorStoreRecordCollection<Key, Record>) this.options
+                .getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
                     dataSource,
                     collectionName,
-                    recordClass,
-                    recordDefinition);
+                    options.getRecordClass(),
+                    options.getRecordDefinition());
         }
 
-        return new JDBCVectorStoreRecordCollection<>(
+        JDBCVectorStoreRecordCollectionOptions<Record> jdbcOptions = (JDBCVectorStoreRecordCollectionOptions<Record>) options;
+        return (VectorStoreRecordCollection<Key, Record>) new JDBCVectorStoreRecordCollection<>(
             dataSource,
             collectionName,
             JDBCVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(recordClass)
-                .withRecordDefinition(recordDefinition)
-                .withQueryProvider(this.queryProvider)
+                .withCollectionsTableName(jdbcOptions.getCollectionsTableName())
+                .withPrefixForCollectionTables(jdbcOptions.getPrefixForCollectionTables())
+                .withQueryProvider(jdbcOptions.getQueryProvider() == null ? queryProvider
+                    : jdbcOptions.getQueryProvider())
+                .withRecordClass(jdbcOptions.getRecordClass())
+                .withRecordDefinition(jdbcOptions.getRecordDefinition())
+                .withVectorStoreRecordMapper(jdbcOptions.getVectorStoreRecordMapper())
                 .build());
     }
 

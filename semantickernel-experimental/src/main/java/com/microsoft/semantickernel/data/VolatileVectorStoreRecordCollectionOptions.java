@@ -6,7 +6,8 @@ import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefin
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class VolatileVectorStoreRecordCollectionOptions<Record> {
+public class VolatileVectorStoreRecordCollectionOptions<Record>
+    implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
@@ -31,6 +32,16 @@ public class VolatileVectorStoreRecordCollectionOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Gets the key class.
+     *
+     * @return the key class
+     */
+    @Override
+    public Class<String> getKeyClass() {
+        return String.class;
     }
 
     /**
