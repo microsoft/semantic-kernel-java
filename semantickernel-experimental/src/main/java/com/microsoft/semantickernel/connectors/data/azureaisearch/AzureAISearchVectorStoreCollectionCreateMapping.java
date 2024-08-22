@@ -20,11 +20,11 @@ import javax.annotation.Nonnull;
 public class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static String getVectorSearchProfileName(VectorStoreRecordVectorField vectorField) {
-        return vectorField.getName() + "Profile";
+        return vectorField.getEffectiveStorageName() + "Profile";
     }
 
     private static String getAlgorithmConfigName(VectorStoreRecordVectorField vectorField) {
-        return vectorField.getName() + "AlgorithmConfig";
+        return vectorField.getEffectiveStorageName() + "AlgorithmConfig";
     }
 
     private static VectorSearchAlgorithmMetric getAlgorithmMetric(
@@ -68,7 +68,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
     }
 
     public static SearchField mapKeyField(VectorStoreRecordKeyField keyField) {
-        return new SearchField(keyField.getName(), SearchFieldDataType.STRING)
+        return new SearchField(keyField.getEffectiveStorageName(), SearchFieldDataType.STRING)
             .setKey(true)
             .setFilterable(true);
     }
@@ -76,16 +76,16 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
     public static SearchField mapDataField(VectorStoreRecordDataField dataField) {
         if (dataField.getFieldType() == null) {
             throw new IllegalArgumentException(
-                "Field type is required: " + dataField.getName());
+                "Field type is required: " + dataField.getEffectiveStorageName());
         }
 
-        return new SearchField(dataField.getName(),
+        return new SearchField(dataField.getEffectiveStorageName(),
             getSearchFieldDataType(dataField.getFieldType()))
             .setFilterable(dataField.isFilterable());
     }
 
     public static SearchField mapVectorField(VectorStoreRecordVectorField vectorField) {
-        return new SearchField(vectorField.getName(),
+        return new SearchField(vectorField.getEffectiveStorageName(),
             SearchFieldDataType.collection(SearchFieldDataType.SINGLE))
             .setSearchable(true)
             .setVectorSearchDimensions(vectorField.getDimensions())

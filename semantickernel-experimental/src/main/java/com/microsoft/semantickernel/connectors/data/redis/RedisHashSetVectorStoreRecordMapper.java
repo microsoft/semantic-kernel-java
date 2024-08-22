@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -8,7 +10,6 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.exceptions.SKException;
 
@@ -94,8 +95,9 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
             return new RedisHashSetVectorStoreRecordMapper<>(record -> {
                 try {
                     ObjectNode jsonNode = mapper.valueToTree(record);
-                    String key = jsonNode.get(recordDefinition.getKeyField().getName()).asText();
-                    jsonNode.remove(recordDefinition.getKeyField().getName());
+                    String key = jsonNode
+                        .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
+                    jsonNode.remove(recordDefinition.getKeyField().getEffectiveStorageName());
 
                     Map<String, String> resultMap = new HashMap<>();
                     Iterator<Entry<String, JsonNode>> fields = jsonNode.fields();
@@ -123,35 +125,35 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                     }
 
                     ObjectNode jsonNode = mapper.createObjectNode();
-                    jsonNode.set(recordDefinition.getKeyField().getName(),
+                    jsonNode.set(recordDefinition.getKeyField().getEffectiveStorageName(),
                         mapper.valueToTree(storageModel.getKey()));
 
                     for (VectorStoreRecordDataField field : recordDefinition.getDataFields()) {
-                        jsonNode.put(field.getName(), storageModel.getValue().get(field.getName()));
+                        jsonNode.put(field.getEffectiveStorageName(),
+                            storageModel.getValue().get(field.getEffectiveStorageName()));
                     }
 
                     for (VectorStoreRecordVectorField field : recordDefinition.getVectorFields()) {
-                        String value = storageModel.getValue().get(field.getName());
+                        String value = storageModel.getValue().get(field.getEffectiveStorageName());
 
                         // If vector fields were not requested, skip
                         if (value == null) {
                             continue;
                         }
 
-                        Class<?> valueType = recordClass.getDeclaredField(field.getName())
-                            .getType();
+                        Class<?> valueType = field.getFieldType();
 
                         if (valueType.equals(String.class)) {
-                            jsonNode.put(field.getName(), value);
+                            jsonNode.put(field.getEffectiveStorageName(), value);
                         } else {
                             // Convert the String stored in Redis back to the correct type and then put the JSON node
-                            jsonNode.set(field.getName(),
+                            jsonNode.set(field.getEffectiveStorageName(),
                                 mapper.valueToTree(mapper.readValue(value, valueType)));
                         }
                     }
 
                     return mapper.convertValue(jsonNode, recordClass);
-                } catch (Exception e) {
+                } catch (JsonProcessingException e) {
                     throw new SKException(
                         "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.data;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
 import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
@@ -43,8 +44,7 @@ public class VolatileVectorStoreRecordCollection<Record> implements
 
         // Validate the key type
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections
-                .singletonList(recordDefinition.getKeyDeclaredField(options.getRecordClass())),
+            Collections.singletonList(recordDefinition.getKeyField()),
             supportedKeyTypes);
     }
 
@@ -147,7 +147,8 @@ public class VolatileVectorStoreRecordCollection<Record> implements
         return Mono.fromCallable(() -> {
             try {
                 ObjectNode objectNode = objectMapper.valueToTree(data);
-                String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
+                String key = objectNode
+                    .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
 
                 getCollection().put(key, data);
                 return key;
@@ -173,7 +174,8 @@ public class VolatileVectorStoreRecordCollection<Record> implements
             return data.stream().map(record -> {
                 try {
                     ObjectNode objectNode = objectMapper.valueToTree(record);
-                    String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
+                    String key = objectNode
+                        .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
 
                     collection.put(key, record);
                     return key;

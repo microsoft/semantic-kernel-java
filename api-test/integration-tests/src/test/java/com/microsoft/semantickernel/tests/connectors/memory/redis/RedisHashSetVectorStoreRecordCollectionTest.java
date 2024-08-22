@@ -53,6 +53,7 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
         List<VectorStoreRecordField> fields = new ArrayList<>();
         fields.add(VectorStoreRecordKeyField.builder()
                 .withName("id")
+                .withFieldType(String.class)
                 .build());
         fields.add(VectorStoreRecordDataField.builder()
                 .withName("name")
@@ -64,12 +65,15 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
                 .build());
         fields.add(VectorStoreRecordDataField.builder()
                 .withName("description")
+                .withStorageName("summary")
                 .withFieldType(String.class)
                 .withHasEmbedding(true)
                 .withEmbeddingFieldName("descriptionEmbedding")
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("descriptionEmbedding")
+                .withStorageName("summaryEmbedding")
+                .withFieldType(List.class)
                 .withDimensions(768)
                 .build());
         fields.add(VectorStoreRecordDataField.builder()

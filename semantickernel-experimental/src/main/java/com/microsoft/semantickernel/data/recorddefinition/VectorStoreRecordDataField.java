@@ -8,8 +8,6 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
     private final boolean hasEmbedding;
     @Nullable
     private final String embeddingFieldName;
-    @Nullable
-    private final Class<?> fieldType;
     private final boolean isFilterable;
 
     public static Builder builder() {
@@ -21,22 +19,21 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
      *
      * @param name the name of the field
      * @param storageName the storage name of the field
+     * @param fieldType the field type
      * @param hasEmbedding a value indicating whether the field has an embedding
      * @param embeddingFieldName the name of the embedding
-     * @param fieldType the field type
      * @param isFilterable a value indicating whether the field is filterable
      */
     public VectorStoreRecordDataField(
         @Nonnull String name,
         @Nullable String storageName,
+        @Nonnull Class<?> fieldType,
         boolean hasEmbedding,
         @Nullable String embeddingFieldName,
-        @Nullable Class<?> fieldType,
         boolean isFilterable) {
-        super(name, storageName);
+        super(name, storageName, fieldType);
         this.hasEmbedding = hasEmbedding;
         this.embeddingFieldName = embeddingFieldName;
-        this.fieldType = fieldType;
         this.isFilterable = isFilterable;
     }
 
@@ -60,16 +57,6 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
     }
 
     /**
-     * Gets the field type.
-     *
-     * @return the field type
-     */
-    @Nullable
-    public Class<?> getFieldType() {
-        return fieldType;
-    }
-
-    /**
      * Gets a value indicating whether the field is filterable.
      *
      * @return a value indicating whether the field is filterable
@@ -83,8 +70,6 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
         private boolean hasEmbedding;
         @Nullable
         private String embeddingFieldName;
-        @Nullable
-        private Class<?> fieldType;
         private boolean isFilterable;
 
         /**
@@ -110,17 +95,6 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
         }
 
         /**
-         * Sets the field type.
-         *
-         * @param fieldType the field type
-         * @return the builder
-         */
-        public Builder withFieldType(Class<?> fieldType) {
-            this.fieldType = fieldType;
-            return this;
-        }
-
-        /**
          * Sets a value indicating whether the field is filterable.
          *
          * @param isFilterable a value indicating whether the field is filterable
@@ -141,6 +115,9 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
             if (name == null) {
                 throw new IllegalArgumentException("name is required");
             }
+            if (fieldType == null) {
+                throw new IllegalArgumentException("fieldType is required");
+            }
             if (hasEmbedding && embeddingFieldName == null) {
                 throw new IllegalArgumentException(
                     "embeddingFieldName is required when hasEmbedding is true");
@@ -149,9 +126,9 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
             return new VectorStoreRecordDataField(
                 name,
                 storageName,
+                fieldType,
                 hasEmbedding,
                 embeddingFieldName,
-                fieldType,
                 isFilterable);
         }
     }

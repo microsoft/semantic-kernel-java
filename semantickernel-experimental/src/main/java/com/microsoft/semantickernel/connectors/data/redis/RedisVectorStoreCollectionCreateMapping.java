@@ -82,17 +82,18 @@ public class RedisVectorStoreCollectionCreateMapping {
 
                 if (dataField.getFieldType() == null) {
                     throw new IllegalArgumentException(
-                        "Field type is required for filterable fields: " + dataField.getName());
+                        "Field type is required for filterable fields: "
+                            + dataField.getEffectiveStorageName());
                 }
 
                 if (dataField.getFieldType().equals(String.class)) {
-                    schema.addTextField(getRedisPath(dataField.getName()), 1.0);
+                    schema.addTextField(getRedisPath(dataField.getEffectiveStorageName()), 1.0);
                 } else if (supportedFilterableNumericTypes.contains(dataField.getFieldType())) {
-                    schema.addNumericField(getRedisPath(dataField.getName()));
+                    schema.addNumericField(getRedisPath(dataField.getEffectiveStorageName()));
                 } else {
                     throw new IllegalArgumentException(
                         "Unsupported field type for numeric filterable fields: "
-                            + dataField.getName());
+                            + dataField.getEffectiveStorageName());
                 }
 
             }
@@ -103,7 +104,7 @@ public class RedisVectorStoreCollectionCreateMapping {
                 if (vectorField.getDimensions() < 1) {
                     throw new IllegalArgumentException(
                         "Dimensions must be greater than 0 for vector fields: "
-                            + vectorField.getName());
+                            + vectorField.getEffectiveStorageName());
                 }
 
                 Schema.VectorField.VectorAlgo algorithm = getAlgorithmConfig(vectorField);
@@ -114,7 +115,8 @@ public class RedisVectorStoreCollectionCreateMapping {
                 attributes.put(RedisIndexSchemaParams.DIMENSIONS, vectorField.getDimensions());
                 attributes.put(RedisIndexSchemaParams.DISTANCE_METRIC, metric);
 
-                schema.addVectorField(getRedisPath(vectorField.getName()), algorithm, attributes);
+                schema.addVectorField(getRedisPath(vectorField.getEffectiveStorageName()),
+                    algorithm, attributes);
             }
         }
 

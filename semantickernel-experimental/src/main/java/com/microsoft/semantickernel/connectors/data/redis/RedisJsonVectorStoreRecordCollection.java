@@ -81,17 +81,16 @@ public class RedisJsonVectorStoreRecordCollection<Record>
 
         // Validate supported types
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections
-                .singletonList(recordDefinition.getKeyDeclaredField(this.options.getRecordClass())),
+            Collections.singletonList(recordDefinition.getKeyField()),
             supportedKeyTypes);
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getVectorDeclaredFields(this.options.getRecordClass()),
+            new ArrayList<>(recordDefinition.getVectorFields()),
             supportedVectorTypes);
 
         // If mapper is not provided, set a default one
         if (options.getVectorStoreRecordMapper() == null) {
             vectorStoreRecordMapper = new RedisJsonVectorStoreRecordMapper.Builder<Record>()
-                .withKeyFieldName(recordDefinition.getKeyField().getName())
+                .withKeyFieldName(recordDefinition.getKeyField().getEffectiveStorageName())
                 .withRecordClass(options.getRecordClass())
                 .build();
         } else {
@@ -101,7 +100,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
         // Creates a list of paths to retrieve from Redis when no vectors are requested
         // Paths are in the format of $.field
         this.dataFields = recordDefinition.getDataFields().stream()
-            .map(VectorStoreRecordDataField::getName)
+            .map(VectorStoreRecordDataField::getEffectiveStorageName)
             .map(Path2::new)
             .toArray(Path2[]::new);
     }

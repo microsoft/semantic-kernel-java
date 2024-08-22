@@ -87,7 +87,7 @@ public class JDBCVectorStoreRecordCollection<Record>
         }
 
         // Check if the types are supported
-        queryProvider.validateSupportedTypes(options.getRecordClass(), recordDefinition);
+        queryProvider.validateSupportedTypes(recordDefinition);
     }
 
     /**
@@ -122,8 +122,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     @Override
     public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(
-            () -> queryProvider.createCollection(this.collectionName, options.getRecordClass(),
-                recordDefinition))
+            () -> queryProvider.createCollection(this.collectionName, recordDefinition))
             .subscribeOn(Schedulers.boundedElastic())
             .then(Mono.just(this));
     }
@@ -200,7 +199,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     protected String getKeyFromRecord(Record data) {
         try {
             Field keyField = data.getClass()
-                .getDeclaredField(recordDefinition.getKeyField().getName());
+                .getDeclaredField(recordDefinition.getKeyField().getEffectiveStorageName());
             keyField.setAccessible(true);
             return (String) keyField.get(data);
         } catch (NoSuchFieldException | IllegalAccessException e) {
