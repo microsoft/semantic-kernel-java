@@ -9,6 +9,7 @@ import com.azure.core.util.ClientOptions;
 import com.azure.core.util.MetricsOptions;
 import com.azure.core.util.TracingOptions;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
+import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
@@ -120,7 +121,10 @@ public class Redis_DataStorage {
             .build();
 
         String collectionName = "skgithubfiles";
-        var collection = vectorStore.getCollection(collectionName, GitHubFile.class, null);
+        var collection = vectorStore.getCollection(collectionName,
+                RedisJsonVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                    .withRecordClass(GitHubFile.class)
+                    .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

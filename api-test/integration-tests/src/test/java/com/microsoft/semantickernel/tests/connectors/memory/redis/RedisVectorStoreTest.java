@@ -1,8 +1,11 @@
 package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
+import com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.redis.RedisStorageType;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,6 +39,18 @@ public class RedisVectorStoreTest {
         }
     }
 
+    private static VectorStoreRecordCollectionOptions<String, Hotel> getRecordCollectionOptions(RedisStorageType storageType) {
+        if (storageType == RedisStorageType.JSON) {
+            return RedisJsonVectorStoreRecordCollectionOptions.<Hotel>builder()
+                    .withRecordClass(Hotel.class)
+                    .build();
+        } else {
+            return RedisHashSetVectorStoreRecordCollectionOptions.<Hotel>builder()
+                    .withRecordClass(Hotel.class)
+                    .build();
+        }
+    }
+
     @ParameterizedTest
     @EnumSource(RedisStorageType.class)
     public void getCollectionNamesAsync(RedisStorageType storageType) {
@@ -46,7 +61,7 @@ public class RedisVectorStoreTest {
         List<String> collectionNames = Arrays.asList("collection1", "collection2", "collection3");
 
         for (String collectionName : collectionNames) {
-            vectorStore.getCollection(collectionName, Hotel.class, null).createCollectionAsync().block();
+            vectorStore.getCollection(collectionName, getRecordCollectionOptions(storageType)).createCollectionAsync().block();
         }
 
         List<String> retrievedCollectionNames = vectorStore.getCollectionNamesAsync().block();

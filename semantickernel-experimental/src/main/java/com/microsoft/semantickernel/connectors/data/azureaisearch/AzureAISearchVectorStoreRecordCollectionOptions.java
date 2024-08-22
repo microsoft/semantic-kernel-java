@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.SearchDocument;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import javax.annotation.Nonnull;
@@ -12,12 +13,11 @@ import javax.annotation.Nullable;
  *
  * @param <Record> the record type
  */
-public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
-
+public class AzureAISearchVectorStoreRecordCollectionOptions<Record>
+    implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     @Nullable
     private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
-
     @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
 
@@ -29,6 +29,16 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Gets the key class.
+     *
+     * @return the key class
+     */
+    @Override
+    public Class<String> getKeyClass() {
+        return String.class;
     }
 
     /**

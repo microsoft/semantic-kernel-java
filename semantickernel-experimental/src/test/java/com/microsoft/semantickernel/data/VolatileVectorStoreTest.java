@@ -24,7 +24,11 @@ public class VolatileVectorStoreTest {
         List<String> collectionNames = Arrays.asList("hotels1", "hotels2", "hotels3");
 
         for (String collectionName : collectionNames) {
-            vectorStore.getCollection(collectionName, Hotel.class, null).createCollectionAsync()
+            vectorStore.getCollection(collectionName,
+                VolatileVectorStoreRecordCollectionOptions.<Hotel>builder()
+                    .withRecordClass(Hotel.class)
+                    .build())
+                .createCollectionAsync()
                 .block();
         }
 

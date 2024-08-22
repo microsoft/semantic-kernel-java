@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
@@ -88,7 +89,10 @@ public class JDBCVectorStoreTest {
         List<String> collectionNames = Arrays.asList("collection1", "collection2", "collection3");
 
         for (String collectionName : collectionNames) {
-            vectorStore.getCollection(collectionName, Hotel.class, null).createCollectionAsync().block();
+            vectorStore.getCollection(collectionName,
+                    JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
+                    .withRecordClass(Hotel.class)
+                    .build()).createCollectionAsync().block();
         }
 
         List<String> retrievedCollectionNames = vectorStore.getCollectionNamesAsync().block();

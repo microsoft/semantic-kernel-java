@@ -16,15 +16,12 @@ public interface VectorStore {
      * Gets a collection from the vector store.
      *
      * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
+     * @param options          The options for the collection.
      * @return The collection.
      */
     <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
         @Nonnull String collectionName,
-        @Nonnull Class<Key> keyClass,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition);
+        @Nonnull VectorStoreRecordCollectionOptions<Key, Record> options);
 
     /**
      * Gets the names of all collections in the vector store.

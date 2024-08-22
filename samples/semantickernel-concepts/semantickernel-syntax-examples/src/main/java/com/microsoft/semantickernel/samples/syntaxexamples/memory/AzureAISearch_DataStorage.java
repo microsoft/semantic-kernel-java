@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
@@ -125,8 +126,9 @@ public class AzureAISearch_DataStorage {
         String collectionName = "skgithubfiles";
         var collection = azureAISearchVectorStore.getCollection(
             collectionName,
-            GitHubFile.class,
-            null);
+            AzureAISearchVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                    .withRecordClass(GitHubFile.class)
+                    .build());
 
         // Create collection if it does not exist and store data
         collection
