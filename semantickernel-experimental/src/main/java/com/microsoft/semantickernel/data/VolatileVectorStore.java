@@ -40,6 +40,7 @@ public class VolatileVectorStore implements VectorStore {
 
         return (VectorStoreRecordCollection<Key, Record>) new VolatileVectorStoreRecordCollection<>(
             collectionName,
+            collections,
             (VolatileVectorStoreRecordCollectionOptions<Record>) options);
     }
 
