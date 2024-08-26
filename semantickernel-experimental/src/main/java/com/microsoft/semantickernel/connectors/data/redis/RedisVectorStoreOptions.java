@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.microsoft.semantickernel.exceptions.SKException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -98,7 +100,7 @@ public class RedisVectorStoreOptions {
          */
         public RedisVectorStoreOptions build() {
             if (storageType == null) {
-                throw new IllegalArgumentException("storageType is required");
+                throw new SKException("storageType is required");
             }
 
             return new RedisVectorStoreOptions(storageType, vectorStoreRecordCollectionFactory);

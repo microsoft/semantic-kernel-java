@@ -122,11 +122,11 @@ public class RedisVectorStore implements VectorStore {
         @Override
         public RedisVectorStore build() {
             if (client == null) {
-                throw new IllegalArgumentException("client is required");
+                throw new SKException("client is required");
             }
 
             if (options == null) {
-                throw new IllegalArgumentException("options is required");
+                throw new SKException("options is required");
             }
 
             return new RedisVectorStore(client, options);

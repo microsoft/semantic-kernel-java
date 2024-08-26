@@ -14,9 +14,6 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.postgresql.util.PGobject;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -94,10 +91,10 @@ public class PostgreSQLVectorStoreRecordMapper<Record>
          */
         public PostgreSQLVectorStoreRecordMapper<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
             if (vectorStoreRecordDefinition == null) {
-                throw new IllegalArgumentException("vectorStoreRecordDefinition is required");
+                throw new SKException("vectorStoreRecordDefinition is required");
             }
 
             return new PostgreSQLVectorStoreRecordMapper<>(

@@ -97,10 +97,10 @@ public class JDBCVectorStoreRecordMapper<Record>
          */
         public JDBCVectorStoreRecordMapper<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
             if (vectorStoreRecordDefinition == null) {
-                throw new IllegalArgumentException("vectorStoreRecordDefinition is required");
+                throw new SKException("vectorStoreRecordDefinition is required");
             }
 
             return new JDBCVectorStoreRecordMapper<>(

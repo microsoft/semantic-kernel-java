@@ -5,6 +5,8 @@ import com.azure.search.documents.SearchDocument;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -128,7 +130,7 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record>
          */
         public AzureAISearchVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass must be provided");
+                throw new SKException("recordClass must be provided");
             }
 
             return new AzureAISearchVectorStoreRecordCollectionOptions<>(

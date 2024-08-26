@@ -162,7 +162,7 @@ public class JDBCVectorStore implements SQLVectorStore {
          */
         public Mono<JDBCVectorStore> buildAsync() {
             if (dataSource == null) {
-                throw new IllegalArgumentException("dataSource is required");
+                throw new SKException("dataSource is required");
             }
 
             JDBCVectorStore vectorStore = new JDBCVectorStore(dataSource, options);

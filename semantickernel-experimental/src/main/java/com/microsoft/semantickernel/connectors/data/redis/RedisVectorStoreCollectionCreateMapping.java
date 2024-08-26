@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import com.microsoft.semantickernel.exceptions.SKException;
 import redis.clients.jedis.search.Schema;
 
 public class RedisVectorStoreCollectionCreateMapping {
@@ -42,7 +44,7 @@ public class RedisVectorStoreCollectionCreateMapping {
             case EUCLIDEAN:
                 return RedisVectorDistanceMetric.EUCLIDEAN;
             default:
-                throw new IllegalArgumentException(
+                throw new SKException(
                     "Unsupported distance function: " + vectorField.getDistanceFunction());
         }
     }
@@ -59,7 +61,7 @@ public class RedisVectorStoreCollectionCreateMapping {
             case FLAT:
                 return Schema.VectorField.VectorAlgo.FLAT;
             default:
-                throw new IllegalArgumentException(
+                throw new SKException(
                     "Unsupported index kind: " + vectorField.getIndexKind());
         }
     }
@@ -81,7 +83,7 @@ public class RedisVectorStoreCollectionCreateMapping {
                 VectorStoreRecordDataField dataField = (VectorStoreRecordDataField) field;
 
                 if (dataField.getFieldType() == null) {
-                    throw new IllegalArgumentException(
+                    throw new SKException(
                         "Field type is required for filterable fields: "
                             + dataField.getEffectiveStorageName());
                 }
@@ -91,7 +93,7 @@ public class RedisVectorStoreCollectionCreateMapping {
                 } else if (supportedFilterableNumericTypes.contains(dataField.getFieldType())) {
                     schema.addNumericField(getRedisPath(dataField.getEffectiveStorageName()));
                 } else {
-                    throw new IllegalArgumentException(
+                    throw new SKException(
                         "Unsupported field type for numeric filterable fields: "
                             + dataField.getEffectiveStorageName());
                 }
@@ -102,7 +104,7 @@ public class RedisVectorStoreCollectionCreateMapping {
                 VectorStoreRecordVectorField vectorField = (VectorStoreRecordVectorField) field;
 
                 if (vectorField.getDimensions() < 1) {
-                    throw new IllegalArgumentException(
+                    throw new SKException(
                         "Dimensions must be greater than 0 for vector fields: "
                             + vectorField.getEffectiveStorageName());
                 }

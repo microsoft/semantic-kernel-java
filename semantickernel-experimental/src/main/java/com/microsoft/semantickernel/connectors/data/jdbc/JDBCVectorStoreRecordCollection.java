@@ -329,13 +329,13 @@ public class JDBCVectorStoreRecordCollection<Record>
         @Override
         public JDBCVectorStoreRecordCollection<Record> build() {
             if (dataSource == null) {
-                throw new IllegalArgumentException("dataSource is required");
+                throw new SKException("dataSource is required");
             }
             if (collectionName == null) {
-                throw new IllegalArgumentException("collectionName is required");
+                throw new SKException("collectionName is required");
             }
             if (options == null) {
-                throw new IllegalArgumentException("options is required");
+                throw new SKException("options is required");
             }
 
             return new JDBCVectorStoreRecordCollection<>(dataSource, collectionName, options);
