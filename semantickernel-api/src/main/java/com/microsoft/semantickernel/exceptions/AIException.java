@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.exceptions;
 
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -65,53 +66,57 @@ public class AIException extends SKException {
         /**
          * Unknown error.
          */
-        UNKNOWN_ERROR("Unknown error"),
+        UNKNOWN_ERROR(SemanticKernelResources.getString("unknown.error")),
 
         /**
          * No response.
          */
-        NO_RESPONSE("No response"),
+        NO_RESPONSE(SemanticKernelResources.getString("no.response")),
         /**
          * Access denied.
          */
-        ACCESS_DENIED("Access is denied"),
+        ACCESS_DENIED(SemanticKernelResources.getString("access.is.denied")),
 
         /**
          * Invalid request.
          */
-        INVALID_REQUEST("The request was invalid"),
+        INVALID_REQUEST(SemanticKernelResources.getString("the.request.was.invalid")),
         /**
          * Invalid response.
          */
-        INVALID_RESPONSE_CONTENT("The content of the response was invalid"),
+        INVALID_RESPONSE_CONTENT(
+            SemanticKernelResources.getString("the.content.of.the.response.was.invalid")),
 
         /**
          * Throttling.
          */
-        THROTTLING("The request was throttled"),
+        THROTTLING(SemanticKernelResources.getString("the.request.was.throttled")),
         /**
          * Request timeout.
          */
-        REQUEST_TIMEOUT("The request timed out"),
+        REQUEST_TIMEOUT(SemanticKernelResources.getString("the.request.timed.out")),
 
         /**
          * Service error.
          */
-        SERVICE_ERROR("There was an error in the service"),
+        SERVICE_ERROR(SemanticKernelResources.getString("there.was.an.error.in.the.service")),
 
         /**
          * Model not available.
          */
-        MODEL_NOT_AVAILABLE("The requested model is not available"),
+        MODEL_NOT_AVAILABLE(
+            SemanticKernelResources.getString("the.requested.model.is.not.available")),
 
         /**
          * Invalid configuration.
          */
-        INVALID_CONFIGURATION("The supplied configuration was invalid"),
+        INVALID_CONFIGURATION(
+            SemanticKernelResources.getString("the.supplied.configuration.was.invalid")),
         /**
          * Function type not supported.
          */
-        FUNCTION_TYPE_NOT_SUPPORTED("The function is not supported");
+        FUNCTION_TYPE_NOT_SUPPORTED(
+            SemanticKernelResources.getString("the.function.is.not.supported"));
 
         private final String message;
 

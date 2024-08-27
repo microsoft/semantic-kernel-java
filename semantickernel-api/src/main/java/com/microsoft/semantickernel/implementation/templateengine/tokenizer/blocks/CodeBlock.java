@@ -6,12 +6,14 @@ import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -44,12 +46,14 @@ public final class CodeBlock extends Block implements CodeRendering {
     public boolean isValid() {
         Optional<Block> invalid = tokens.stream().filter(token -> !token.isValid()).findFirst();
         if (invalid.isPresent()) {
-            LOGGER.error("Invalid block" + invalid.get().getContent());
+            LOGGER.error(MessageFormat.format(SemanticKernelResources.getString("invalid.block.0"),
+                invalid.get().getContent()));
             return false;
         }
 
         if (!this.tokens.isEmpty() && this.tokens.get(0).getType() == BlockTypes.NAMED_ARG) {
-            LOGGER.error("Unexpected named argument found. Expected function name first.");
+            LOGGER.error(SemanticKernelResources.getString(
+                "unexpected.named.argument.found.expected.function.name.first"));
             return false;
         }
 
@@ -62,7 +66,9 @@ public final class CodeBlock extends Block implements CodeRendering {
 
     private boolean isValidFunctionCall() {
         if (this.tokens.get(0).getType() != BlockTypes.FUNCTION_ID) {
-            LOGGER.error("Unexpected second token found: " + tokens.get(1).getContent());
+            LOGGER.error(MessageFormat.format(
+                SemanticKernelResources.getString("unexpected.second.token.found.0"),
+                tokens.get(1).getContent()));
             return false;
         }
 
@@ -70,15 +76,17 @@ public final class CodeBlock extends Block implements CodeRendering {
             this.tokens.get(1).getType() != BlockTypes.VARIABLE &&
             this.tokens.get(1).getType() != BlockTypes.NAMED_ARG) {
             LOGGER.error(
-                "The first arg of a function must be a quoted string, variable or named argument");
+                SemanticKernelResources.getString(
+                    "the.first.arg.of.a.function.must.be.a.quoted.string.variable.or.named.argument"));
             return false;
         }
 
         for (int i = 2; i < this.tokens.size(); i++) {
             if (this.tokens.get(i).getType() != BlockTypes.NAMED_ARG) {
                 LOGGER.error(
-                    "Functions only support named arguments after the first argument. Argument " + i
-                        + " is not named.");
+                    SemanticKernelResources.getString(
+                        "functions.only.support.named.arguments.after.the.first.argument"),
+                    i);
                 return false;
             }
         }
