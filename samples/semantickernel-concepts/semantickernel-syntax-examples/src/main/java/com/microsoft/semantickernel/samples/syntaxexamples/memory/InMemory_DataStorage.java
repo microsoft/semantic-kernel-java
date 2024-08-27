@@ -103,9 +103,9 @@ public class InMemory_DataStorage {
 
         String collectionName = "skgithubfiles";
         var collection = volatileVectorStore.getCollection(collectionName,
-                VolatileVectorStoreRecordCollectionOptions.<GitHubFile>builder()
-                        .withRecordClass(GitHubFile.class)
-                        .build());
+            VolatileVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection
