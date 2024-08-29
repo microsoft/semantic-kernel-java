@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.microsoft.semantickernel.exceptions.SKException;
 import reactor.core.publisher.Mono;

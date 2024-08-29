@@ -10,9 +10,10 @@ import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmMetric;
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
+import com.azure.search.documents.indexes.models.VectorSearchVectorizerKind;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.time.OffsetDateTime;
@@ -83,7 +84,8 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
 
         return new SearchField(dataField.getEffectiveStorageName(),
             getSearchFieldDataType(dataField.getFieldType()))
-            .setFilterable(dataField.isFilterable());
+            .setFilterable(dataField.isFilterable())
+            .setSearchable(dataField.isFullTextSearchable());
     }
 
     public static SearchField mapVectorField(VectorStoreRecordVectorField vectorField) {
@@ -103,8 +105,8 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
         }
 
         algorithms.add(getAlgorithmConfig(vectorField));
-        profiles.add(new VectorSearchProfile(getVectorSearchProfileName(vectorField),
-            getAlgorithmConfigName(vectorField)));
+        profiles.add(new VectorSearchProfile(
+            getVectorSearchProfileName(vectorField), getAlgorithmConfigName(vectorField)));
     }
 
     public static SearchFieldDataType getSearchFieldDataType(Class<?> fieldType) {

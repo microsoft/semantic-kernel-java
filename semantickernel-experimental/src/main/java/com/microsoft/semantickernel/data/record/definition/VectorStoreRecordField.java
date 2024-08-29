@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.recorddefinition;
+package com.microsoft.semantickernel.data.record.definition;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 

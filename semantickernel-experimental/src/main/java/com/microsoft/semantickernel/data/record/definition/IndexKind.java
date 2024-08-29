@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.recorddefinition;
+package com.microsoft.semantickernel.data.record.definition;
 
 public enum IndexKind {
     HNSW("Hnsw"), FLAT("Flat");

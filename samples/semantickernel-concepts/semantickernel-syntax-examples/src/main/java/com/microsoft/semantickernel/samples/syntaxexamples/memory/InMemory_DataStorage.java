@@ -9,9 +9,9 @@ import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEm
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStore;
 import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,7 @@ public class InMemory_DataStorage {
 
         @VectorStoreRecordKeyAttribute()
         private final String id;
-        @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
+        @VectorStoreRecordDataAttribute()
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
@@ -64,7 +64,7 @@ public class InMemory_DataStorage {
         }
 
         static String encodeId(String realId) {
-            return AzureAISearch_DataStorage.GitHubFile.encodeId(realId);
+            return AzureAISearchVectorStore.GitHubFile.encodeId(realId);
         }
     }
 

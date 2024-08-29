@@ -5,7 +5,6 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStore;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;

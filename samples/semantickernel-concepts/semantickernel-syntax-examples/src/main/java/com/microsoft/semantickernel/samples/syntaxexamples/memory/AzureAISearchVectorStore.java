@@ -10,16 +10,15 @@ import com.azure.core.util.MetricsOptions;
 import com.azure.core.util.TracingOptions;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
-import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.VectorSearchResult;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -27,10 +26,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class AzureAISearch_DataStorage {
+public class AzureAISearchVectorStore {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
@@ -51,7 +51,7 @@ public class AzureAISearch_DataStorage {
         @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
         private final String id;
-        @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
+        @VectorStoreRecordDataAttribute()
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
@@ -118,13 +118,13 @@ public class AzureAISearch_DataStorage {
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
         // Create a new Azure AI Search vector store
-        var azureAISearchVectorStore = AzureAISearchVectorStore.builder()
-            .withClient(searchClient)
+        var azureAISearchVectorStore = com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore.builder()
+            .withSearchIndexAsyncClient(searchClient)
             .withOptions(new AzureAISearchVectorStoreOptions())
             .build();
 
         String collectionName = "skgithubfiles";
-        var collection = azureAISearchVectorStore.getCollection(
+        var collection = (AzureAISearchVectorStoreRecordCollection<GitHubFile>) azureAISearchVectorStore.getCollection(
             collectionName,
             AzureAISearchVectorStoreRecordCollectionOptions.<GitHubFile>builder()
                     .withRecordClass(GitHubFile.class)
@@ -136,18 +136,26 @@ public class AzureAISearch_DataStorage {
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        // Query the Azure AI Search client for results
-        // This might take a few seconds to return the best result
-        var result = searchClient.getSearchAsyncClient(collectionName)
-            .search("How to get started with the Semantic Kernel?")
-            .blockFirst();
+        // Search for results
+        // Might need to wait for the data to be indexed
+        var results = search("How to get started", collection, embeddingGeneration).block();
+        var searchResult = results.get(0);
+        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
+                searchResult.getScore(), searchResult.getRecord().link, searchResult.getRecord().description);
+    }
 
-        GitHubFile gitHubFile = result.getDocument(GitHubFile.class);
-        System.out.println("Best result: " + gitHubFile.description + ". Link: " + gitHubFile.link);
+
+    private static Mono<List<VectorSearchResult<GitHubFile>>> search(
+            String searchText,
+            AzureAISearchVectorStoreRecordCollection<GitHubFile> recordCollection,
+            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+
+        return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
+                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
-        VectorStoreRecordCollection<String, GitHubFile> recordStore,
+        AzureAISearchVectorStoreRecordCollection<GitHubFile> recordCollection,
         OpenAITextEmbeddingGenerationService embeddingGeneration,
         Map<String, String> data) {
 
@@ -163,7 +171,7 @@ public class AzureAISearch_DataStorage {
                             entry.getValue(),
                             entry.getKey(),
                             embeddings.get(0).getVector());
-                        return recordStore.upsertAsync(gitHubFile, null);
+                        return recordCollection.upsertAsync(gitHubFile, null);
                     });
             })
             .collectList();

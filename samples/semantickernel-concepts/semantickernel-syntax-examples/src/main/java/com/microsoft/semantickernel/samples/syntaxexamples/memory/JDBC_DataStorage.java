@@ -11,9 +11,9 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -45,7 +45,7 @@ public class JDBC_DataStorage {
 
         @VectorStoreRecordKeyAttribute()
         private final String id;
-        @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
+        @VectorStoreRecordDataAttribute()
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;

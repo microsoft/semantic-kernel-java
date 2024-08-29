@@ -3,11 +3,10 @@ package com.microsoft.semantickernel.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.Collections;
 import java.util.HashSet;

@@ -7,10 +7,10 @@ import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorSto
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;

@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.recorddefinition;
+package com.microsoft.semantickernel.data.record.definition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,12 @@ public class VectorStoreRecordDefinition {
         fields.add(keyField);
         fields.addAll(dataFields);
         return fields;
+    }
+
+    public Map<String, String> getStorageNames() {
+        return getAllFields().stream()
+            .collect(Collectors.toMap(VectorStoreRecordField::getName,
+                VectorStoreRecordField::getEffectiveStorageName));
     }
 
     private VectorStoreRecordDefinition(
@@ -145,9 +152,7 @@ public class VectorStoreRecordDefinition {
                     .withName(field.getName())
                     .withStorageName(storageName)
                     .withFieldType(field.getType())
-                    .withHasEmbedding(dataAttribute.hasEmbedding())
-                    .withEmbeddingFieldName(dataAttribute.embeddingFieldName())
-                    .withIsFilterable(dataAttribute.isFilterable())
+                    .isFilterable(dataAttribute.isFilterable())
                     .build());
             }
 

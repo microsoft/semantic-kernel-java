@@ -2,12 +2,12 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.BeforeAll;

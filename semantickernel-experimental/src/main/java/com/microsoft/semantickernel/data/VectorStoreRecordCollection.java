@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
 import java.util.List;
 import reactor.core.publisher.Mono;
 

@@ -2,15 +2,14 @@
 package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.exceptions.SKException;
 
 import javax.annotation.Nullable;

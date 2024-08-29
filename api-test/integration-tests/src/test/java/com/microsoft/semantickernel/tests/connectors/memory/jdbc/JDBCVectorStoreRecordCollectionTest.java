@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCo
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import org.junit.jupiter.params.ParameterizedTest;

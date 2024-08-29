@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

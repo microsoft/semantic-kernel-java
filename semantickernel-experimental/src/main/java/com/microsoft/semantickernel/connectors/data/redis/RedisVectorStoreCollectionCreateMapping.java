@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
