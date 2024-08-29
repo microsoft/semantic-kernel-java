@@ -134,8 +134,8 @@ public class JDBC_DataStorage {
         String collectionName = "skgithubfiles";
         var collection = jdbcVectorStore.getCollection(collectionName,
             JDBCVectorStoreRecordCollectionOptions.<GitHubFile>builder()
-                    .withRecordClass(GitHubFile.class)
-                    .build());
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

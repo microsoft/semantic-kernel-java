@@ -122,9 +122,9 @@ public class Redis_DataStorage {
 
         String collectionName = "skgithubfiles";
         var collection = vectorStore.getCollection(collectionName,
-                RedisJsonVectorStoreRecordCollectionOptions.<GitHubFile>builder()
-                    .withRecordClass(GitHubFile.class)
-                    .build());
+            RedisJsonVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

@@ -127,8 +127,8 @@ public class AzureAISearchVectorStore {
         var collection = (AzureAISearchVectorStoreRecordCollection<GitHubFile>) azureAISearchVectorStore.getCollection(
             collectionName,
             AzureAISearchVectorStoreRecordCollectionOptions.<GitHubFile>builder()
-                    .withRecordClass(GitHubFile.class)
-                    .build());
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         collection
