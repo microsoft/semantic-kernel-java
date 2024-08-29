@@ -68,8 +68,6 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .withName("description")
                 .withStorageName("summary")
                 .withFieldType(String.class)
-                .withHasEmbedding(true)
-                .withEmbeddingFieldName("descriptionEmbedding")
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("descriptionEmbedding")
