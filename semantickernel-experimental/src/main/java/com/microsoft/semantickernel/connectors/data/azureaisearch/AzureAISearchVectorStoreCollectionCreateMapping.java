@@ -20,7 +20,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-public class AzureAISearchVectorStoreCollectionCreateMapping {
+class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static String getVectorSearchProfileName(VectorStoreRecordVectorField vectorField) {
         return vectorField.getEffectiveStorageName() + "Profile";

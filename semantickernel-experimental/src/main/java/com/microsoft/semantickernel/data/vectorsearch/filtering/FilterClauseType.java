@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorsearch.options;
+package com.microsoft.semantickernel.data.vectorsearch.filtering;
 
 public enum FilterClauseType {
     /**

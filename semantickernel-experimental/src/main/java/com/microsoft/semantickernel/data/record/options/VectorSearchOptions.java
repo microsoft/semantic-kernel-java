@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorsearch.options;
+package com.microsoft.semantickernel.data.record.options;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.data.vectorsearch.filtering.BasicVectorSearchFilter;
 
 import javax.annotation.Nullable;
 

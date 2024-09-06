@@ -12,7 +12,6 @@ import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.IndexingResult;
 import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.models.VectorQuery;
-import com.azure.search.documents.models.VectorizableTextQuery;
 import com.azure.search.documents.models.VectorizedQuery;
 import com.microsoft.semantickernel.data.VectorSearch;
 import com.microsoft.semantickernel.data.VectorSearchResult;
@@ -26,10 +25,7 @@ import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVect
 import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
-import com.microsoft.semantickernel.data.vectorsearch.options.VectorSearchOptions;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizableTextSearchQuery;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
+import com.microsoft.semantickernel.data.record.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
@@ -319,6 +315,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         String filter = AzureAISearchVectorStoreCollectionSearchMapping
             .buildFilterString(options.getBasicVectorSearchFilter(), storageNames);
+
         SearchOptions searchOptions = new SearchOptions()
             .setFilter(filter)
             .setTop(options.getLimit())
