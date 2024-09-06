@@ -24,6 +24,11 @@ public class BasicVectorSearchFilter {
         this(new ArrayList<>());
     }
 
+    /**
+     * Creates a new instance of the BasicVectorSearchFilter class.
+     *
+     * @param filterClauses The filter clauses.
+     */
     public BasicVectorSearchFilter(List<FilterClause> filterClauses) {
         this.filterClauses = new ArrayList<>(filterClauses);
     }
@@ -44,20 +49,30 @@ public class BasicVectorSearchFilter {
     public static class Builder {
         private final List<FilterClause> filterClauses = new ArrayList<>();
 
+        /**
+         * Adds an equality filter clause to the filter.
+         *
+         * @param equalityFilterClause The equality filter clause to add.
+         * @return The builder.
+         */
         public Builder equality(EqualityFilterClause equalityFilterClause) {
             filterClauses.add(equalityFilterClause);
             return this;
         }
 
+        /**
+         * Adds a tag list contains filter clause to the filter.
+         *
+         * @param tagListContainsFilterClause The tag list contains filter clause to add.
+         * @return The builder.
+         */
         public Builder tagListContains(TagListContainsFilterClause tagListContainsFilterClause) {
             filterClauses.add(tagListContainsFilterClause);
             return this;
         }
 
         public BasicVectorSearchFilter build() {
-            BasicVectorSearchFilter basicVectorSearchFilter = new BasicVectorSearchFilter();
-            basicVectorSearchFilter.filterClauses.addAll(filterClauses);
-            return basicVectorSearchFilter;
+            return new BasicVectorSearchFilter(filterClauses);
         }
     }
 }

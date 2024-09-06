@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.microsoft.semantickernel.data.vectorsearch.filtering.EqualityFilterClause;
@@ -32,7 +33,7 @@ public class AzureAISearchEqualityFilterClause extends EqualityFilterClause {
             return String.format("%s eq '%s'", fieldName, value);
         } else if (value instanceof Boolean) {
             return String.format("%s eq %s", fieldName,
-                    value.toString().toLowerCase());
+                value.toString().toLowerCase());
         } else if (value instanceof Integer) {
             return String.format("%s eq %d", fieldName, (Integer) value);
         } else if (value instanceof Long) {
@@ -43,12 +44,12 @@ public class AzureAISearchEqualityFilterClause extends EqualityFilterClause {
             return String.format("%s eq %f", fieldName, (Double) value);
         } else if (value instanceof OffsetDateTime) {
             return String.format("%s eq %s", fieldName, ((OffsetDateTime) value)
-                    .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         } else if (value == null) {
             return String.format("%s eq null", fieldName);
         } else {
             throw new SKException("Unsupported filter value type '"
-                    + value.getClass().getSimpleName() + "'.");
+                + value.getClass().getSimpleName() + "'.");
         }
     }
 }

@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.data.vectorsearch.filtering;
 public interface FilterClause {
 
     /**
-     * Gets the filter.
+     * Gets the filter string.
      *
      * @return The filter.
      */

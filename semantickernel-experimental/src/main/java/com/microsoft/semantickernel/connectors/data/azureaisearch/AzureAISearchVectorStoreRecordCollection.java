@@ -309,8 +309,9 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         List<VectorQuery> vectorQueries = new ArrayList<>();
         vectorQueries.add(new VectorizedQuery((List<Float>) vector)
-            .setFields(options.getVectorFieldName() != null ? options.getVectorFieldName()
-                : firstVectorFieldName)
+            .setFields(
+                storageNames.get(options.getVectorFieldName() != null ? options.getVectorFieldName()
+                    : firstVectorFieldName))
             .setKNearestNeighborsCount(options.getLimit()));
 
         String filter = AzureAISearchVectorStoreCollectionSearchMapping
