@@ -330,17 +330,4 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         return searchAndMapAsync(null, searchOptions);
     }
-
-    /**
-     * Vectorizable text search. This method searches for records that are similar to the given text.
-     *
-     * @param searchText The text to search with.
-     * @param options The options to use for the search.
-     * @return A list of search results.
-     */
-    @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(String searchText,
-        VectorSearchOptions options) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
 }

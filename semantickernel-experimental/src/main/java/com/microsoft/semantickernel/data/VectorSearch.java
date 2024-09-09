@@ -16,14 +16,4 @@ public interface VectorSearch<Record> {
      */
     <Vector> Mono<List<VectorSearchResult<Record>>> searchAsync(Vector vector,
         VectorSearchOptions options);
-
-    /**
-     * Vectorizable text search. This method searches for records that are similar to the given text.
-     *
-     * @param searchText The text to search with.
-     * @param options The options to use for the search.
-     * @return A list of search results.
-     */
-    Mono<List<VectorSearchResult<Record>>> searchAsync(String searchText,
-        VectorSearchOptions options);
 }
