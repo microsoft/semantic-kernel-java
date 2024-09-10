@@ -195,13 +195,13 @@ public class PostgreSQLVectorStoreQueryProvider extends
             Statement createTableAndIndexes = connection.createStatement()) {
 
             String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-                    + getCollectionTableName(collectionName) + " ("
-                    + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
-                    + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                + getCollectionTableName(collectionName) + " ("
+                + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
+                + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
                     supportedDataTypes)
-                    + ", "
-                    + getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields())
-                    + ");";
+                + ", "
+                + getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields())
+                + ");";
 
             createTableAndIndexes.addBatch(createStorageTable);
             for (VectorStoreRecordVectorField vectorField : vectorFields) {
