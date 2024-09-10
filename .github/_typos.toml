@@ -43,7 +43,7 @@ extend-ignore-re = [
     'Version=".*"', # ignore package version numbers
 ]
 
-[exclude]
-words = [
+[default]
+ignore-words = [
     "Prelease"
 ]
