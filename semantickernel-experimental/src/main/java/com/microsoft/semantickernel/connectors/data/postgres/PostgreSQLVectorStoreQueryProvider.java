@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -150,6 +151,29 @@ public class PostgreSQLVectorStoreQueryProvider extends
             .collect(Collectors.joining(", "));
     }
 
+    private String createIndexForVectorField(String collectionName,
+        VectorStoreRecordVectorField vectorField) {
+        PostgreSQLVectorIndexKind indexKind = PostgreSQLVectorIndexKind
+            .fromIndexKind(vectorField.getIndexKind());
+        PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
+            .fromDistanceFunction(vectorField.getDistanceFunction());
+
+        // If indexKind is not specified, no index is created
+        // and pgvector performs exact nearest neighbor search.
+        if (indexKind == null) {
+            return null;
+        }
+        if (distanceFunction == null) {
+            throw new SKException(
+                "Distance function is required for vector field: " + vectorField.getName());
+        }
+
+        return "CREATE INDEX IF NOT EXISTS " + getCollectionTableName(collectionName) + "_index"
+            + " ON " + getCollectionTableName(collectionName)
+            + " USING " + indexKind.getValue()
+            + " (" + vectorField.getName() + " " + distanceFunction.getValue() + ");";
+    }
+
     /**
      * Creates a collection.
      *
@@ -158,28 +182,43 @@ public class PostgreSQLVectorStoreQueryProvider extends
      * @throws SKException if an error occurs while creating the collection
      */
     @Override
-    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
+    @SuppressFBWarnings(value = {
+            "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE",
+            "SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"
+    }) // SQL query is generated dynamically with valid identifiers
     public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
 
-        String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-            + getCollectionTableName(collectionName) + " ("
-            + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
-            + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
-                supportedDataTypes)
-            + ", "
-            + getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields())
-            + ");";
-
-        String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
-            + " (collectionId) VALUES (?)";
+        List<VectorStoreRecordVectorField> vectorFields = recordDefinition.getVectorFields();
 
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
-            createTable.execute();
+            Statement createTableAndIndexes = connection.createStatement()) {
+
+            String createStorageTable = "CREATE TABLE IF NOT EXISTS "
+                + getCollectionTableName(collectionName) + " ("
+                + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
+                + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                    supportedDataTypes)
+                + ", "
+                + getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields())
+                + ");";
+
+            createTableAndIndexes.addBatch(createStorageTable);
+            for (VectorStoreRecordVectorField vectorField : vectorFields) {
+                String createVectorIndex = createIndexForVectorField(collectionName, vectorField);
+
+                if (createVectorIndex != null) {
+                    createTableAndIndexes.addBatch(createVectorIndex);
+                }
+            }
+
+            createTableAndIndexes.executeBatch();
         } catch (SQLException e) {
             throw new SKException("Failed to create collection", e);
         }
+
+        String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
+            + " (collectionId) VALUES (?)";
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
