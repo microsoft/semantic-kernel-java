@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.microsoft.semantickernel.exceptions.SKException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -8,13 +10,18 @@ public class RedisVectorStoreOptions {
     @Nullable
     private final RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
 
+    @Nonnull
+    private final RedisStorageType storageType;
+
     /**
      * Creates a new instance of the Redis vector store options.
      *
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
      */
     public RedisVectorStoreOptions(
+        @Nonnull RedisStorageType storageType,
         @Nullable RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory) {
+        this.storageType = storageType;
         this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
     }
 
@@ -22,7 +29,7 @@ public class RedisVectorStoreOptions {
      * Creates a new instance of the Redis vector store options.
      */
     public RedisVectorStoreOptions() {
-        this(null);
+        this(RedisStorageType.JSON, null);
     }
 
     /**
@@ -45,11 +52,23 @@ public class RedisVectorStoreOptions {
     }
 
     /**
+     * Gets the storage type.
+     *
+     * @return the storage type
+     */
+    @Nonnull
+    public RedisStorageType getStorageType() {
+        return storageType;
+    }
+
+    /**
      * Builder for Redis vector store options.
      */
     public static class Builder {
         @Nullable
         private RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
+        @Nullable
+        private RedisStorageType storageType;
 
         /**
          * Sets the vector store record collection factory.
@@ -64,12 +83,27 @@ public class RedisVectorStoreOptions {
         }
 
         /**
+         * Sets the storage type.
+         *
+         * @param storageType The storage type.
+         * @return The updated builder instance.
+         */
+        public Builder withStorageType(RedisStorageType storageType) {
+            this.storageType = storageType;
+            return this;
+        }
+
+        /**
          * Builds the options.
          *
          * @return The options.
          */
         public RedisVectorStoreOptions build() {
-            return new RedisVectorStoreOptions(vectorStoreRecordCollectionFactory);
+            if (storageType == null) {
+                throw new SKException("storageType is required");
+            }
+
+            return new RedisVectorStoreOptions(storageType, vectorStoreRecordCollectionFactory);
         }
     }
 }

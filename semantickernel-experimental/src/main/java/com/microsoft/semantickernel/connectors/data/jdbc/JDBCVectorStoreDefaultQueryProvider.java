@@ -12,7 +12,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,9 +29,9 @@ import java.util.stream.Stream;
 public class JDBCVectorStoreDefaultQueryProvider
     implements JDBCVectorStoreQueryProvider {
 
-    private Map<Class<?>, String> supportedKeyTypes;
-    private Map<Class<?>, String> supportedDataTypes;
-    private Map<Class<?>, String> supportedVectorTypes;
+    private final Map<Class<?>, String> supportedKeyTypes;
+    private final Map<Class<?>, String> supportedDataTypes;
+    private final Map<Class<?>, String> supportedVectorTypes;
     private final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
@@ -89,12 +88,23 @@ public class JDBCVectorStoreDefaultQueryProvider
     }
 
     /**
+     * Gets the key column name from a key field.
+     * @param keyField the key field
+     * @return the key column name
+     */
+    protected String getKeyColumnName(VectorStoreRecordField keyField) {
+        return validateSQLidentifier(keyField.getEffectiveStorageName());
+    }
+
+    /**
      * Formats the query columns from a record definition.
      * @param fields the fields to get the columns from
      * @return the formatted query columns
      */
     protected String getQueryColumnsFromFields(List<VectorStoreRecordField> fields) {
-        return fields.stream().map(VectorStoreRecordField::getName)
+        return fields.stream()
+            .map(VectorStoreRecordField::getEffectiveStorageName)
+            .map(JDBCVectorStoreDefaultQueryProvider::validateSQLidentifier)
             .collect(Collectors.joining(", "));
     }
 
@@ -104,9 +114,11 @@ public class JDBCVectorStoreDefaultQueryProvider
      * @param types the types
      * @return the formatted column names and types
      */
-    protected String getColumnNamesAndTypes(List<Field> fields, Map<Class<?>, String> types) {
+    protected String getColumnNamesAndTypes(List<VectorStoreRecordField> fields,
+        Map<Class<?>, String> types) {
         List<String> columns = fields.stream()
-            .map(field -> field.getName() + " " + types.get(field.getType()))
+            .map(field -> validateSQLidentifier(field.getEffectiveStorageName()) + " "
+                + types.get(field.getFieldType()))
             .collect(Collectors.toList());
 
         return String.join(", ", columns);
@@ -169,20 +181,20 @@ public class JDBCVectorStoreDefaultQueryProvider
     /**
      * Checks if the types of the record class fields are supported.
      *
-     * @param recordClass the record class
      * @param recordDefinition the record definition
-     * @throws IllegalArgumentException if the types are not supported
+     * @throws SKException if the types are not supported
      */
     @Override
-    public void validateSupportedTypes(Class<?> recordClass,
-        VectorStoreRecordDefinition recordDefinition) {
+    public void validateSupportedTypes(VectorStoreRecordDefinition recordDefinition) {
+
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections.singletonList(recordDefinition.getKeyDeclaredField(recordClass)),
+            Collections.singletonList(recordDefinition.getKeyField()),
             getSupportedKeyTypes().keySet());
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getDataDeclaredFields(recordClass), getSupportedDataTypes().keySet());
+            new ArrayList<>(recordDefinition.getDataFields()),
+            getSupportedDataTypes().keySet());
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getVectorDeclaredFields(recordClass),
+            new ArrayList<>(recordDefinition.getVectorFields()),
             getSupportedVectorTypes().keySet());
     }
 
@@ -212,23 +224,23 @@ public class JDBCVectorStoreDefaultQueryProvider
      * Creates a collection.
      *
      * @param collectionName the collection name
-     * @param recordClass the record class
      * @param recordDefinition the record definition
      * @throws SKException if an error occurs while creating the collection
      */
     @Override
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
-    public void createCollection(String collectionName, Class<?> recordClass,
+    public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
-        Field keyDeclaredField = recordDefinition.getKeyDeclaredField(recordClass);
-        List<Field> dataDeclaredFields = recordDefinition.getDataDeclaredFields(recordClass);
-        List<Field> vectorDeclaredFields = recordDefinition.getVectorDeclaredFields(recordClass);
 
         String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-            + getCollectionTableName(collectionName)
-            + " (" + keyDeclaredField.getName() + " VARCHAR(255) PRIMARY KEY, "
-            + getColumnNamesAndTypes(dataDeclaredFields, getSupportedDataTypes()) + ", "
-            + getColumnNamesAndTypes(vectorDeclaredFields, getSupportedVectorTypes()) + ");";
+            + getCollectionTableName(collectionName) + " ("
+            + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
+            + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                getSupportedDataTypes())
+            + ", "
+            + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getVectorFields()),
+                getSupportedVectorTypes())
+            + ");";
 
         String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
             + " (collectionId) VALUES (?)";
@@ -329,7 +341,7 @@ public class JDBCVectorStoreDefaultQueryProvider
 
         String query = "SELECT " + getQueryColumnsFromFields(fields)
             + " FROM " + getCollectionTableName(collectionName)
-            + " WHERE " + recordDefinition.getKeyField().getName()
+            + " WHERE " + getKeyColumnName(recordDefinition.getKeyField())
             + " IN (" + getWildcardString(keys.size()) + ")";
 
         try (Connection connection = dataSource.getConnection();
@@ -371,7 +383,7 @@ public class JDBCVectorStoreDefaultQueryProvider
     public void deleteRecords(String collectionName, List<String> keys,
         VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) {
         String query = "DELETE FROM " + getCollectionTableName(collectionName)
-            + " WHERE " + recordDefinition.getKeyField().getName()
+            + " WHERE " + getKeyColumnName(recordDefinition.getKeyField())
             + " IN (" + getWildcardString(keys.size()) + ")";
 
         try (Connection connection = dataSource.getConnection();
@@ -391,13 +403,13 @@ public class JDBCVectorStoreDefaultQueryProvider
      *
      * @param identifier the identifier
      * @return the identifier if it is valid
-     * @throws IllegalArgumentException if the identifier is invalid
+     * @throws SKException if the identifier is invalid
      */
     public static String validateSQLidentifier(String identifier) {
         if (identifier.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
             return identifier;
         }
-        throw new IllegalArgumentException("Invalid SQL identifier: " + identifier);
+        throw new SKException("Invalid SQL identifier: " + identifier);
     }
 
     /**
@@ -443,7 +455,7 @@ public class JDBCVectorStoreDefaultQueryProvider
         @Override
         public JDBCVectorStoreDefaultQueryProvider build() {
             if (dataSource == null) {
-                throw new IllegalArgumentException("DataSource is required");
+                throw new SKException("DataSource is required");
             }
 
             return new JDBCVectorStoreDefaultQueryProvider(dataSource, collectionsTable,

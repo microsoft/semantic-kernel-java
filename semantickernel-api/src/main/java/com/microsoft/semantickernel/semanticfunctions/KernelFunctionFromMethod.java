@@ -14,6 +14,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
@@ -22,6 +23,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -400,7 +402,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
         if (requestedType == String.class && !targetArgType.isAssignableFrom(requestedType)) {
             LOGGER.warn(
-                "Annotation on method: {} is requesting a String which is not assignable to method type {}, possibly as the type argument has not been provided on the annotation.",
+                SemanticKernelResources.getString("annotation.on.method.is.requesting.a.string"),
                 method.getName(),
                 targetArgType.getName());
         }
@@ -632,21 +634,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     private static String formErrorMessage(Method method, Parameter parameter) {
         Matcher matcher = Pattern.compile("arg(\\d)").matcher(parameter.getName());
         matcher.find();
-        return "For the function "
-            + method.getDeclaringClass().getName()
-            + "."
-            + method.getName()
-            + ", the unknown parameter"
-            + " name was detected as \""
-            + parameter.getName()
-            + "\" this is argument"
-            + " number "
-            + matcher.group(1)
-            + " to the function, this indicates that the argument name for this function was"
-            + " removed during compilation and semantic-kernel is unable to determine the name"
-            + " of the parameter. To support this function the argument must be annotated with"
-            + " @SKFunctionParameters or @SKFunctionInputAttribute. Alternatively the function"
-            + " was invoked with a required context variable missing and no default value.";
+        return MessageFormat.format(
+            SemanticKernelResources.getString(
+                "for.the.function.0.1.the.unknown.parameter.name.was.detected"),
+            method.getDeclaringClass().getName(), method.getName(), parameter.getName(),
+            matcher.group(1));
     }
 
     private static List<InputVariable> getParameters(Method method) {

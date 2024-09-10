@@ -13,6 +13,8 @@ import com.azure.search.documents.indexes.models.VectorSearchProfile;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.exceptions.SKException;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -20,11 +22,11 @@ import javax.annotation.Nonnull;
 public class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static String getVectorSearchProfileName(VectorStoreRecordVectorField vectorField) {
-        return vectorField.getName() + "Profile";
+        return vectorField.getEffectiveStorageName() + "Profile";
     }
 
     private static String getAlgorithmConfigName(VectorStoreRecordVectorField vectorField) {
-        return vectorField.getName() + "AlgorithmConfig";
+        return vectorField.getEffectiveStorageName() + "AlgorithmConfig";
     }
 
     private static VectorSearchAlgorithmMetric getAlgorithmMetric(
@@ -41,7 +43,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
             case EUCLIDEAN:
                 return VectorSearchAlgorithmMetric.EUCLIDEAN;
             default:
-                throw new IllegalArgumentException(
+                throw new SKException(
                     "Unsupported distance function: " + vectorField.getDistanceFunction());
         }
     }
@@ -62,30 +64,30 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
                     .setParameters(
                         new ExhaustiveKnnParameters().setMetric(getAlgorithmMetric(vectorField)));
             default:
-                throw new IllegalArgumentException(
+                throw new SKException(
                     "Unsupported index kind: " + vectorField.getIndexKind());
         }
     }
 
     public static SearchField mapKeyField(VectorStoreRecordKeyField keyField) {
-        return new SearchField(keyField.getName(), SearchFieldDataType.STRING)
+        return new SearchField(keyField.getEffectiveStorageName(), SearchFieldDataType.STRING)
             .setKey(true)
             .setFilterable(true);
     }
 
     public static SearchField mapDataField(VectorStoreRecordDataField dataField) {
         if (dataField.getFieldType() == null) {
-            throw new IllegalArgumentException(
-                "Field type is required: " + dataField.getName());
+            throw new SKException(
+                "Field type is required: " + dataField.getEffectiveStorageName());
         }
 
-        return new SearchField(dataField.getName(),
+        return new SearchField(dataField.getEffectiveStorageName(),
             getSearchFieldDataType(dataField.getFieldType()))
             .setFilterable(dataField.isFilterable());
     }
 
     public static SearchField mapVectorField(VectorStoreRecordVectorField vectorField) {
-        return new SearchField(vectorField.getName(),
+        return new SearchField(vectorField.getEffectiveStorageName(),
             SearchFieldDataType.collection(SearchFieldDataType.SINGLE))
             .setSearchable(true)
             .setVectorSearchDimensions(vectorField.getDimensions())
@@ -97,7 +99,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
         List<VectorSearchProfile> profiles,
         VectorStoreRecordVectorField vectorField) {
         if (vectorField.getDimensions() <= 0) {
-            throw new IllegalArgumentException("Vector field dimensions must be greater than 0");
+            throw new SKException("Vector field dimensions must be greater than 0");
         }
 
         algorithms.add(getAlgorithmConfig(vectorField));
@@ -121,7 +123,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
         } else if (fieldType == OffsetDateTime.class) {
             return SearchFieldDataType.DATE_TIME_OFFSET;
         } else {
-            throw new IllegalArgumentException("Unsupported field type: " + fieldType.getName());
+            throw new SKException("Unsupported field type: " + fieldType.getName());
         }
     }
 }

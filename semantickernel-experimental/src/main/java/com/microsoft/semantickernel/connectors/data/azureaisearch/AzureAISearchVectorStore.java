@@ -5,7 +5,9 @@ import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.models.SearchIndex;
 import com.microsoft.semantickernel.data.VectorStore;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -34,46 +36,34 @@ public class AzureAISearchVectorStore implements VectorStore {
      * Gets a new instance of {@link AzureAISearchVectorStoreRecordCollection}
      *
      * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
+     * @param options          The options for the collection.
      * @return The collection.
      */
     @Override
     public final <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
         @Nonnull String collectionName,
-        @Nonnull Class<Key> keyClass,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (!keyClass.equals(String.class)) {
-            throw new IllegalArgumentException("Azure AI Search only supports string keys");
+        @Nonnull VectorStoreRecordCollectionOptions<Key, Record> options) {
+        if (!options.getKeyClass().equals(String.class)) {
+            throw new SKException("Azure AI Search only supports string keys");
+        }
+        if (options.getRecordClass() == null) {
+            throw new SKException("Record class is required");
         }
 
-        return (VectorStoreRecordCollection<Key, Record>) getCollection(
-            collectionName, recordClass, recordDefinition);
-    }
-
-    public <Record> AzureAISearchVectorStoreRecordCollection<Record> getCollection(
-        @Nonnull String collectionName,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (options.getVectorStoreRecordCollectionFactory() != null) {
-            return options.getVectorStoreRecordCollectionFactory()
+        if (this.options.getVectorStoreRecordCollectionFactory() != null) {
+            return (VectorStoreRecordCollection<Key, Record>) this.options
+                .getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
                     client,
                     collectionName,
-                    AzureAISearchVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(recordClass)
-                        .withRecordDefinition(recordDefinition)
-                        .build());
+                    options.getRecordClass(),
+                    options.getRecordDefinition());
         }
 
-        return new AzureAISearchVectorStoreRecordCollection<>(
+        return (VectorStoreRecordCollection<Key, Record>) new AzureAISearchVectorStoreRecordCollection<>(
             client,
             collectionName,
-            AzureAISearchVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(recordClass)
-                .withRecordDefinition(recordDefinition)
-                .build());
+            (AzureAISearchVectorStoreRecordCollectionOptions<Record>) options);
     }
 
     /**

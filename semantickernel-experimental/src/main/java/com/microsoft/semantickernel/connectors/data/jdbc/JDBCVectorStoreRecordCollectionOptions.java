@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.sql.ResultSet;
@@ -11,7 +13,8 @@ import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreD
 import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_COLLECTIONS_TABLE;
 import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
-public class JDBCVectorStoreRecordCollectionOptions<Record> {
+public class JDBCVectorStoreRecordCollectionOptions<Record>
+    implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
@@ -41,6 +44,16 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Gets the key class.
+     *
+     * @return the key class
+     */
+    @Override
+    public Class<String> getKeyClass() {
+        return String.class;
     }
 
     /**
@@ -168,7 +181,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record> {
          */
         public JDBCVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
 
             return new JDBCVectorStoreRecordCollectionOptions<>(

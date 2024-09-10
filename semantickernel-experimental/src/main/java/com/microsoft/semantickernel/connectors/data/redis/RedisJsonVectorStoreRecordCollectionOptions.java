@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map.Entry;
 
-public class RedisVectorStoreRecordCollectionOptions<Record> {
+public class RedisJsonVectorStoreRecordCollectionOptions<Record>
+    implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     @Nullable
     private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
@@ -16,7 +19,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
 
-    private RedisVectorStoreRecordCollectionOptions(
+    private RedisJsonVectorStoreRecordCollectionOptions(
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
         @Nullable VectorStoreRecordDefinition recordDefinition,
@@ -35,6 +38,16 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Gets the key class.
+     *
+     * @return the key class
+     */
+    @Override
+    public Class<String> getKeyClass() {
+        return String.class;
     }
 
     /**
@@ -76,7 +89,7 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
     }
 
     /**
-     * Builder for {@link RedisVectorStoreRecordCollectionOptions}.
+     * Builder for {@link RedisJsonVectorStoreRecordCollectionOptions}.
      *
      * @param <Record> the record type
      */
@@ -140,12 +153,12 @@ public class RedisVectorStoreRecordCollectionOptions<Record> {
          *
          * @return the options
          */
-        public RedisVectorStoreRecordCollectionOptions<Record> build() {
+        public RedisJsonVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass must be provided");
+                throw new SKException("recordClass must be provided");
             }
 
-            return new RedisVectorStoreRecordCollectionOptions<>(
+            return new RedisJsonVectorStoreRecordCollectionOptions<>(
                 recordClass,
                 vectorStoreRecordMapper,
                 recordDefinition,

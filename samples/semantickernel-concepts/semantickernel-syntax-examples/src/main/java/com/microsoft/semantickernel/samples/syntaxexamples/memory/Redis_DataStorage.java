@@ -9,20 +9,20 @@ import com.azure.core.util.ClientOptions;
 import com.azure.core.util.MetricsOptions;
 import com.azure.core.util.TracingOptions;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
+import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
-import java.nio.charset.StandardCharsets;
+
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import com.microsoft.semantickernel.samples.syntaxexamples.memory.AzureAISearch_DataStorage.GitHubFile;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
@@ -121,7 +121,10 @@ public class Redis_DataStorage {
             .build();
 
         String collectionName = "skgithubfiles";
-        var collection = vectorStore.getCollection(collectionName, GitHubFile.class, null);
+        var collection = vectorStore.getCollection(collectionName,
+            RedisJsonVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

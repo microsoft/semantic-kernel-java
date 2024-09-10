@@ -90,20 +90,19 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         // Validate supported types
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections
-                .singletonList(recordDefinition.getKeyDeclaredField(this.options.getRecordClass())),
+            Collections.singletonList(recordDefinition.getKeyField()),
             supportedKeyTypes);
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getDataDeclaredFields(this.options.getRecordClass()),
+            new ArrayList<>(recordDefinition.getDataFields()),
             supportedDataTypes);
         VectorStoreRecordDefinition.validateSupportedTypes(
-            recordDefinition.getVectorDeclaredFields(this.options.getRecordClass()),
+            new ArrayList<>(recordDefinition.getVectorFields()),
             supportedVectorTypes);
 
         // Add non-vector fields to the list
-        nonVectorFields.add(this.recordDefinition.getKeyField().getName());
+        nonVectorFields.add(this.recordDefinition.getKeyField().getEffectiveStorageName());
         nonVectorFields.addAll(this.recordDefinition.getDataFields().stream()
-            .map(VectorStoreRecordDataField::getName)
+            .map(VectorStoreRecordDataField::getEffectiveStorageName)
             .collect(Collectors.toList()));
     }
 
@@ -256,7 +255,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         return client.deleteDocuments(keys.stream().map(key -> {
             SearchDocument document = new SearchDocument();
-            document.put(this.recordDefinition.getKeyField().getName(), key);
+            document.put(this.recordDefinition.getKeyField().getEffectiveStorageName(), key);
             return document;
         }).collect(Collectors.toList())).then();
     }

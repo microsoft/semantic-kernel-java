@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blo
 
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import javax.annotation.Nullable;
@@ -18,7 +19,7 @@ public final class VarBlock extends Block implements TextRendering {
         super(content, BlockTypes.VARIABLE);
 
         if (content.length() < 2) {
-            LOGGER.error("The variable name is empty");
+            LOGGER.error(SemanticKernelResources.getString("the.variable.name.is.empty"));
         }
 
         this.name = content.substring(1);
@@ -40,7 +41,8 @@ public final class VarBlock extends Block implements TextRendering {
             name);
 
         if (value == null) {
-            LOGGER.warn("Variable `{}{}` not found", Symbols.VarPrefix, name);
+            LOGGER.warn(SemanticKernelResources.getString("variable.not.found"), Symbols.VarPrefix,
+                name);
         }
 
         return value != null ? value.toPromptString(types) : "";
@@ -50,24 +52,27 @@ public final class VarBlock extends Block implements TextRendering {
     public boolean isValid() {
         if (getContent() == null || getContent().isEmpty()) {
             LOGGER.error(
-                "A variable must start with the symbol {} and have a name", Symbols.VarPrefix);
+                SemanticKernelResources.getString(
+                    "a.variable.must.start.with.the.symbol.and.have.a.name"),
+                Symbols.VarPrefix);
             return false;
         }
 
         if (getContent().charAt(0) != Symbols.VarPrefix) {
-            LOGGER.error("A variable must start with the symbol {}", Symbols.VarPrefix);
+            LOGGER.error(SemanticKernelResources.getString("a.variable.must.start.with.the.symbol"),
+                Symbols.VarPrefix);
             return false;
         }
 
         if (getContent().length() < 2) {
-            LOGGER.error("The variable name is empty");
+            LOGGER.error(SemanticKernelResources.getString("the.variable.name.is.empty"));
             return false;
         }
 
         if (!name.matches("^[a-zA-Z0-9_]*$")) {
             LOGGER.error(
-                "The variable name '{}' contains invalid characters. "
-                    + "Only alphanumeric chars and underscore are allowed.",
+                SemanticKernelResources.getString(
+                    "the.variable.name.contains.invalid.characters.only.alphanumeric.chars.and.underscore.are.allowed"),
                 name);
             return false;
         }

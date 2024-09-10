@@ -10,9 +10,12 @@ import com.azure.core.util.MetricsOptions;
 import com.azure.core.util.TracingOptions;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
@@ -45,7 +48,7 @@ public class AzureAISearch_DataStorage {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
-
+        @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
@@ -60,10 +63,10 @@ public class AzureAISearch_DataStorage {
         }
 
         public GitHubFile(
-            String id,
-            String description,
-            String link,
-            List<Float> embedding) {
+            @JsonProperty("fileId") String id,
+            @JsonProperty("description") String description,
+            @JsonProperty("link") String link,
+            @JsonProperty("embedding") List<Float> embedding) {
             this.id = id;
             this.description = description;
             this.link = link;
@@ -123,8 +126,9 @@ public class AzureAISearch_DataStorage {
         String collectionName = "skgithubfiles";
         var collection = azureAISearchVectorStore.getCollection(
             collectionName,
-            GitHubFile.class,
-            null);
+            AzureAISearchVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         collection

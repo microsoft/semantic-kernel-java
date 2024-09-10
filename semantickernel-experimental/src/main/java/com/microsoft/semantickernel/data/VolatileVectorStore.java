@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.microsoft.semantickernel.exceptions.SKException;
 import reactor.core.publisher.Mono;
 
 public class VolatileVectorStore implements VectorStore {
@@ -21,37 +23,25 @@ public class VolatileVectorStore implements VectorStore {
     /**
      * Gets a collection from the vector store.
      *
-     * @param collectionName   The name of the collection.
-     * @param recordDefinition The record definition.
+     * @param collectionName The name of the collection.
+     * @param options        The options for the collection.
      * @return The collection.
      */
     @Override
     public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
         @Nonnull String collectionName,
-        @Nonnull Class<Key> keyClass,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (keyClass != String.class) {
-            throw new IllegalArgumentException("Volatile only supports string keys");
+        @Nonnull VectorStoreRecordCollectionOptions<Key, Record> options) {
+        if (options.getKeyClass() != String.class) {
+            throw new SKException("Volatile only supports string keys");
+        }
+        if (options.getRecordClass() == null) {
+            throw new SKException("Record class is required");
         }
 
-        return (VectorStoreRecordCollection<Key, Record>) getCollection(
-            collectionName,
-            recordClass,
-            recordDefinition);
-    }
-
-    public <Record> VectorStoreRecordCollection<String, Record> getCollection(
-        @Nonnull String collectionName,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        return new VolatileVectorStoreRecordCollection<>(
+        return (VectorStoreRecordCollection<Key, Record>) new VolatileVectorStoreRecordCollection<>(
             collectionName,
             collections,
-            VolatileVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(recordClass)
-                .withRecordDefinition(recordDefinition)
-                .build());
+            (VolatileVectorStoreRecordCollectionOptions<Record>) options);
     }
 
     /**

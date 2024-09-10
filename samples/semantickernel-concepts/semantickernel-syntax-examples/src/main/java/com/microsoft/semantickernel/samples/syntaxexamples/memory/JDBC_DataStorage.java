@@ -8,6 +8,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
@@ -132,8 +133,9 @@ public class JDBC_DataStorage {
 
         String collectionName = "skgithubfiles";
         var collection = jdbcVectorStore.getCollection(collectionName,
-            GitHubFile.class,
-            null);
+            JDBCVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

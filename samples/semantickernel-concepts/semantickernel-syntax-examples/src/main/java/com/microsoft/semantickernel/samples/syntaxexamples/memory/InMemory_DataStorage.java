@@ -8,6 +8,7 @@ import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStore;
+import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
@@ -101,7 +102,10 @@ public class InMemory_DataStorage {
         var volatileVectorStore = new VolatileVectorStore();
 
         String collectionName = "skgithubfiles";
-        var collection = volatileVectorStore.getCollection(collectionName, GitHubFile.class, null);
+        var collection = volatileVectorStore.getCollection(collectionName,
+            VolatileVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                .withRecordClass(GitHubFile.class)
+                .build());
 
         // Create collection if it does not exist and store data
         List<String> ids = collection

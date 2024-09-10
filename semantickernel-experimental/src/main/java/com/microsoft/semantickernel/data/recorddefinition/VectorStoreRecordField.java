@@ -13,16 +13,20 @@ public class VectorStoreRecordField {
     private final String name;
     @Nullable
     private final String storageName;
+    private final Class<?> fieldType;
 
     /**
      * Creates a new instance of the VectorStoreRecordField class.
      *
      * @param name the name of the field
      */
-    public VectorStoreRecordField(@Nonnull String name,
-        @Nullable String storageName) {
+    public VectorStoreRecordField(
+        @Nonnull String name,
+        @Nullable String storageName,
+        @Nonnull Class<?> fieldType) {
         this.name = name;
         this.storageName = storageName;
+        this.fieldType = fieldType;
     }
 
     /**
@@ -39,15 +43,38 @@ public class VectorStoreRecordField {
      *
      * @return the storage name of the field
      */
-    @Nullable
     public String getStorageName() {
         return storageName;
     }
 
+    /**
+     * Gets the effective storage name of the field.
+     * <p>
+     * If the storage name is not set, the name of the field is returned.
+     * @return the effective storage name of the field
+     */
+    public String getEffectiveStorageName() {
+        return storageName != null ? storageName : name;
+    }
+
+    /**
+     * Gets the field type.
+     *
+     * @return the field type
+     */
+    public Class<?> getFieldType() {
+        return fieldType;
+    }
+
     public abstract static class Builder<T, U extends Builder<T, U>>
         implements SemanticKernelBuilder<T> {
-        protected String name = "";
-        protected String storageName = "";
+
+        @Nullable
+        protected String name;
+        @Nullable
+        protected String storageName;
+        @Nullable
+        protected Class<?> fieldType;
 
         /**
          * Sets the name of the field.
@@ -68,6 +95,17 @@ public class VectorStoreRecordField {
          */
         public U withStorageName(String storageName) {
             this.storageName = storageName;
+            return (U) this;
+        }
+
+        /**
+         * Sets the field type.
+         *
+         * @param fieldType the field type
+         * @return the builder
+         */
+        public U withFieldType(Class<?> fieldType) {
+            this.fieldType = fieldType;
             return (U) this;
         }
 
