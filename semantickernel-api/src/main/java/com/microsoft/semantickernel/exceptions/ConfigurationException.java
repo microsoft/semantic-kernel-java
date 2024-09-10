@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.exceptions;
 
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -65,27 +66,31 @@ public class ConfigurationException extends SKCheckedException {
         /**
          * Unknown error
          */
-        UNKNOWN_ERROR("Unknown error"),
+        UNKNOWN_ERROR(SemanticKernelResources.getString("unknown.error")),
 
         /**
          * Could not find configuration file
          */
-        CONFIGURATION_NOT_FOUND("Could not find configuration file"),
+        CONFIGURATION_NOT_FOUND(
+            SemanticKernelResources.getString("could.not.find.configuration.file")),
 
         /**
          * Could not parse or load configuration file
          */
-        COULD_NOT_READ_CONFIGURATION("Could not parse or load configuration file"),
+        COULD_NOT_READ_CONFIGURATION(
+            SemanticKernelResources.getString("could.not.parse.or.load.configuration.file")),
 
         /**
          * Could not find any valid configuration settings
          */
-        NO_VALID_CONFIGURATIONS_FOUND("Could not find any valid configuration settings"),
+        NO_VALID_CONFIGURATIONS_FOUND(
+            SemanticKernelResources.getString("could.not.find.any.valid.configuration.settings")),
 
         /**
          * Could not find value for configuration key
          */
-        VALUE_NOT_FOUND("Could not find value for configuration key");
+        VALUE_NOT_FOUND(
+            SemanticKernelResources.getString("could.not.find.value.for.configuration.key"));
 
         private final String message;
 

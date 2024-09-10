@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +55,13 @@ public class ServiceLoadUtil {
                 | IllegalAccessException
                 | NoSuchMethodException
                 | RuntimeException e) {
-                LOGGER.error("Unable to load service " + clazz.getName() + " ", e);
+                LOGGER.error(String.format(
+                    SemanticKernelResources.getString("unable.to.load.service.s"), clazz.getName()),
+                    e);
             }
 
             if (impl == null) {
-                throw new RuntimeException("Service not found: " + clazz.getName());
+                throw new RuntimeException(String.format("Service not found: %s", clazz.getName()));
             }
         }
 

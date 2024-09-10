@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.contextvariables;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -144,7 +145,8 @@ public class ContextVariableTypeConverter<T> {
             return (U) converter.get().toObject((T) t);
         }
 
-        LOGGER.warn("No converter found for {} to {}", t.getClass(), clazz);
+        LOGGER.warn(SemanticKernelResources.getString("no.converter.found.for.to"), t.getClass(),
+            clazz);
         return null;
     }
 

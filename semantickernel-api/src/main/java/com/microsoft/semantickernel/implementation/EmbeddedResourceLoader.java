@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.implementation;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -126,7 +128,10 @@ public class EmbeddedResourceLoader {
             return bf.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             // IGNORE
-            LOGGER.trace("Failed to load file: " + fileName, e);
+            LOGGER.trace(
+                MessageFormat.format(SemanticKernelResources.getString("failed.to.load.file.0"),
+                    fileName),
+                e);
         }
         return null;
     }
