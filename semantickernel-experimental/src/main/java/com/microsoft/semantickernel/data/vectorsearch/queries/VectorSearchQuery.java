@@ -3,8 +3,9 @@ package com.microsoft.semantickernel.data.vectorsearch.queries;
 
 import com.microsoft.semantickernel.data.record.options.VectorSearchOptions;
 
-public class VectorSearchQuery {
+import java.util.List;
 
+public class VectorSearchQuery {
     private final VectorSearchQueryType queryType;
     private final Object searchOptions;
 
@@ -21,9 +22,9 @@ public class VectorSearchQuery {
         return searchOptions;
     }
 
-    public static <Vector> VectorizedSearchQuery<Vector> createQuery(Vector vector,
+    public static VectorizedSearchQuery createQuery(List<Float> vector,
         VectorSearchOptions options) {
-        return new VectorizedSearchQuery<>(vector, options);
+        return new VectorizedSearchQuery(vector, options);
     }
 
     public static VectorizableTextSearchQuery createQuery(String searchText,

@@ -12,6 +12,7 @@ import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.IndexingResult;
 import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.models.VectorQuery;
+import com.azure.search.documents.models.VectorizableTextQuery;
 import com.azure.search.documents.models.VectorizedQuery;
 import com.microsoft.semantickernel.data.VectorSearch;
 import com.microsoft.semantickernel.data.VectorSearchResult;
@@ -26,6 +27,9 @@ import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.data.record.options.VectorSearchOptions;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizableTextSearchQuery;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
@@ -42,8 +46,9 @@ import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class AzureAISearchVectorStoreRecordCollection<Record> implements
-    VectorStoreRecordCollection<String, Record>, VectorSearch<Record> {
+public class AzureAISearchVectorStoreRecordCollection<Record> extends VectorSearch<Record>
+    implements
+    VectorStoreRecordCollection<String, Record> {
 
     private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
         Collections.singletonList(
@@ -290,29 +295,42 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
     }
 
     /**
-     * Vectorized search. This method searches for records that are similar to the given vector.
+     * Search the vector store for records that match the given embedding and filter.
      *
-     * @param vector The vector to search with.
-     * @param options The options to use for the search.
+     * @param query The vector search query.
      * @return A list of search results.
      */
     @Override
-    public <Vector> Mono<List<VectorSearchResult<Record>>> searchAsync(Vector vector,
-        VectorSearchOptions options) {
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
         if (firstVectorFieldName == null) {
             throw new SKException("No vector fields defined. Cannot perform vector search");
         }
 
+        VectorSearchOptions options = (VectorSearchOptions) query.getSearchOptions();
         if (options == null) {
             options = VectorSearchOptions.createDefault(firstVectorFieldName);
         }
 
         List<VectorQuery> vectorQueries = new ArrayList<>();
-        vectorQueries.add(new VectorizedQuery((List<Float>) vector)
-            .setFields(
-                storageNames.get(options.getVectorFieldName() != null ? options.getVectorFieldName()
-                    : firstVectorFieldName))
-            .setKNearestNeighborsCount(options.getLimit()));
+
+        if (query instanceof VectorizedSearchQuery) {
+            vectorQueries.add(new VectorizedQuery(((VectorizedSearchQuery) query).getVector())
+                .setFields(
+                    storageNames
+                        .get(options.getVectorFieldName() != null ? options.getVectorFieldName()
+                            : firstVectorFieldName))
+                .setKNearestNeighborsCount(options.getLimit()));
+        } else if (query instanceof VectorizableTextSearchQuery) {
+            vectorQueries
+                .add(new VectorizableTextQuery(((VectorizableTextSearchQuery) query).getQueryText())
+                    .setFields(
+                        storageNames
+                            .get(options.getVectorFieldName() != null ? options.getVectorFieldName()
+                                : firstVectorFieldName))
+                    .setKNearestNeighborsCount(options.getLimit()));
+        } else {
+            throw new SKException("Unsupported query type: " + query.getQueryType());
+        }
 
         String filter = AzureAISearchVectorStoreCollectionSearchMapping
             .buildFilterString(options.getBasicVectorSearchFilter(), storageNames);
