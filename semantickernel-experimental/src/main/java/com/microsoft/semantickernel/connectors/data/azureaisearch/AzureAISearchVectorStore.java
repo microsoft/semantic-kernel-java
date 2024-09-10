@@ -126,10 +126,10 @@ public class AzureAISearchVectorStore implements VectorStore {
          */
         public AzureAISearchVectorStore build() {
             if (searchIndexAsyncClient == null) {
-                throw new IllegalStateException("searchIndexAsyncClient is required");
+                throw new SKException("searchIndexAsyncClient is required");
             }
             if (options == null) {
-                throw new IllegalStateException("options is required");
+                throw new SKException("options is required");
             }
 
             return new AzureAISearchVectorStore(searchIndexAsyncClient, options);
