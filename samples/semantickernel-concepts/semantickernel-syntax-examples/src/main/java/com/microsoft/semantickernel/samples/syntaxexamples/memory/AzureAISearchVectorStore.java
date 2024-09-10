@@ -151,7 +151,7 @@ public class AzureAISearchVectorStore {
             OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
         return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-                .flatMap(r -> recordCollection.searchAsync("How to get started", null));
+                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
