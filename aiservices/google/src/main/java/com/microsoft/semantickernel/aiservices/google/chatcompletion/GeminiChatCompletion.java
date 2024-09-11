@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import com.microsoft.semantickernel.services.chatcompletion.StreamingChatContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -73,6 +74,21 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
         return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel,
             invocationContext);
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory, @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
+        throw new UnsupportedOperationException(
+            "Streaming chat message contents are not supported");
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(String prompt,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+        throw new UnsupportedOperationException(
+            "Streaming chat message contents are not supported");
     }
 
     @Override
