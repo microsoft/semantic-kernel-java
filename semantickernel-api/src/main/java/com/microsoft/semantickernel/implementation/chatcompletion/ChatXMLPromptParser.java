@@ -5,6 +5,7 @@ import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -203,7 +204,7 @@ public class ChatXMLPromptParser {
                 }
             }
         } catch (IOException | XMLStreamException | IllegalArgumentException e) {
-            LOGGER.error("Error parsing prompt", e);
+            LOGGER.error(SemanticKernelResources.getString("error.parsing.prompt"), e);
         }
         return chatPromptParseVisitor;
     }

@@ -21,6 +21,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKCheckedException;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -97,7 +98,8 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         try {
             GenerativeModel model = getGenerativeModel(kernel, invocationContext);
             return MonoConverter.fromApiFuture(model.generateContentAsync(contents))
-                .doOnError(e -> LOGGER.error("Error generating chat completion", e))
+                .doOnError(e -> LOGGER.error(
+                    SemanticKernelResources.getString("error.generating.chat.completion"), e))
                 .flatMap(result -> {
                     // Get ChatMessageContent from the response
                     GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(
@@ -253,7 +255,8 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                 if (settings.getResultsPerPrompt() < 1
                     || settings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
-                    throw SKCheckedException.build("Error building generative model.",
+                    throw SKCheckedException.build(
+                        SemanticKernelResources.getString("error.building.generative.model"),
                         new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                             String.format(
                                 "Results per prompt must be in range between 1 and %d, inclusive.",

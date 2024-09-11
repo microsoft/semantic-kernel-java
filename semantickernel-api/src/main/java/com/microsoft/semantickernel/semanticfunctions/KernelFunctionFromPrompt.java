@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderingEvent;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -126,7 +127,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 prompt = promptHookResult.getPrompt();
                 KernelFunctionArguments args = promptHookResult.getArguments();
 
-                LOGGER.info("RENDERED PROMPT: \n{}", prompt);
+                LOGGER.info(SemanticKernelResources.getString("rendered.prompt"), prompt);
 
                 FunctionInvokingEvent updateArguments = kernelHooks
                     .executeHooks(new FunctionInvokingEvent(this, args));
@@ -246,9 +247,8 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             .doOnError(
                 ex -> {
                     LOGGER.warn(
-                        "Something went wrong while rendering the semantic"
-                            + " function or while executing the text"
-                            + " completion. Function: {}.{}. Error: {}",
+                        SemanticKernelResources.getString(
+                            "something.went.wrong.while.rendering.the.semantic.function.or.while.executing.the.text.completion.function.error"),
                         getPluginName(),
                         getName(),
                         ex.getMessage());
@@ -260,16 +260,10 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                     if (ex instanceof HttpResponseException
                         && ((HttpResponseException) ex).getResponse().getStatusCode() == 400
                         && ex.getMessage() != null
-                        && ex.getMessage().contains("parameters are not available" + " on")) {
+                        && ex.getMessage().contains("parameters are not available on")) {
                         LOGGER.warn(
-                            "This error indicates that you have attempted"
-                                + " to use a chat completion model in a"
-                                + " text completion service. Try using a"
-                                + " chat completion service instead when"
-                                + " building your kernel, for instance when"
-                                + " building your service use"
-                                + " SKBuilders.chatCompletion() rather than"
-                                + " SKBuilders.textCompletionService().");
+                            SemanticKernelResources.getString(
+                                "this.error.indicates.that.you.have.attempted.to.use.a.chat.completion.model"));
                     }
                 });
     }

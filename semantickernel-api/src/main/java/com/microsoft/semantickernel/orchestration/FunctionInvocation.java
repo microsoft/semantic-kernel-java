@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -95,9 +96,10 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         @Nullable InvocationContext context) {
         if (variableType == null) {
             LOGGER.debug(
-                "No variable type explicitly specified by calling 'withResultType' for function invocation: "
-                    + function.getPluginName() + "." + function.getName() + "."
-                    + " This may cause a runtime error (probably a ClassCastException) if the result type is not compatible with the expected type.");
+                SemanticKernelResources.getString(
+                    "no.variable.type.explicitly.specified.by.calling.withresulttype.for.function"),
+                function.getPluginName(),
+                function.getName());
         }
 
         function
@@ -309,7 +311,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     private void logSubscribeWarning() {
         if (isSubscribed) {
             LOGGER.warn(
-                "Attempting to modify function {}.{} after it has already been subscribed to. This is not necessarily an error but may be an unusual pattern and indicate a potential bug.",
+                SemanticKernelResources.getString(
+                    "attempting.to.modify.function.after.it.has.already.been.subscribed"),
                 function.getPluginName(), function.getName());
         }
     }
@@ -324,7 +327,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
 
         if (isSubscribed) {
             LOGGER.warn(
-                "Function {}.{} has already been subscribed to. This is not necessarily an error but may be an unusual pattern.",
+                SemanticKernelResources.getString(
+                    "function.has.already.been.subscribed.to.this.is.not.necessarily.an.error.but.may.be.an.unusual.pattern"),
                 function.getPluginName(), function.getName());
         }
 

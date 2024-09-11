@@ -23,7 +23,7 @@ public enum IndexKind {
      */
     public static IndexKind fromString(String text) {
         if (text == null || text.isEmpty()) {
-            return FLAT;
+            return null;
         }
 
         for (IndexKind b : IndexKind.values()) {

@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader.ResourceLocation;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromMethod;
@@ -143,8 +144,8 @@ public class KernelPluginFactory {
 
         if (plugin.getFunctions().isEmpty()) {
             LOGGER.warn(
-                "No functions found in class {}. This can be caused by DI frameworks that create proxies, or modules that are not making your methods visible. "
-                    + "Try using: KernelPluginFactory.createFromObject(Class<?> clazz, Object target, String pluginName).",
+                SemanticKernelResources.getString(
+                    "no.functions.found.in.class.this.can.be.caused.by"),
                 clazz.getName());
         }
         return plugin;
@@ -360,7 +361,7 @@ public class KernelPluginFactory {
 
                 plugins.put(dir.getName(), plugin);
             } catch (IOException e) {
-                LOGGER.error("Failed to read file", e);
+                LOGGER.error(SemanticKernelResources.getString("failed.to.read.file"), e);
             }
         }
 
@@ -386,7 +387,8 @@ public class KernelPluginFactory {
 
             return getKernelFunction(functionName, promptTemplateFactory, config, template);
         } catch (Exception e) {
-            LOGGER.error("Failed to read file " + configPath.getAbsolutePath(), e);
+            LOGGER.error(SemanticKernelResources.getString("failed.to.read.file1"),
+                configPath.getAbsolutePath(), e);
 
             throw new SKException("Failed to read function " + configPath.getAbsolutePath(), e);
         }
@@ -474,8 +476,10 @@ public class KernelPluginFactory {
             pluginDirectoryName, functionName, clazz);
 
         if (promptTemplateConfig == null) {
-            LOGGER.warn("Unable to load prompt template config for " + functionName + " in "
-                + pluginDirectoryName);
+            LOGGER.warn(
+                SemanticKernelResources.getString("unable.to.load.prompt.template.config.for.in"),
+                functionName,
+                pluginDirectoryName);
             return null;
         }
         KernelFunction<?> function = getKernelFunction(functionName, promptTemplateFactory,
@@ -503,7 +507,8 @@ public class KernelPluginFactory {
         try {
             return getFileContents(promptFileName, clazz);
         } catch (IOException e) {
-            LOGGER.error("Failed to read file " + promptFileName, e);
+            LOGGER.error(SemanticKernelResources.getString("failed.to.read.file1"), promptFileName,
+                e);
 
             throw new SKException("No plugins found in directory " + promptFileName);
         }
@@ -535,11 +540,13 @@ public class KernelPluginFactory {
             return PromptTemplateConfig.parseFromJson(config);
         } catch (Exception e) {
             if (e instanceof SKException) {
-                LOGGER.error("Failed to parse config file " + configFileName, e);
+                LOGGER.error(SemanticKernelResources.getString("failed.to.parse.config.file"),
+                    configFileName, e);
 
                 throw new SKException("Failed to parse config file " + configFileName, e);
             } else {
-                LOGGER.debug("No config for " + functionName + " in " + pluginName);
+                LOGGER.debug(SemanticKernelResources.getString("no.config.for.in"), functionName,
+                    pluginName);
             }
             return null;
         }

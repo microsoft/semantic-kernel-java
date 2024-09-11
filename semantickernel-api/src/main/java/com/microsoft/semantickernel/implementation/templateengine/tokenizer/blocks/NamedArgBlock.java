@@ -6,6 +6,7 @@ import static com.microsoft.semantickernel.implementation.templateengine.tokeniz
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -109,18 +110,20 @@ public class NamedArgBlock extends Block implements TextRendering {
     @Override
     public boolean isValid() {
         if (Verify.isNullOrEmpty(this.name)) {
-            LOGGER.error("A named argument must have a name");
+            LOGGER.error(SemanticKernelResources.getString("a.named.argument.must.have.a.name"));
             return false;
         }
 
         if (this.valBlock != null && !this.valBlock.isValid()) {
-            LOGGER.error("There was an issue with the named argument value for '" + name);
+            LOGGER.error(SemanticKernelResources.getString(
+                "there.was.an.issue.with.the.named.argument.value.for"), name);
             return false;
         } else if (this.varBlock != null && !this.varBlock.isValid()) {
-            LOGGER.error("There was an issue with the named argument value for '" + name);
+            LOGGER.error(SemanticKernelResources.getString(
+                "there.was.an.issue.with.the.named.argument.value.for"), name);
             return false;
         } else if (this.valBlock == null && this.varBlock == null) {
-            LOGGER.error("A named argument must have a value");
+            LOGGER.error(SemanticKernelResources.getString("a.named.argument.must.have.a.value"));
             return false;
         }
 

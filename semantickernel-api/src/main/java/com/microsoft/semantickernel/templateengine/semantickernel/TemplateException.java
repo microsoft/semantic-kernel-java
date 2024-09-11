@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.templateengine.semantickernel;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -78,34 +79,39 @@ public class TemplateException extends SKException {
          * Unknown error.
          */
         //spotless:on
-        UNKNOWN_ERROR("Unknown error"),
+        UNKNOWN_ERROR(SemanticKernelResources.getString("unknown.error")),
 
         // spotless:off
         /**
          * Syntax error, the template syntax used is not valid.
          */
         //spotless:on
-        SYNTAX_ERROR("Syntax error, the template syntax used is not valid"),
+        SYNTAX_ERROR(
+            SemanticKernelResources
+                .getString("syntax.error.the.template.syntax.used.is.not.valid")),
 
         // spotless:off
         /**
          * The block type produced be the tokenizer was not expected.
          */
-        UNEXPECTED_BLOCK_TYPE("The block type produced be the tokenizer was not expected"),
+        UNEXPECTED_BLOCK_TYPE(SemanticKernelResources.getString(
+            "the.block.type.produced.be.the.tokenizer.was.not.expected")),
 
         //spotless:off
         /**
          * The template requires an unknown function.
          */
         //spotless:on
-        FUNCTION_NOT_FOUND("The template requires an unknown function"),
+        FUNCTION_NOT_FOUND(
+            SemanticKernelResources.getString("the.template.requires.an.unknown.function")),
 
         // spotless:off
         /**
          * The template execution failed, e.g. a function call threw an exception.
          */
         //spotless:on
-        RUNTIME_ERROR("The template execution failed, e.g. a function call threw an exception");
+        RUNTIME_ERROR(SemanticKernelResources.getString(
+            "the.template.execution.failed.e.g.a.function.call.threw.an.exception"));
 
         private final String message;
 
