@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

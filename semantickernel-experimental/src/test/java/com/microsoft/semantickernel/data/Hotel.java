@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 
 import java.util.List;
 

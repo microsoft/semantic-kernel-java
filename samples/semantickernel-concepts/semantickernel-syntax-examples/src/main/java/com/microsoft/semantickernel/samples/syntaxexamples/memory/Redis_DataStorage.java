@@ -12,10 +12,10 @@ import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEm
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 
 import java.util.Arrays;
 import java.util.Collections;

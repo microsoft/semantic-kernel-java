@@ -2,9 +2,9 @@
 package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.VectorStore;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStore;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;

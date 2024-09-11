@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorsearch.filtering;
+package com.microsoft.semantickernel.data.filtering;
 
 public interface FilterClause {
 

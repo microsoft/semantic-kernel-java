@@ -2,11 +2,11 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
-import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 
 import java.sql.ResultSet;
 import java.util.List;

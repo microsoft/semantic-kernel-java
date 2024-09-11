@@ -5,12 +5,9 @@ import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRe
 import com.microsoft.semantickernel.connectors.data.redis.RedisStorageType;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.redis.testcontainers.RedisContainer;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.testcontainers.junit.jupiter.Container;

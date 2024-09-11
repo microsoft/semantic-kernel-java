@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.connectors.data.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

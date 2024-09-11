@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 
+import com.microsoft.semantickernel.data.vectorstorage.VectorStore;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import reactor.core.publisher.Mono;
 

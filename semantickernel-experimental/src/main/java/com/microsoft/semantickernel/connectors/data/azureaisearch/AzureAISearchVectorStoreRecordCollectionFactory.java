@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 
 /**
  * Factory for creating Azure AI Search vector store record collections.

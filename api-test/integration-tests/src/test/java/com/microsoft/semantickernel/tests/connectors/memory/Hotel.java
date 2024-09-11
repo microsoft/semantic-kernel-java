@@ -2,9 +2,9 @@ package com.microsoft.semantickernel.tests.connectors.memory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 
 import java.util.List;
 

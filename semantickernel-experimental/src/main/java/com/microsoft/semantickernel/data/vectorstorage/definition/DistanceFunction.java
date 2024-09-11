@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.record.definition;
+package com.microsoft.semantickernel.data.vectorstorage.definition;
 
 public enum DistanceFunction {
     COSINE_SIMILARITY("cosineSimilarity"), DOT_PRODUCT("dotProduct"), EUCLIDEAN("euclidean");

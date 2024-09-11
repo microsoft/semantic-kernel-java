@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.vectorsearch.queries;
 
-import com.microsoft.semantickernel.data.record.options.VectorSearchOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 
 import java.util.List;
 

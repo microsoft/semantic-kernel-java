@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorsearch.filtering;
+package com.microsoft.semantickernel.data.filtering;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BasicVectorSearchFilter {
 
@@ -30,7 +28,7 @@ public class BasicVectorSearchFilter {
      * @param filterClauses The filter clauses.
      */
     public BasicVectorSearchFilter(List<FilterClause> filterClauses) {
-        this.filterClauses = new ArrayList<>(filterClauses);
+        this.filterClauses = Collections.unmodifiableList(filterClauses);
     }
 
     /**
@@ -39,7 +37,7 @@ public class BasicVectorSearchFilter {
      * @return The filter clauses.
      */
     public List<FilterClause> getFilterClauses() {
-        return Collections.unmodifiableList(filterClauses);
+        return filterClauses;
     }
 
     public static Builder builder() {

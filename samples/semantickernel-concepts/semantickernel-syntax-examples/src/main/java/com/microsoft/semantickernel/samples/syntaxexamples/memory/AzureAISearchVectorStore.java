@@ -15,10 +15,10 @@ import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEm
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreOptions;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.VectorSearchResult;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.record.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -139,6 +139,11 @@ public class AzureAISearchVectorStore {
         // Search for results
         // Might need to wait for the data to be indexed
         var results = search("How to get started", collection, embeddingGeneration).block();
+
+        if (results == null || results.isEmpty()) {
+            System.out.println("No search results found.");
+            return;
+        }
         var searchResult = results.get(0);
         System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
                 searchResult.getScore(), searchResult.getRecord().link, searchResult.getRecord().description);

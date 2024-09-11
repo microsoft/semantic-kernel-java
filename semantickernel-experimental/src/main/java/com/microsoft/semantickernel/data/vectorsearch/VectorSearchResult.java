@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data;
+package com.microsoft.semantickernel.data.vectorsearch;
 
 public class VectorSearchResult<Record> {
     private final Record record;

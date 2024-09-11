@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.record.definition;
+package com.microsoft.semantickernel.data.vectorstorage.definition;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 

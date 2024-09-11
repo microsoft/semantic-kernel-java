@@ -10,10 +10,9 @@ import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmMetric;
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
-import com.azure.search.documents.indexes.models.VectorSearchVectorizerKind;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.time.OffsetDateTime;

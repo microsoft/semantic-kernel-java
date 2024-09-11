@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.record.options;
+package com.microsoft.semantickernel.data.vectorstorage.options;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.vectorsearch.filtering.BasicVectorSearchFilter;
+import com.microsoft.semantickernel.data.filtering.BasicVectorSearchFilter;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import javax.annotation.Nullable;
 
@@ -133,6 +134,10 @@ public class VectorSearchOptions {
 
         @Override
         public VectorSearchOptions build() {
+            if (limit < 1) {
+                throw new SKException("The limit must be greater than 0.");
+            }
+
             return new VectorSearchOptions(basicVectorSearchFilter, vectorFieldName, limit, offset,
                 includeVectors);
         }

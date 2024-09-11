@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
-import com.microsoft.semantickernel.data.vectorsearch.filtering.EqualityFilterClause;
+import com.microsoft.semantickernel.data.filtering.EqualityFilterClause;
 import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.time.OffsetDateTime;

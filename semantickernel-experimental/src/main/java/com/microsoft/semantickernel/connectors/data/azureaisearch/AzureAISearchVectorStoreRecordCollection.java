@@ -14,19 +14,21 @@ import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.models.VectorQuery;
 import com.azure.search.documents.models.VectorizableTextQuery;
 import com.azure.search.documents.models.VectorizedQuery;
-import com.microsoft.semantickernel.data.VectorSearch;
-import com.microsoft.semantickernel.data.VectorSearchResult;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.record.definition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.data.record.options.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.record.options.GetRecordOptions;
-import com.microsoft.semantickernel.data.record.options.UpsertRecordOptions;
-import com.microsoft.semantickernel.data.record.options.VectorSearchOptions;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizableSearch;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearch;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizableTextSearchQuery;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
@@ -46,9 +48,10 @@ import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class AzureAISearchVectorStoreRecordCollection<Record> extends VectorSearch<Record>
-    implements
-    VectorStoreRecordCollection<String, Record> {
+public class AzureAISearchVectorStoreRecordCollection<Record> implements
+    VectorStoreRecordCollection<String, Record>,
+    VectorizedSearch<Record>,
+    VectorizableSearch<Record> {
 
     private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
         Collections.singletonList(
@@ -207,10 +210,15 @@ public class AzureAISearchVectorStoreRecordCollection<Record> extends VectorSear
         return searchAsyncClient
             .getDocumentWithResponse(key, this.options.getRecordClass(), selectedFields)
             .flatMap(response -> {
+                int statusCode = response.getStatusCode();
+                if (statusCode >= 200 && statusCode < 300) {
+                    return Mono.just(response.getValue());
+                }
                 if (response.getStatusCode() == 404) {
                     return Mono.error(new SKException("Record not found: " + key));
                 }
-                return Mono.just(response.getValue());
+                return Mono.error(new SKException("Failed to get record: " + key + ". Status code: "
+                    + statusCode));
             });
 
     }
@@ -273,12 +281,11 @@ public class AzureAISearchVectorStoreRecordCollection<Record> extends VectorSear
         }).collect(Collectors.toList())).then();
     }
 
-    private Mono<List<VectorSearchResult<Record>>> searchAndMapAsync(String searchText,
-        SearchOptions searchOptions) {
+    private Mono<List<VectorSearchResult<Record>>> searchAndMapAsync(SearchOptions searchOptions) {
         VectorStoreRecordMapper<Record, SearchDocument> mapper = this.options
             .getVectorStoreRecordMapper();
 
-        return this.searchAsyncClient.search(searchText, searchOptions)
+        return this.searchAsyncClient.search(null, searchOptions)
             .flatMap(response -> {
                 Record record;
 
@@ -339,6 +346,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> extends VectorSear
             .setFilter(filter)
             .setTop(options.getLimit())
             .setSkip(options.getOffset())
+            .setScoringParameters()
             .setVectorSearchOptions(new com.azure.search.documents.models.VectorSearchOptions()
                 .setQueries(vectorQueries));
 
@@ -346,6 +354,32 @@ public class AzureAISearchVectorStoreRecordCollection<Record> extends VectorSear
             searchOptions.setSelect(nonVectorFields.toArray(new String[0]));
         }
 
-        return searchAndMapAsync(null, searchOptions);
+        return searchAndMapAsync(searchOptions);
+    }
+
+    /**
+     * Vectorizable text search. This method searches for records that are similar to the given text.
+     *
+     * @param searchText The text to search with.
+     * @param options    The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(String searchText,
+        VectorSearchOptions options) {
+        return searchAsync(VectorSearchQuery.createQuery(searchText, options));
+    }
+
+    /**
+     * Vectorized search. This method searches for records that are similar to the given vector.
+     *
+     * @param vector  The vector to search with.
+     * @param options The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+        VectorSearchOptions options) {
+        return searchAsync(VectorSearchQuery.createQuery(vector, options));
     }
 }

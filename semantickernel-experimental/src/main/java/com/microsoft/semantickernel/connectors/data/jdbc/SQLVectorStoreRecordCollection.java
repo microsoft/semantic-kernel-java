@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import reactor.core.publisher.Mono;
 
 public interface SQLVectorStoreRecordCollection<Key, Record>
