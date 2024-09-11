@@ -86,14 +86,16 @@ public class MySQLVectorStoreQueryProvider extends
         List<VectorStoreRecordField> fields = recordDefinition.getAllFields();
 
         String onDuplicateKeyUpdate = fields.stream()
-            .map(field -> validateSQLidentifier(field.getEffectiveStorageName())
-                + " = VALUES(" + validateSQLidentifier(field.getEffectiveStorageName()) + ")")
+            .map(field -> formatQuery("%s = VALUES(%s)",
+                validateSQLidentifier(field.getEffectiveStorageName()),
+                field.getEffectiveStorageName()))
             .collect(Collectors.joining(", "));
 
-        String query = "INSERT INTO " + getCollectionTableName(collectionName)
-            + " (" + getQueryColumnsFromFields(fields) + ")"
-            + " VALUES (" + getWildcardString(fields.size()) + ")"
-            + " ON DUPLICATE KEY UPDATE " + onDuplicateKeyUpdate;
+        String query = formatQuery("INSERT INTO %s (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s",
+            getCollectionTableName(collectionName),
+            getQueryColumnsFromFields(fields),
+            getWildcardString(fields.size()),
+            onDuplicateKeyUpdate);
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {

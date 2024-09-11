@@ -166,9 +166,9 @@ public class JDBCVectorStoreDefaultQueryProvider
      */
     @Override
     public void prepareVectorStore() {
-        String createCollectionsTable = "CREATE TABLE IF NOT EXISTS "
-            + validateSQLidentifier(collectionsTable)
-            + " (collectionId VARCHAR(255) PRIMARY KEY);";
+        String createCollectionsTable = formatQuery(
+            "CREATE TABLE IF NOT EXISTS %s (collectionId VARCHAR(255) PRIMARY KEY);",
+            validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement createTable = connection.prepareStatement(createCollectionsTable)) {
@@ -207,8 +207,8 @@ public class JDBCVectorStoreDefaultQueryProvider
      */
     @Override
     public boolean collectionExists(String collectionName) {
-        String query = "SELECT 1 FROM " + validateSQLidentifier(collectionsTable)
-            + " WHERE collectionId = ?";
+        String query = formatQuery("SELECT 1 FROM %s WHERE collectionId = ?",
+            validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
@@ -232,18 +232,19 @@ public class JDBCVectorStoreDefaultQueryProvider
     public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
 
-        String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-            + getCollectionTableName(collectionName) + " ("
-            + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
-            + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
-                getSupportedDataTypes())
-            + ", "
-            + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getVectorFields()),
-                getSupportedVectorTypes())
-            + ");";
+        String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
+            + "%s VARCHAR(255) PRIMARY KEY, "
+            + "%s, "
+            + "%s);",
+            getCollectionTableName(collectionName),
+            getKeyColumnName(recordDefinition.getKeyField()),
+            getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                getSupportedDataTypes()),
+            getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getVectorFields()),
+                getSupportedVectorTypes()));
 
-        String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
-            + " (collectionId) VALUES (?)";
+        String insertCollectionQuery = formatQuery("INSERT INTO %s (collectionId) VALUES (?)",
+            validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
@@ -269,9 +270,10 @@ public class JDBCVectorStoreDefaultQueryProvider
      */
     @Override
     public void deleteCollection(String collectionName) {
-        String deleteCollectionOperation = "DELETE FROM " + validateSQLidentifier(collectionsTable)
-            + " WHERE collectionId = ?";
-        String dropTableOperation = "DROP TABLE " + getCollectionTableName(collectionName);
+        String deleteCollectionOperation = formatQuery("DELETE FROM %s WHERE collectionId = ?",
+            validateSQLidentifier(collectionsTable));
+        String dropTableOperation = formatQuery("DROP TABLE %s",
+            getCollectionTableName(collectionName));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement deleteCollection = connection
@@ -298,7 +300,8 @@ public class JDBCVectorStoreDefaultQueryProvider
      */
     @Override
     public List<String> getCollectionNames() {
-        String query = "SELECT collectionId FROM " + validateSQLidentifier(collectionsTable);
+        String query = formatQuery("SELECT collectionId FROM %s",
+            validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
@@ -339,10 +342,11 @@ public class JDBCVectorStoreDefaultQueryProvider
             fields = recordDefinition.getNonVectorFields();
         }
 
-        String query = "SELECT " + getQueryColumnsFromFields(fields)
-            + " FROM " + getCollectionTableName(collectionName)
-            + " WHERE " + getKeyColumnName(recordDefinition.getKeyField())
-            + " IN (" + getWildcardString(keys.size()) + ")";
+        String query = formatQuery("SELECT %s FROM %s WHERE %s IN (%s)",
+            getQueryColumnsFromFields(fields),
+            getCollectionTableName(collectionName),
+            getKeyColumnName(recordDefinition.getKeyField()),
+            getWildcardString(keys.size()));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
@@ -382,9 +386,10 @@ public class JDBCVectorStoreDefaultQueryProvider
     @Override
     public void deleteRecords(String collectionName, List<String> keys,
         VectorStoreRecordDefinition recordDefinition, DeleteRecordOptions options) {
-        String query = "DELETE FROM " + getCollectionTableName(collectionName)
-            + " WHERE " + getKeyColumnName(recordDefinition.getKeyField())
-            + " IN (" + getWildcardString(keys.size()) + ")";
+        String query = formatQuery("DELETE FROM %s WHERE %s IN (%s)",
+            getCollectionTableName(collectionName),
+            getKeyColumnName(recordDefinition.getKeyField()),
+            getWildcardString(keys.size()));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
@@ -410,6 +415,17 @@ public class JDBCVectorStoreDefaultQueryProvider
             return identifier;
         }
         throw new SKException("Invalid SQL identifier: " + identifier);
+    }
+
+    /**
+     * Formats a query.
+     *
+     * @param query the query
+     * @param args the arguments
+     * @return the formatted query
+     */
+    public String formatQuery(String query, String... args) {
+        return String.format(query, (Object[]) args);
     }
 
     /**

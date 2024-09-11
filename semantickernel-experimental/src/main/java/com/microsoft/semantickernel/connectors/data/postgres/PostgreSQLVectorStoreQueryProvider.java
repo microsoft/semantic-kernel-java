@@ -168,10 +168,12 @@ public class PostgreSQLVectorStoreQueryProvider extends
                 "Distance function is required for vector field: " + vectorField.getName());
         }
 
-        return "CREATE INDEX IF NOT EXISTS " + getCollectionTableName(collectionName) + "_index"
-            + " ON " + getCollectionTableName(collectionName)
-            + " USING " + indexKind.getValue()
-            + " (" + vectorField.getName() + " " + distanceFunction.getValue() + ");";
+        return formatQuery("CREATE INDEX IF NOT EXISTS %s ON %s USING %s (%s %s);",
+            getCollectionTableName(collectionName) + "_index",
+            getCollectionTableName(collectionName),
+            indexKind.getValue(),
+            vectorField.getName(),
+            distanceFunction.getValue());
     }
 
     /**
@@ -194,14 +196,15 @@ public class PostgreSQLVectorStoreQueryProvider extends
         try (Connection connection = dataSource.getConnection();
             Statement createTableAndIndexes = connection.createStatement()) {
 
-            String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-                + getCollectionTableName(collectionName) + " ("
-                + getKeyColumnName(recordDefinition.getKeyField()) + " VARCHAR(255) PRIMARY KEY, "
-                + getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
-                    supportedDataTypes)
-                + ", "
-                + getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields())
-                + ");";
+            String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
+                + "%s VARCHAR(255) PRIMARY KEY, "
+                + "%s, "
+                + "%s);",
+                getCollectionTableName(collectionName),
+                getKeyColumnName(recordDefinition.getKeyField()),
+                getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                    supportedDataTypes),
+                getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields()));
 
             createTableAndIndexes.addBatch(createStorageTable);
             for (VectorStoreRecordVectorField vectorField : vectorFields) {
@@ -217,8 +220,8 @@ public class PostgreSQLVectorStoreQueryProvider extends
             throw new SKException("Failed to create collection", e);
         }
 
-        String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
-            + " (collectionId) VALUES (?)";
+        String insertCollectionQuery = formatQuery("INSERT INTO %s (collectionId) VALUES (?)",
+            validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
@@ -284,16 +287,18 @@ public class PostgreSQLVectorStoreQueryProvider extends
 
         String onDuplicateKeyUpdate = fields.stream()
             .filter(field -> !(field instanceof VectorStoreRecordKeyField)) // Exclude key fields
-            .map(field -> validateSQLidentifier(field.getEffectiveStorageName())
-                + " = EXCLUDED." + validateSQLidentifier(field.getEffectiveStorageName()))
+            .map(field -> formatQuery("%s = EXCLUDED.%s",
+                validateSQLidentifier(field.getEffectiveStorageName()),
+                field.getEffectiveStorageName()))
             .collect(Collectors.joining(", "));
 
-        String query = "INSERT INTO " + getCollectionTableName(collectionName)
-            + " (" + getQueryColumnsFromFields(fields) + ")"
-            + " VALUES (" + getWildcardStringWithCast(fields) + ")"
-            + " ON CONFLICT (" + getKeyColumnName(recordDefinition.getKeyField())
-            + ") DO UPDATE SET "
-            + onDuplicateKeyUpdate;
+        String query = formatQuery(
+            "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s",
+            getCollectionTableName(collectionName),
+            getQueryColumnsFromFields(fields),
+            getWildcardStringWithCast(fields),
+            getKeyColumnName(recordDefinition.getKeyField()),
+            onDuplicateKeyUpdate);
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
