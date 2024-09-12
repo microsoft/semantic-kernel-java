@@ -34,8 +34,8 @@ public class VectorSearchOptions {
         String vectorFieldName, int limit, int offset, boolean includeVectors) {
         this.basicVectorSearchFilter = basicVectorSearchFilter;
         this.vectorFieldName = vectorFieldName;
-        this.limit = limit;
-        this.offset = offset;
+        this.limit = Math.max(1, limit);
+        this.offset = Math.max(0, offset);
         this.includeVectors = includeVectors;
     }
 
@@ -134,10 +134,6 @@ public class VectorSearchOptions {
 
         @Override
         public VectorSearchOptions build() {
-            if (limit < 1) {
-                throw new SKException("The limit must be greater than 0.");
-            }
-
             return new VectorSearchOptions(basicVectorSearchFilter, vectorFieldName, limit, offset,
                 includeVectors);
         }
