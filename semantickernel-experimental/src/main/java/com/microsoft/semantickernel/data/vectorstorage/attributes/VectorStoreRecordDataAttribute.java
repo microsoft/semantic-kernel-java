@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.recordattributes;
+package com.microsoft.semantickernel.data.vectorstorage.attributes;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,17 +20,12 @@ public @interface VectorStoreRecordDataAttribute {
     String storageName() default "";
 
     /**
-     * Whether the field has a vector representation.
-     */
-    boolean hasEmbedding() default false;
-
-    /**
-     * Name of the field that contains the vector representation.
-     */
-    String embeddingFieldName() default "";
-
-    /**
      * Whether the field is filterable.
      */
     boolean isFilterable() default false;
+
+    /**
+     * Whether the field is full text searchable.
+     */
+    boolean isFullTextSearchable() default false;
 }

@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data;
+package com.microsoft.semantickernel.data.vectorstorage;
 
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
 import reactor.core.publisher.Mono;
 
 /**

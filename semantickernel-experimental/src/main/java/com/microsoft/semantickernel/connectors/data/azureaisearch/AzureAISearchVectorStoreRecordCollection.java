@@ -6,21 +6,32 @@ import com.azure.search.documents.SearchDocument;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.models.SearchField;
 import com.azure.search.documents.indexes.models.SearchIndex;
-import com.azure.search.documents.indexes.models.VectorSearch;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
 import com.azure.search.documents.models.IndexDocumentsResult;
 import com.azure.search.documents.models.IndexingResult;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.azure.search.documents.models.SearchOptions;
+import com.azure.search.documents.models.VectorQuery;
+import com.azure.search.documents.models.VectorizableTextQuery;
+import com.azure.search.documents.models.VectorizedQuery;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizableSearch;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearch;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizableTextSearchQuery;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
@@ -32,14 +43,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class AzureAISearchVectorStoreRecordCollection<Record> implements
-    VectorStoreRecordCollection<String, Record> {
+    VectorStoreRecordCollection<String, Record>,
+    VectorizedSearch<Record>,
+    VectorizableSearch<Record> {
 
     private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
         Collections.singletonList(
@@ -65,22 +77,25 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             List.class,
             Collection.class));
 
-    private final SearchIndexAsyncClient client;
+    private final SearchIndexAsyncClient searchIndexAsyncClient;
+    private final SearchAsyncClient searchAsyncClient;
     private final String collectionName;
-    private final Map<String, SearchAsyncClient> clientsByIndex = new ConcurrentHashMap<>();
     private final AzureAISearchVectorStoreRecordCollectionOptions<Record> options;
     private final VectorStoreRecordDefinition recordDefinition;
 
     // List of non-vector fields. Used to fetch only non-vector fields when vectors are not requested
     private final List<String> nonVectorFields = new ArrayList<>();
+    private final Map<String, String> storageNames;
+    private final String firstVectorFieldName;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public AzureAISearchVectorStoreRecordCollection(
-        @Nonnull SearchIndexAsyncClient client,
+        @Nonnull SearchIndexAsyncClient searchIndexAsyncClient,
         @Nonnull String collectionName,
         @Nonnull AzureAISearchVectorStoreRecordCollectionOptions<Record> options) {
-        this.client = client;
+        this.searchIndexAsyncClient = searchIndexAsyncClient;
         this.collectionName = collectionName;
+        this.searchAsyncClient = searchIndexAsyncClient.getSearchAsyncClient(collectionName);
         this.options = options;
 
         // If record definition is not provided, create one from the record class
@@ -104,6 +119,10 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         nonVectorFields.addAll(this.recordDefinition.getDataFields().stream()
             .map(VectorStoreRecordDataField::getEffectiveStorageName)
             .collect(Collectors.toList()));
+
+        storageNames = recordDefinition.getStorageNames();
+        firstVectorFieldName = recordDefinition.getVectorFields().isEmpty() ? null
+            : recordDefinition.getVectorFields().get(0).getName();
     }
 
     @Override
@@ -112,7 +131,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
     }
 
     private Mono<List<String>> getIndexesAsync() {
-        return client.listIndexes().map(SearchIndex::getName).collect(Collectors.toList());
+        return searchIndexAsyncClient.listIndexes().map(SearchIndex::getName)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -145,11 +165,11 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         SearchIndex newIndex = new SearchIndex(collectionName)
             .setFields(searchFields)
-            .setVectorSearch(new VectorSearch()
+            .setVectorSearch(new com.azure.search.documents.indexes.models.VectorSearch()
                 .setAlgorithms(algorithms)
                 .setProfiles(profiles));
 
-        return client.createIndex(newIndex).then(Mono.just(this));
+        return searchIndexAsyncClient.createIndex(newIndex).then(Mono.just(this));
     }
 
     @Override
@@ -166,14 +186,12 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
     @Override
     public Mono<Void> deleteCollectionAsync() {
-        return client.deleteIndex(this.collectionName).then();
+        return searchIndexAsyncClient.deleteIndex(this.collectionName).then();
     }
 
     @Override
     public Mono<Record> getAsync(
         @Nonnull String key, GetRecordOptions options) {
-        SearchAsyncClient client = this.getSearchClient(this.collectionName);
-
         // If vectors are not requested, only fetch non-vector fields
         List<String> selectedFields = null;
         if (options != null && !options.includeVectors()) {
@@ -185,16 +203,22 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         // Use custom mapper if available
         if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
-            return client.getDocument(key, SearchDocument.class)
+            return searchAsyncClient.getDocument(key, SearchDocument.class)
                 .map(this.options.getVectorStoreRecordMapper()::mapStorageModeltoRecord);
         }
 
-        return client.getDocumentWithResponse(key, this.options.getRecordClass(), selectedFields)
+        return searchAsyncClient
+            .getDocumentWithResponse(key, this.options.getRecordClass(), selectedFields)
             .flatMap(response -> {
+                int statusCode = response.getStatusCode();
+                if (statusCode >= 200 && statusCode < 300) {
+                    return Mono.just(response.getValue());
+                }
                 if (response.getStatusCode() == 404) {
                     return Mono.error(new SKException("Record not found: " + key));
                 }
-                return Mono.just(response.getValue());
+                return Mono.error(new SKException("Failed to get record: " + key + ". Status code: "
+                    + statusCode));
             });
 
     }
@@ -221,7 +245,6 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         if (records.isEmpty()) {
             return Mono.just(Collections.emptyList());
         }
-        SearchAsyncClient client = this.getSearchClient(this.collectionName);
 
         VectorStoreRecordMapper<Record, SearchDocument> mapper = this.options
             .getVectorStoreRecordMapper();
@@ -236,7 +259,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             documents = records;
         }
 
-        return client.uploadDocuments(documents)
+        return searchAsyncClient.uploadDocuments(documents)
             .map(IndexDocumentsResult::getResults)
             .map(
                 results -> results.stream()
@@ -251,24 +274,112 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
     @Override
     public Mono<Void> deleteBatchAsync(List<String> keys, DeleteRecordOptions options) {
-        SearchAsyncClient client = this.getSearchClient(this.collectionName);
-
-        return client.deleteDocuments(keys.stream().map(key -> {
+        return searchAsyncClient.deleteDocuments(keys.stream().map(key -> {
             SearchDocument document = new SearchDocument();
             document.put(this.recordDefinition.getKeyField().getEffectiveStorageName(), key);
             return document;
         }).collect(Collectors.toList())).then();
     }
 
+    private Mono<List<VectorSearchResult<Record>>> searchAndMapAsync(SearchOptions searchOptions) {
+        VectorStoreRecordMapper<Record, SearchDocument> mapper = this.options
+            .getVectorStoreRecordMapper();
+
+        return this.searchAsyncClient.search(null, searchOptions)
+            .flatMap(response -> {
+                Record record;
+
+                // Use custom mapper if available
+                if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
+                    record = mapper
+                        .mapStorageModeltoRecord(response.getDocument(SearchDocument.class));
+                } else {
+                    record = response.getDocument(this.options.getRecordClass());
+                }
+
+                return Mono.just(new VectorSearchResult<>(record, response.getScore()));
+            }).collectList();
+    }
+
     /**
-     * Get a search client for the index specified. Note: the index might not exist, but we avoid
-     * checking everytime and the extra latency.
+     * Search the vector store for records that match the given embedding and filter.
      *
-     * @param indexName Index name
-     * @return Search client ready to read/write
+     * @param query The vector search query.
+     * @return A list of search results.
      */
-    protected SearchAsyncClient getSearchClient(@Nonnull String indexName) {
-        return clientsByIndex.computeIfAbsent(
-            indexName, client::getSearchAsyncClient);
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
+        if (firstVectorFieldName == null) {
+            throw new SKException("No vector fields defined. Cannot perform vector search");
+        }
+
+        VectorSearchOptions options = (VectorSearchOptions) query.getSearchOptions();
+        if (options == null) {
+            options = VectorSearchOptions.createDefault(firstVectorFieldName);
+        }
+
+        List<VectorQuery> vectorQueries = new ArrayList<>();
+
+        if (query instanceof VectorizedSearchQuery) {
+            vectorQueries.add(new VectorizedQuery(((VectorizedSearchQuery) query).getVector())
+                .setFields(
+                    storageNames
+                        .get(options.getVectorFieldName() != null ? options.getVectorFieldName()
+                            : firstVectorFieldName))
+                .setKNearestNeighborsCount(options.getLimit()));
+        } else if (query instanceof VectorizableTextSearchQuery) {
+            vectorQueries
+                .add(new VectorizableTextQuery(((VectorizableTextSearchQuery) query).getQueryText())
+                    .setFields(
+                        storageNames
+                            .get(options.getVectorFieldName() != null ? options.getVectorFieldName()
+                                : firstVectorFieldName))
+                    .setKNearestNeighborsCount(options.getLimit()));
+        } else {
+            throw new SKException("Unsupported query type: " + query.getQueryType());
+        }
+
+        String filter = AzureAISearchVectorStoreCollectionSearchMapping
+            .buildFilterString(options.getBasicVectorSearchFilter(), storageNames);
+
+        SearchOptions searchOptions = new SearchOptions()
+            .setFilter(filter)
+            .setTop(options.getLimit())
+            .setSkip(options.getOffset())
+            .setScoringParameters()
+            .setVectorSearchOptions(new com.azure.search.documents.models.VectorSearchOptions()
+                .setQueries(vectorQueries));
+
+        if (!options.isIncludeVectors()) {
+            searchOptions.setSelect(nonVectorFields.toArray(new String[0]));
+        }
+
+        return searchAndMapAsync(searchOptions);
+    }
+
+    /**
+     * Vectorizable text search. This method searches for records that are similar to the given text.
+     *
+     * @param searchText The text to search with.
+     * @param options    The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(String searchText,
+        VectorSearchOptions options) {
+        return searchAsync(VectorSearchQuery.createQuery(searchText, options));
+    }
+
+    /**
+     * Vectorized search. This method searches for records that are similar to the given vector.
+     *
+     * @param vector  The vector to search with.
+     * @param options The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+        VectorSearchOptions options) {
+        return searchAsync(VectorSearchQuery.createQuery(vector, options));
     }
 }

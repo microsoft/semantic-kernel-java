@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.postgres;
 
-import com.microsoft.semantickernel.data.recorddefinition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 
 public enum PostgreSQLVectorDistanceFunction {
     L2("vector_l2_ops", "<->"), COSINE("vector_cosine_ops", "<=>"), INNER_PRODUCT("vector_ip_ops",

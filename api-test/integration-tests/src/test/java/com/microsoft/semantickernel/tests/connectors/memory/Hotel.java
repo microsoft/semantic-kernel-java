@@ -2,9 +2,9 @@ package com.microsoft.semantickernel.tests.connectors.memory;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class Hotel {
     @VectorStoreRecordDataAttribute
     private final int code;
     @JsonProperty("summary")
-    @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
+    @VectorStoreRecordDataAttribute()
     private final String description;
     @JsonProperty("summaryEmbedding")
     @VectorStoreRecordVectorAttribute(dimensions = 3)

@@ -2,12 +2,12 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.api.BeforeAll;
@@ -67,8 +67,6 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
                 .withName("description")
                 .withStorageName("summary")
                 .withFieldType(String.class)
-                .withHasEmbedding(true)
-                .withEmbeddingFieldName("descriptionEmbedding")
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("descriptionEmbedding")

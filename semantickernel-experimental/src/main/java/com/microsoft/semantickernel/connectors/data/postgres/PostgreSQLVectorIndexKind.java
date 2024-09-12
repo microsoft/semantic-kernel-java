@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.postgres;
 
-import com.microsoft.semantickernel.data.recorddefinition.IndexKind;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 
 public enum PostgreSQLVectorIndexKind {
     HNSW("hnsw"), IVFFLAT("ivfflat");

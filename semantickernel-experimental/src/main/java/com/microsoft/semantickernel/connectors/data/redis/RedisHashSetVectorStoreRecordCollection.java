@@ -2,13 +2,13 @@
 package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;

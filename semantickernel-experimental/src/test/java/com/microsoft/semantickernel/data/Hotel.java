@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public class Hotel {
     private final String name;
     @VectorStoreRecordDataAttribute
     private final int code;
-    @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
+    @VectorStoreRecordDataAttribute()
     private final String description;
     @VectorStoreRecordVectorAttribute(dimensions = 3)
     private final List<Float> descriptionEmbedding;

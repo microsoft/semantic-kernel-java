@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.recordattributes;
+package com.microsoft.semantickernel.data.vectorstorage.attributes;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

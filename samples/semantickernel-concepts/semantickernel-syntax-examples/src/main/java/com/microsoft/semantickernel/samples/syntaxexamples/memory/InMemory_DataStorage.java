@@ -6,12 +6,12 @@ import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStore;
 import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,7 @@ public class InMemory_DataStorage {
 
         @VectorStoreRecordKeyAttribute()
         private final String id;
-        @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "embedding")
+        @VectorStoreRecordDataAttribute()
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
@@ -64,7 +64,7 @@ public class InMemory_DataStorage {
         }
 
         static String encodeId(String realId) {
-            return AzureAISearch_DataStorage.GitHubFile.encodeId(realId);
+            return AzureAISearchVectorStore.GitHubFile.encodeId(realId);
         }
     }
 

@@ -17,7 +17,7 @@ import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example27_P
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example59_OpenAIFunctionCalling;
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example60_AdvancedMethodFunctions;
 import com.microsoft.semantickernel.samples.syntaxexamples.java.KernelFunctionYaml_Example;
-import com.microsoft.semantickernel.samples.syntaxexamples.memory.AzureAISearch_DataStorage;
+import com.microsoft.semantickernel.samples.syntaxexamples.memory.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example10_DescribeAllPluginsAndFunctions;
 import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example13_ConversationSummaryPlugin;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example06_TemplateLanguage;
@@ -38,7 +38,7 @@ public class RunAll {
 
     public static void main(String[] args) {
         List<MainMethod> mains = Arrays.asList(
-            AzureAISearch_DataStorage::main,
+            AzureAISearchVectorStore::main,
             Example01_NativeFunctions::main,
             Example03_Arguments::main,
             Example05_InlineFunctionDefinition::main,

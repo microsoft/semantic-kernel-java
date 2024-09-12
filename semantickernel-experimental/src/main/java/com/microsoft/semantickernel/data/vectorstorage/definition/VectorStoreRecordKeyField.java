@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.recorddefinition;
+package com.microsoft.semantickernel.data.vectorstorage.definition;
 
 /**
  * Represents the key field in a record.
