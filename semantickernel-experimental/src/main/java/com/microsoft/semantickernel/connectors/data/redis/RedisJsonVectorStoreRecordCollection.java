@@ -214,7 +214,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
         return Mono.defer(() -> {
             try {
                 Object value;
-                if (options != null && options.includeVectors()) {
+                if (options != null && options.isIncludeVectors()) {
                     value = client.jsonGet(redisKey);
                 } else {
                     value = client.jsonGet(redisKey, dataFields);
@@ -225,7 +225,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
                 }
 
                 JsonNode jsonNode;
-                if (options != null && options.includeVectors()) {
+                if (options != null && options.isIncludeVectors()) {
                     jsonNode = objectMapper.valueToTree(value);
                 } else {
                     // Remove the $. prefix from every key in the JSON object
@@ -255,7 +255,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
         keys.forEach(key -> {
             String redisKey = getRedisKey(key, collectionName);
 
-            if (options != null && options.includeVectors()) {
+            if (options != null && options.isIncludeVectors()) {
                 responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey)));
             } else {
                 responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey, dataFields)));
@@ -274,7 +274,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
                         }
 
                         JsonNode jsonNode;
-                        if (options != null && options.includeVectors()) {
+                        if (options != null && options.isIncludeVectors()) {
                             jsonNode = objectMapper.valueToTree(value);
                         } else {
                             jsonNode = removeRedisPathPrefix((JSONObject) value);

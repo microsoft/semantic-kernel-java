@@ -19,7 +19,6 @@ import java.util.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class JDBCVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, ResultSet> {
@@ -115,7 +114,7 @@ public class JDBCVectorStoreRecordMapper<Record>
                         // Select fields from the record definition.
                         List<VectorStoreRecordField> fields;
                         ResultSetMetaData metaData = resultSet.getMetaData();
-                        if (options != null && options.includeVectors()) {
+                        if (options != null && options.isIncludeVectors()) {
                             fields = vectorStoreRecordDefinition.getAllFields();
                         } else {
                             fields = vectorStoreRecordDefinition.getNonVectorFields();

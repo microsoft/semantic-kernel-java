@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -135,7 +134,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                             storageModel.getValue().get(field.getEffectiveStorageName()));
                     }
 
-                    if (options != null && options.includeVectors()) {
+                    if (options != null && options.isIncludeVectors()) {
                         for (VectorStoreRecordVectorField field : recordDefinition
                             .getVectorFields()) {
                             String value = storageModel.getValue()

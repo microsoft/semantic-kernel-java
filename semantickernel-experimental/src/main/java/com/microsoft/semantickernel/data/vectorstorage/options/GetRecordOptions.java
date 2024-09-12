@@ -52,7 +52,7 @@ public class GetRecordOptions {
      *
      * @return whether to include vectors
      */
-    public boolean includeVectors() {
+    public boolean isIncludeVectors() {
         return includeVectors;
     }
 }

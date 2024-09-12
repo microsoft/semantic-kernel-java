@@ -16,11 +16,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.postgresql.util.PGobject;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class PostgreSQLVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, ResultSet> {
@@ -107,7 +105,7 @@ public class PostgreSQLVectorStoreRecordMapper<Record>
 
                         // Select fields from the record definition.
                         List<VectorStoreRecordField> fields;
-                        if (options != null && options.includeVectors()) {
+                        if (options != null && options.isIncludeVectors()) {
                             fields = vectorStoreRecordDefinition.getAllFields();
                         } else {
                             fields = vectorStoreRecordDefinition.getNonVectorFields();

@@ -15,7 +15,6 @@ import com.azure.search.documents.models.VectorQuery;
 import com.azure.search.documents.models.VectorizableTextQuery;
 import com.azure.search.documents.models.VectorizedQuery;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizableSearch;
-import com.microsoft.semantickernel.data.vectorsearch.VectorSearch;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
@@ -194,7 +193,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         @Nonnull String key, GetRecordOptions options) {
         // If vectors are not requested, only fetch non-vector fields
         List<String> selectedFields = null;
-        if (options == null || !options.includeVectors()) {
+        if (options == null || !options.isIncludeVectors()) {
             selectedFields = Collections.unmodifiableList(nonVectorFields);
         }
 

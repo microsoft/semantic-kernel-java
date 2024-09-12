@@ -231,7 +231,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
         keys.forEach(key -> {
             String redisKey = getRedisKey(key, collectionName);
 
-            if (options != null && options.includeVectors()) {
+            if (options != null && options.isIncludeVectors()) {
                 // Returns Map<String, String> with the fields and values
                 responses.add(new AbstractMap.SimpleEntry<>(key, pipeline.hgetAll(redisKey)));
             } else {
@@ -247,7 +247,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
             try {
                 return Mono.just(responses.stream()
                     .map(entry -> {
-                        if (options != null && options.includeVectors()) {
+                        if (options != null && options.isIncludeVectors()) {
                             // Results directly in a Map<String, String>
                             return this.vectorStoreRecordMapper
                                 .mapStorageModeltoRecord(

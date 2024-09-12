@@ -338,7 +338,7 @@ public class JDBCVectorStoreQueryProvider
         VectorStoreRecordMapper<Record, ResultSet> mapper,
         GetRecordOptions options) {
         List<VectorStoreRecordField> fields;
-        if (options != null && options.includeVectors()) {
+        if (options != null && options.isIncludeVectors()) {
             fields = recordDefinition.getAllFields();
         } else {
             fields = recordDefinition.getNonVectorFields();
