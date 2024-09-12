@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a definition of a vector store record.
@@ -23,12 +24,17 @@ public class VectorStoreRecordDefinition {
     private final List<VectorStoreRecordDataField> dataFields;
     private final List<VectorStoreRecordVectorField> vectorFields;
 
+    // Cached information
+    private final List<VectorStoreRecordField> nonVectorFields;
+    private final List<VectorStoreRecordField> allFields;
+    private final Map<String, VectorStoreRecordField> allFieldsMap;
+
     public VectorStoreRecordKeyField getKeyField() {
         return keyField;
     }
 
     public List<VectorStoreRecordDataField> getDataFields() {
-        return Collections.unmodifiableList(dataFields);
+        return dataFields;
     }
 
     /**
@@ -36,7 +42,7 @@ public class VectorStoreRecordDefinition {
      * @return List of VectorStoreRecordVectorField
      */
     public List<VectorStoreRecordVectorField> getVectorFields() {
-        return Collections.unmodifiableList(vectorFields);
+        return vectorFields;
     }
 
     /**
@@ -44,22 +50,27 @@ public class VectorStoreRecordDefinition {
      * @return List of VectorStoreRecordField
      */
     public List<VectorStoreRecordField> getAllFields() {
-        List<VectorStoreRecordField> fields = new ArrayList<>();
-        fields.add(keyField);
-        fields.addAll(dataFields);
-        fields.addAll(vectorFields);
-        return fields;
+        return allFields;
     }
 
+    /**
+     * Gets the non-vector fields in the record definition.
+     * @return List of VectorStoreRecordField
+     */
     public List<VectorStoreRecordField> getNonVectorFields() {
-        List<VectorStoreRecordField> fields = new ArrayList<>();
-        fields.add(keyField);
-        fields.addAll(dataFields);
-        return fields;
+        return nonVectorFields;
     }
 
-    public Map<String, String> getStorageNames() {
-        return getAllFields().stream()
+    public VectorStoreRecordField getField(String fieldName) {
+        return allFieldsMap.get(fieldName);
+    }
+
+    /**
+     * Gets the storage names of the fields in the record definition.
+     * @return Map of field names to storage names
+     */
+    public Map<String, String> getFieldStorageNames() {
+        return allFields.stream()
             .collect(Collectors.toMap(VectorStoreRecordField::getName,
                 VectorStoreRecordField::getEffectiveStorageName));
     }
@@ -69,8 +80,16 @@ public class VectorStoreRecordDefinition {
         List<VectorStoreRecordDataField> dataFields,
         List<VectorStoreRecordVectorField> vectorFields) {
         this.keyField = keyField;
-        this.dataFields = dataFields;
-        this.vectorFields = vectorFields;
+        this.dataFields = Collections.unmodifiableList(dataFields);
+        this.vectorFields = Collections.unmodifiableList(vectorFields);
+        this.nonVectorFields = Collections
+            .unmodifiableList(Stream.concat(Stream.of(keyField), dataFields.stream())
+                .collect(Collectors.toList()));
+        this.allFields = Collections
+            .unmodifiableList(Stream.concat(nonVectorFields.stream(), vectorFields.stream())
+                .collect(Collectors.toList()));
+        this.allFieldsMap = Collections.unmodifiableMap(allFields.stream()
+            .collect(Collectors.toMap(VectorStoreRecordField::getName, p -> p)));
     }
 
     private static VectorStoreRecordDefinition checkFields(

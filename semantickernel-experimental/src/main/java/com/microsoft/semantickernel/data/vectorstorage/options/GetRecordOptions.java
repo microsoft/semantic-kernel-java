@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 public class GetRecordOptions {
     private final boolean includeVectors;
 
-    private GetRecordOptions(boolean includeVectors) {
+    public GetRecordOptions(boolean includeVectors) {
         this.includeVectors = includeVectors;
     }
 

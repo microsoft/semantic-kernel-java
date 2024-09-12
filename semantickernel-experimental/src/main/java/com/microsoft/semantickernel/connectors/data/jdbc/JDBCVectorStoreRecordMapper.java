@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -17,6 +18,7 @@ import java.sql.ResultSetMetaData;
 import java.util.List;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class JDBCVectorStoreRecordMapper<Record>
@@ -27,7 +29,8 @@ public class JDBCVectorStoreRecordMapper<Record>
      *
      * @param storageModelToRecordMapper the function to convert a storage model to a record
      */
-    protected JDBCVectorStoreRecordMapper(Function<ResultSet, Record> storageModelToRecordMapper) {
+    protected JDBCVectorStoreRecordMapper(
+        BiFunction<ResultSet, GetRecordOptions, Record> storageModelToRecordMapper) {
         super(null, storageModelToRecordMapper);
     }
 
@@ -104,7 +107,7 @@ public class JDBCVectorStoreRecordMapper<Record>
             }
 
             return new JDBCVectorStoreRecordMapper<>(
-                resultSet -> {
+                (resultSet, options) -> {
                     try {
                         // Create an ObjectNode to hold the values
                         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -112,8 +115,7 @@ public class JDBCVectorStoreRecordMapper<Record>
                         // Select fields from the record definition.
                         List<VectorStoreRecordField> fields;
                         ResultSetMetaData metaData = resultSet.getMetaData();
-                        if (metaData.getColumnCount() == vectorStoreRecordDefinition.getAllFields()
-                            .size()) {
+                        if (options != null && options.includeVectors()) {
                             fields = vectorStoreRecordDefinition.getAllFields();
                         } else {
                             fields = vectorStoreRecordDefinition.getNonVectorFields();

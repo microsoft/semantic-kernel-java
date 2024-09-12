@@ -4,8 +4,8 @@ package com.microsoft.semantickernel.connectors.data.mysql;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreDefaultQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MySQLVectorStoreQueryProvider extends
-    JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
+    JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
 
     private final DataSource dataSource;
     private final ObjectMapper objectMapper;
@@ -111,7 +111,7 @@ public class MySQLVectorStoreQueryProvider extends
     }
 
     public static class Builder
-        extends JDBCVectorStoreDefaultQueryProvider.Builder {
+        extends JDBCVectorStoreQueryProvider.Builder {
         private DataSource dataSource;
         private String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;

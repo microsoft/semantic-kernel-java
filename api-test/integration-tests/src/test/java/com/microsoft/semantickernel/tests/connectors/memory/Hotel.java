@@ -19,15 +19,16 @@ public class Hotel {
     @VectorStoreRecordDataAttribute()
     private final String description;
     @JsonProperty("summaryEmbedding")
-    @VectorStoreRecordVectorAttribute(dimensions = 3)
+    @VectorStoreRecordVectorAttribute(dimensions = 8)
     private final List<Float> descriptionEmbedding;
-    @VectorStoreRecordVectorAttribute(dimensions = 3, indexKind = "hnsw", distanceFunction = "cosine")
-    private final List<Float> additionalEmbedding;
+    @JsonProperty("indexedSummaryEmbedding")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = "hnsw", distanceFunction = "cosine")
+    private final List<Float> indexedDescriptionEmbedding;
     @VectorStoreRecordDataAttribute
     private double rating;
 
     public Hotel() {
-        this(null, null, 0, null, null, 0.0);
+        this(null, null, 0, null, null, null, 0.0);
     }
 
     @JsonCreator
@@ -36,14 +37,15 @@ public class Hotel {
             @JsonProperty("name") String name,
             @JsonProperty("code") int code,
             @JsonProperty("summary") String description,
-            @JsonProperty("summaryVector") List<Float> descriptionEmbedding,
+            @JsonProperty("summaryEmbedding") List<Float> descriptionEmbedding,
+            @JsonProperty("indexedSummaryEmbedding") List<Float> indexedDescriptionEmbedding,
             @JsonProperty("rating") double rating) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.description = description;
         this.descriptionEmbedding = descriptionEmbedding;
-        this.additionalEmbedding = descriptionEmbedding;
+        this.indexedDescriptionEmbedding = indexedDescriptionEmbedding;
         this.rating = rating;
     }
 
@@ -66,8 +68,8 @@ public class Hotel {
     public List<Float> getDescriptionEmbedding() {
         return descriptionEmbedding;
     }
-    public List<Float> getAdditionalEmbedding() {
-        return additionalEmbedding;
+    public List<Float> getIndexedDescriptionEmbedding() {
+        return indexedDescriptionEmbedding;
     }
 
     public double getRating() {

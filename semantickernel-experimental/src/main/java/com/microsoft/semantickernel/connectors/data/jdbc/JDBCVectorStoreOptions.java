@@ -9,7 +9,7 @@ public class JDBCVectorStoreOptions {
     @Nullable
     private final JDBCVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
     @Nullable
-    private final JDBCVectorStoreQueryProvider queryProvider;
+    private final SQLVectorStoreQueryProvider queryProvider;
 
     /**
      * Creates a new instance of the JDBC vector store options.
@@ -18,7 +18,7 @@ public class JDBCVectorStoreOptions {
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
     public JDBCVectorStoreOptions(
-        @Nullable JDBCVectorStoreQueryProvider queryProvider,
+        @Nullable SQLVectorStoreQueryProvider queryProvider,
         @Nullable JDBCVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory) {
         this.queryProvider = queryProvider;
         this.vectorStoreRecordCollectionFactory = vectorStoreRecordCollectionFactory;
@@ -38,7 +38,7 @@ public class JDBCVectorStoreOptions {
      */
     @Nullable
     @SuppressFBWarnings("EI_EXPOSE_REP") // DataSource in queryProvider is not exposed
-    public JDBCVectorStoreQueryProvider getQueryProvider() {
+    public SQLVectorStoreQueryProvider getQueryProvider() {
         return queryProvider;
     }
 
@@ -67,7 +67,7 @@ public class JDBCVectorStoreOptions {
      */
     public static class Builder {
         @Nullable
-        private JDBCVectorStoreQueryProvider queryProvider;
+        private SQLVectorStoreQueryProvider queryProvider;
         @Nullable
         private JDBCVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
 
@@ -78,7 +78,7 @@ public class JDBCVectorStoreOptions {
          * @return The updated builder instance.
          */
         @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
-        public Builder withQueryProvider(JDBCVectorStoreQueryProvider queryProvider) {
+        public Builder withQueryProvider(SQLVectorStoreQueryProvider queryProvider) {
             this.queryProvider = queryProvider;
             return this;
         }

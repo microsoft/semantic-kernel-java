@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.vectorstorage;
 
-import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 
 import javax.annotation.Nullable;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -15,7 +16,7 @@ import java.util.function.Function;
 public class VectorStoreRecordMapper<Record, StorageModel> {
     @Nullable
     private final Function<Record, StorageModel> recordToStorageModelMapper;
-    private final Function<StorageModel, Record> storageModelToRecordMapper;
+    private final BiFunction<StorageModel, GetRecordOptions, Record> storageModelToRecordMapper;
 
     /**
      * Constructs a new instance of the VectorStoreRecordMapper.
@@ -25,7 +26,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      */
     protected VectorStoreRecordMapper(
         @Nullable Function<Record, StorageModel> recordToStorageModelMapper,
-        Function<StorageModel, Record> storageModelToRecordMapper) {
+        BiFunction<StorageModel, GetRecordOptions, Record> storageModelToRecordMapper) {
         this.recordToStorageModelMapper = recordToStorageModelMapper;
         this.storageModelToRecordMapper = storageModelToRecordMapper;
     }
@@ -45,7 +46,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      *
      * @return the function to convert a storage model to a record
      */
-    public Function<StorageModel, Record> getStorageModelToRecordMapper() {
+    public BiFunction<StorageModel, GetRecordOptions, Record> getStorageModelToRecordMapper() {
         return storageModelToRecordMapper;
     }
 
@@ -65,7 +66,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      * @param storageModel the storage model to convert
      * @return the record
      */
-    public Record mapStorageModeltoRecord(StorageModel storageModel) {
-        return getStorageModelToRecordMapper().apply(storageModel);
+    public Record mapStorageModeltoRecord(StorageModel storageModel, GetRecordOptions options) {
+        return getStorageModelToRecordMapper().apply(storageModel, options);
     }
 }

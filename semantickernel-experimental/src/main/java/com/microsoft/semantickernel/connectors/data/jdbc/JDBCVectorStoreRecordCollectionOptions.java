@@ -9,16 +9,16 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.sql.ResultSet;
 
-import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreDefaultQueryProvider.validateSQLidentifier;
-import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_COLLECTIONS_TABLE;
-import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
+import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider.validateSQLidentifier;
+import static com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider.DEFAULT_COLLECTIONS_TABLE;
+import static com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider.DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
 public class JDBCVectorStoreRecordCollectionOptions<Record>
     implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
-    private final JDBCVectorStoreQueryProvider queryProvider;
+    private final SQLVectorStoreQueryProvider queryProvider;
     private final String collectionsTableName;
     private final String prefixForCollectionTables;
 
@@ -26,7 +26,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record>
         Class<Record> recordClass,
         VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper,
-        JDBCVectorStoreQueryProvider queryProvider,
+        SQLVectorStoreQueryProvider queryProvider,
         String collectionsTableName,
         String prefixForCollectionTables) {
         this.recordClass = recordClass;
@@ -101,7 +101,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record>
      * @return the query provider
      */
     @SuppressFBWarnings("EI_EXPOSE_REP") // DataSource in queryProvider is not exposed
-    public JDBCVectorStoreQueryProvider getQueryProvider() {
+    public SQLVectorStoreQueryProvider getQueryProvider() {
         return queryProvider;
     }
 
@@ -109,7 +109,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record>
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;
         private VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
-        private JDBCVectorStoreQueryProvider queryProvider;
+        private SQLVectorStoreQueryProvider queryProvider;
         private String collectionsTableName = DEFAULT_COLLECTIONS_TABLE;
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
@@ -150,7 +150,7 @@ public class JDBCVectorStoreRecordCollectionOptions<Record>
          * @return the builder
          */
         @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
-        public Builder<Record> withQueryProvider(JDBCVectorStoreQueryProvider queryProvider) {
+        public Builder<Record> withQueryProvider(SQLVectorStoreQueryProvider queryProvider) {
             this.queryProvider = queryProvider;
             return this;
         }
