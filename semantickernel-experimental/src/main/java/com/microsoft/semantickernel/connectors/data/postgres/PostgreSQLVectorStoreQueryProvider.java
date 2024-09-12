@@ -321,10 +321,17 @@ public class PostgreSQLVectorStoreQueryProvider extends
     }
 
     /**
-     * @param collectionName
-     * @param query
-     * @param recordDefinition
-     * @param mapper
+     * Vector search.
+     * Executes a vector search query and returns the results.
+     * The results are mapped to the specified record type using the provided mapper.
+     * The query is executed against the specified collection.
+     *
+     * @param <Record> the record type
+     * @param collectionName the collection name
+     * @param query the vectorized search query, containing the vector and search options
+     * @param recordDefinition the record definition
+     * @param mapper the mapper, responsible for mapping the result set to the record type.
+     * @return the search results
      */
     @Override
     public <Record> List<VectorSearchResult<Record>> search(String collectionName,
