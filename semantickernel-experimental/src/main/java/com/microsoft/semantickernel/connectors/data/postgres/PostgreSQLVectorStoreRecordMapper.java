@@ -107,7 +107,6 @@ public class PostgreSQLVectorStoreRecordMapper<Record>
 
                         // Select fields from the record definition.
                         List<VectorStoreRecordField> fields;
-                        ResultSetMetaData metaData = resultSet.getMetaData();
                         if (options != null && options.includeVectors()) {
                             fields = vectorStoreRecordDefinition.getAllFields();
                         } else {

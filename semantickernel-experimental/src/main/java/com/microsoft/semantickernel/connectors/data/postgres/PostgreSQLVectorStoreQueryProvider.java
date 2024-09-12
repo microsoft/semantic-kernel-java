@@ -367,7 +367,7 @@ public class PostgreSQLVectorStoreQueryProvider extends
                 getQueryColumnsFromFields(
                     options.isIncludeVectors() ? recordDefinition.getAllFields()
                         : recordDefinition.getNonVectorFields()),
-                vectorField.getEffectiveStorageName(),
+                validateSQLidentifier(vectorField.getEffectiveStorageName()),
                 distanceFunction == null ? PostgreSQLVectorDistanceFunction.L2.getOperator()
                     : distanceFunction.getOperator(),
                 getCollectionTableName(collectionName));
