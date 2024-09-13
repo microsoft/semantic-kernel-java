@@ -29,9 +29,9 @@ public enum PostgreSQLVectorDistanceFunction {
         }
 
         switch (function) {
-            case EUCLIDEAN:
+            case EUCLIDEAN_DISTANCE:
                 return L2;
-            case COSINE:
+            case COSINE_DISTANCE:
                 return COSINE;
             case DOT_PRODUCT:
                 return INNER_PRODUCT;

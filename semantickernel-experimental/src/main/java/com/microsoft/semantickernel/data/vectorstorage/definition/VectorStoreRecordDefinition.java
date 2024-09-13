@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -62,6 +63,9 @@ public class VectorStoreRecordDefinition {
     }
 
     public VectorStoreRecordField getField(String fieldName) {
+        if (!allFieldsMap.containsKey(fieldName)) {
+            throw new SKException("Field not found: " + fieldName);
+        }
         return allFieldsMap.get(fieldName);
     }
 

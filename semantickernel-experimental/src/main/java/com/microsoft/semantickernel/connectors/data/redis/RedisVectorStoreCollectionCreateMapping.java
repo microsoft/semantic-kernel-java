@@ -37,11 +37,11 @@ public class RedisVectorStoreCollectionCreateMapping {
         }
 
         switch (vectorField.getDistanceFunction()) {
-            case COSINE:
+            case COSINE_SIMILARITY:
                 return RedisVectorDistanceMetric.COSINE;
             case DOT_PRODUCT:
                 return RedisVectorDistanceMetric.DOT_PRODUCT;
-            case EUCLIDEAN:
+            case EUCLIDEAN_DISTANCE:
                 return RedisVectorDistanceMetric.EUCLIDEAN;
             default:
                 throw new SKException(

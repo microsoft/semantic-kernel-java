@@ -36,11 +36,11 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
         }
 
         switch (vectorField.getDistanceFunction()) {
-            case COSINE:
+            case COSINE_SIMILARITY:
                 return VectorSearchAlgorithmMetric.COSINE;
             case DOT_PRODUCT:
                 return VectorSearchAlgorithmMetric.DOT_PRODUCT;
-            case EUCLIDEAN:
+            case EUCLIDEAN_DISTANCE:
                 return VectorSearchAlgorithmMetric.EUCLIDEAN;
             default:
                 throw new SKException(
