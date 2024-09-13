@@ -1,3 +1,18 @@
+# 1.3.0
+
+- Added support for Json Schema to Open AI Chat Completions
+- Upgraded to openai sdk 1.0.0-beta.11
+- Added convinience method `FunctionInvocation.withResultTypeAutoConversion` which sets the return type and registers a
+  type converter based on Jackson for the return type.
+
+### Bug Fixes
+
+- Fixed type converters not being passed on to be used in tool invocations
+
+### Breaking Changes
+
+- To support the new Json Schema feature, ResponseFormat has changed from an enum to a class.
+
 # 1.2.2
 
 - Fix bug in `FunctionInvocation` not using per-invocation type conversion when calling `withResultType`.

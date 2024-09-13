@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -78,8 +80,19 @@ public class KernelFunctionYamlTest {
         assertNotNull(result);
         assertEquals(expResult.getName(), result.getName());
         assertEquals(expResult.getDescription(), result.getDescription());
-        assertEquals(expResult.getExecutionSettings(), result.getExecutionSettings());
+        assertEqualsJson(expResult.getExecutionSettings(), result.getExecutionSettings());
         assertEquals(expResult.getMetadata(), result.getMetadata());
+    }
+
+    public static void assertEqualsJson(Object a, Object b) {
+        try {
+            assertEquals(new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(a),
+                new ObjectMapper().writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(b));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

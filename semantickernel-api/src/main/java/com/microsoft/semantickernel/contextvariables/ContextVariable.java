@@ -128,7 +128,7 @@ public class ContextVariable<T> {
         if (typeOfActualReturnedType != null) {
             // Try the to object
             T converted = typeOfActualReturnedType.getConverter().toObject(contextVariableTypes, it,
-                requestedResultType);
+                requestedResultType, false);
 
             if (converted != null) {
                 return contextVariableTypes.getVariableTypeForClass(requestedResultType)

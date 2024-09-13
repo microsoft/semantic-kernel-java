@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.orchestration.responseformat.ResponseFormat.Type;
 import org.junit.jupiter.api.Test;
 
 public class PromptExecutionSettingsTest {
@@ -113,7 +114,8 @@ public class PromptExecutionSettingsTest {
             + "\"best_of\":3,"
             + "\"results_per_prompt\":5,"
             + "\"model_id\":\"custom-model\","
-            + "\"user\":\"custom-user\""
+            + "\"user\":\"custom-user\","
+            + "\"response_format\" : {\"type\" : \"text\"}"
             + "}";
         PromptExecutionSettings settingsFromJson = new ObjectMapper().readValue(json,
             PromptExecutionSettings.class);
@@ -129,8 +131,13 @@ public class PromptExecutionSettingsTest {
             .withResultsPerPrompt(5)
             .withModelId("custom-model")
             .withUser("custom-user")
+            .withResponseFormat(Type.TEXT)
             .build();
 
-        assertEquals(settingsFromBuilder, settingsFromJson);
+        assertEquals(
+            new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(settingsFromBuilder),
+            new ObjectMapper().writerWithDefaultPrettyPrinter()
+                .writeValueAsString(settingsFromJson));
     }
 }

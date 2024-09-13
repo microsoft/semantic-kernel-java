@@ -19,6 +19,9 @@
         <Logger name="com.microsoft.semantickernel.orchestration.FunctionInvocation" level="info">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="com.github.victools.jsonschema" level="info">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Root level="debug">
             <AppenderRef ref="Console"/>
         </Root>
