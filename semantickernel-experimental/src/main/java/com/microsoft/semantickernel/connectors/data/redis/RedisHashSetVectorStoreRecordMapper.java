@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RedisHashSetVectorStoreRecordMapper<Record>
@@ -25,7 +27,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
 
     private RedisHashSetVectorStoreRecordMapper(
         Function<Record, Entry<String, Map<String, String>>> toStorageModelMapper,
-        Function<Entry<String, Map<String, String>>, Record> toRecordMapper) {
+        BiFunction<Entry<String, Map<String, String>>, GetRecordOptions, Record> toRecordMapper) {
         super(toStorageModelMapper, toRecordMapper);
     }
 
@@ -116,7 +118,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                         "Failure to serialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);
                 }
-            }, storageModel -> {
+            }, (storageModel, options) -> {
                 try {
                     // Empty map means no record found
                     if (storageModel.getValue() == null || storageModel.getValue().isEmpty()) {
@@ -132,22 +134,21 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                             storageModel.getValue().get(field.getEffectiveStorageName()));
                     }
 
-                    for (VectorStoreRecordVectorField field : recordDefinition.getVectorFields()) {
-                        String value = storageModel.getValue().get(field.getEffectiveStorageName());
+                    if (options != null && options.isIncludeVectors()) {
+                        for (VectorStoreRecordVectorField field : recordDefinition
+                            .getVectorFields()) {
+                            String value = storageModel.getValue()
+                                .get(field.getEffectiveStorageName());
 
-                        // If vector fields were not requested, skip
-                        if (value == null) {
-                            continue;
-                        }
+                            Class<?> valueType = field.getFieldType();
 
-                        Class<?> valueType = field.getFieldType();
-
-                        if (valueType.equals(String.class)) {
-                            jsonNode.put(field.getEffectiveStorageName(), value);
-                        } else {
-                            // Convert the String stored in Redis back to the correct type and then put the JSON node
-                            jsonNode.set(field.getEffectiveStorageName(),
-                                mapper.valueToTree(mapper.readValue(value, valueType)));
+                            if (valueType.equals(String.class)) {
+                                jsonNode.put(field.getEffectiveStorageName(), value);
+                            } else {
+                                // Convert the String stored in Redis back to the correct type and then put the JSON node
+                                jsonNode.set(field.getEffectiveStorageName(),
+                                    mapper.valueToTree(mapper.readValue(value, valueType)));
+                            }
                         }
                     }
 

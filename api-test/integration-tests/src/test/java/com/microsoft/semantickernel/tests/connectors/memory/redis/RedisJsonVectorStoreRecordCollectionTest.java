@@ -98,11 +98,11 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
     private List<Hotel> getHotels() {
         return List.of(
-                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), 3.0),
-                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0),
-                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0)
+                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),4.0),
+                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),3.0),
+                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),5.0),
+                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),4.0),
+                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),5.0)
         );
     }
 
@@ -234,7 +234,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         recordCollection.upsertBatchAsync(hotels, null).block();
 
         for (Hotel hotel : hotels) {
-            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), null).block();
+            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), new GetRecordOptions(true)).block();
             assertNotNull(retrievedHotel);
             assertNotNull(retrievedHotel.getDescriptionEmbedding());
             assertEquals(hotel.getId(), retrievedHotel.getId());
@@ -253,7 +253,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         List<String> ids = new ArrayList<>();
         hotels.forEach(hotel -> ids.add(hotel.getId()));
 
-        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(ids, null).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(ids, new GetRecordOptions(true)).block();
 
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());

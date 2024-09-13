@@ -2,7 +2,7 @@ package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
@@ -36,7 +36,7 @@ public class JDBCVectorStoreTest {
     private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(PGVECTOR);
 
     private JDBCVectorStore buildVectorStore(QueryProvider provider) {
-        JDBCVectorStoreQueryProvider queryProvider;
+        SQLVectorStoreQueryProvider queryProvider;
         DataSource dataSource;
 
         switch (provider) {

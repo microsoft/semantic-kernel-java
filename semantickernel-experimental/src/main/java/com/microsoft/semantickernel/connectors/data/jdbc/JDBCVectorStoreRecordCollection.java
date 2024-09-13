@@ -5,12 +5,16 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
@@ -24,13 +28,14 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class JDBCVectorStoreRecordCollection<Record>
-    implements SQLVectorStoreRecordCollection<String, Record> {
+    implements SQLVectorStoreRecordCollection<String, Record>,
+    VectorizedSearch<Record> {
 
     private final String collectionName;
     private final VectorStoreRecordDefinition recordDefinition;
     private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
     private final JDBCVectorStoreRecordCollectionOptions<Record> options;
-    private final JDBCVectorStoreQueryProvider queryProvider;
+    private final SQLVectorStoreQueryProvider queryProvider;
 
     /**
      * Creates a new instance of the {@link JDBCVectorStoreRecordCollection}.
@@ -54,7 +59,7 @@ public class JDBCVectorStoreRecordCollection<Record>
 
         // If the query provider is not provided, set a default one
         if (options.getQueryProvider() == null) {
-            this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
+            this.queryProvider = JDBCVectorStoreQueryProvider.builder()
                 .withDataSource(dataSource)
                 .build();
         } else {
@@ -283,6 +288,28 @@ public class JDBCVectorStoreRecordCollection<Record>
     public Mono<Void> prepareAsync() {
         return Mono.fromRunnable(queryProvider::prepareVectorStore)
             .subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
+        return Mono.fromCallable(
+            () -> {
+                return queryProvider.search(this.collectionName, query, recordDefinition,
+                    vectorStoreRecordMapper);
+            }).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    /**
+     * Vectorized search. This method searches for records that are similar to the given vector.
+     *
+     * @param vector              The vector to search with.
+     * @param vectorSearchOptions The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+        VectorSearchOptions vectorSearchOptions) {
+        return this.searchAsync(VectorSearchQuery.createQuery(vector, vectorSearchOptions));
     }
 
     public static class Builder<Record>

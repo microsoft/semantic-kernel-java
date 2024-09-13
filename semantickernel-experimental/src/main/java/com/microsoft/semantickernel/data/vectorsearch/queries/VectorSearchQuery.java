@@ -7,9 +7,9 @@ import java.util.List;
 
 public class VectorSearchQuery {
     private final VectorSearchQueryType queryType;
-    private final Object searchOptions;
+    private final VectorSearchOptions searchOptions;
 
-    public VectorSearchQuery(VectorSearchQueryType queryType, Object searchOptions) {
+    public VectorSearchQuery(VectorSearchQueryType queryType, VectorSearchOptions searchOptions) {
         this.queryType = queryType;
         this.searchOptions = searchOptions;
     }
@@ -18,7 +18,7 @@ public class VectorSearchQuery {
         return queryType;
     }
 
-    public Object getSearchOptions() {
+    public VectorSearchOptions getSearchOptions() {
         return searchOptions;
     }
 

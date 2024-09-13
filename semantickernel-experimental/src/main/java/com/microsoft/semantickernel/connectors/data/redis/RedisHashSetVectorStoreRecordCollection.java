@@ -189,6 +189,9 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
     private Map<String, String> addDataFieldNames(List<String> result) {
         Map<String, String> dataFields = new HashMap<>();
         for (int i = 0; i < result.size(); i++) {
+            if (result.get(i) == null) {
+                continue;
+            }
             dataFields.put(this.dataFields[i], result.get(i));
         }
         return dataFields;
@@ -228,7 +231,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
         keys.forEach(key -> {
             String redisKey = getRedisKey(key, collectionName);
 
-            if (options == null || options.includeVectors()) {
+            if (options != null && options.isIncludeVectors()) {
                 // Returns Map<String, String> with the fields and values
                 responses.add(new AbstractMap.SimpleEntry<>(key, pipeline.hgetAll(redisKey)));
             } else {
@@ -244,19 +247,21 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
             try {
                 return Mono.just(responses.stream()
                     .map(entry -> {
-                        if (options == null || options.includeVectors()) {
+                        if (options != null && options.isIncludeVectors()) {
                             // Results directly in a Map<String, String>
                             return this.vectorStoreRecordMapper
-                                .mapStorageModeltoRecord(
+                                .mapStorageModelToRecord(
                                     new AbstractMap.SimpleEntry<>(entry.getKey(),
-                                        (Map<String, String>) entry.getValue().get()));
+                                        (Map<String, String>) entry.getValue().get()),
+                                    options);
                         }
 
                         // Results in a List<String> with the values of the fields
                         return this.vectorStoreRecordMapper
-                            .mapStorageModeltoRecord(
+                            .mapStorageModelToRecord(
                                 new AbstractMap.SimpleEntry<>(entry.getKey(),
-                                    addDataFieldNames((List<String>) entry.getValue().get())));
+                                    addDataFieldNames((List<String>) entry.getValue().get())),
+                                options);
                     })
                     .collect(Collectors.toList()));
             } catch (Exception e) {

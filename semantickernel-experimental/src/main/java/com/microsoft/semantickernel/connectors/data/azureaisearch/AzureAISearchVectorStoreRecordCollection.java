@@ -15,7 +15,6 @@ import com.azure.search.documents.models.VectorQuery;
 import com.azure.search.documents.models.VectorizableTextQuery;
 import com.azure.search.documents.models.VectorizedQuery;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizableSearch;
-import com.microsoft.semantickernel.data.vectorsearch.VectorSearch;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
@@ -120,7 +119,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             .map(VectorStoreRecordDataField::getEffectiveStorageName)
             .collect(Collectors.toList()));
 
-        storageNames = recordDefinition.getStorageNames();
+        storageNames = recordDefinition.getFieldStorageNames();
         firstVectorFieldName = recordDefinition.getVectorFields().isEmpty() ? null
             : recordDefinition.getVectorFields().get(0).getName();
     }
@@ -194,7 +193,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         @Nonnull String key, GetRecordOptions options) {
         // If vectors are not requested, only fetch non-vector fields
         List<String> selectedFields = null;
-        if (options != null && !options.includeVectors()) {
+        if (options == null || !options.isIncludeVectors()) {
             selectedFields = Collections.unmodifiableList(nonVectorFields);
         }
 
@@ -204,7 +203,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         // Use custom mapper if available
         if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
             return searchAsyncClient.getDocument(key, SearchDocument.class)
-                .map(this.options.getVectorStoreRecordMapper()::mapStorageModeltoRecord);
+                .map(record -> mapper.mapStorageModelToRecord(record, options));
         }
 
         return searchAsyncClient
@@ -281,7 +280,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         }).collect(Collectors.toList())).then();
     }
 
-    private Mono<List<VectorSearchResult<Record>>> searchAndMapAsync(SearchOptions searchOptions) {
+    private Mono<List<VectorSearchResult<Record>>> searchAndMapAsync(SearchOptions searchOptions,
+        GetRecordOptions getRecordOptions) {
         VectorStoreRecordMapper<Record, SearchDocument> mapper = this.options
             .getVectorStoreRecordMapper();
 
@@ -292,7 +292,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
                 // Use custom mapper if available
                 if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
                     record = mapper
-                        .mapStorageModeltoRecord(response.getDocument(SearchDocument.class));
+                        .mapStorageModelToRecord(response.getDocument(SearchDocument.class),
+                            getRecordOptions);
                 } else {
                     record = response.getDocument(this.options.getRecordClass());
                 }
@@ -313,7 +314,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             throw new SKException("No vector fields defined. Cannot perform vector search");
         }
 
-        VectorSearchOptions options = (VectorSearchOptions) query.getSearchOptions();
+        VectorSearchOptions options = query.getSearchOptions();
         if (options == null) {
             options = VectorSearchOptions.createDefault(firstVectorFieldName);
         }
@@ -354,7 +355,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             searchOptions.setSelect(nonVectorFields.toArray(new String[0]));
         }
 
-        return searchAndMapAsync(searchOptions);
+        return searchAndMapAsync(searchOptions, new GetRecordOptions(options.isIncludeVectors()));
     }
 
     /**

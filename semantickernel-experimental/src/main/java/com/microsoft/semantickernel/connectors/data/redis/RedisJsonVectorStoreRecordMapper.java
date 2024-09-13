@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.util.AbstractMap;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
@@ -18,7 +20,7 @@ public class RedisJsonVectorStoreRecordMapper<Record>
 
     private RedisJsonVectorStoreRecordMapper(
         Function<Record, Entry<String, Object>> toStorageModelMapper,
-        Function<Entry<String, Object>, Record> toRecordMapper) {
+        BiFunction<Entry<String, Object>, GetRecordOptions, Record> toRecordMapper) {
         super(toStorageModelMapper, toRecordMapper);
     }
 
@@ -105,7 +107,7 @@ public class RedisJsonVectorStoreRecordMapper<Record>
                         "Failure to serialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);
                 }
-            }, storageModel -> {
+            }, (storageModel, options) -> {
                 try {
                     ObjectNode jsonNode = objectMapper.valueToTree(storageModel.getValue());
                     // Add the key back to the record

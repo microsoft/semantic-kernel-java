@@ -19,7 +19,7 @@ import java.util.List;
 public class JDBCVectorStore implements SQLVectorStore {
     private final DataSource dataSource;
     private final JDBCVectorStoreOptions options;
-    private final JDBCVectorStoreQueryProvider queryProvider;
+    private final SQLVectorStoreQueryProvider queryProvider;
 
     /**
      * Creates a new instance of the {@link JDBCVectorStore}.
@@ -37,7 +37,7 @@ public class JDBCVectorStore implements SQLVectorStore {
         if (this.options != null && this.options.getQueryProvider() != null) {
             this.queryProvider = this.options.getQueryProvider();
         } else {
-            this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
+            this.queryProvider = JDBCVectorStoreQueryProvider.builder()
                 .withDataSource(dataSource)
                 .build();
         }

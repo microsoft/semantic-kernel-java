@@ -1,13 +1,16 @@
 package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.tests.connectors.memory.Hotel;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -44,7 +47,7 @@ public class JDBCVectorStoreRecordCollectionTest {
     }
 
     private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(QueryProvider provider, @Nonnull String collectionName) {
-        JDBCVectorStoreQueryProvider queryProvider;
+        SQLVectorStoreQueryProvider queryProvider;
         DataSource dataSource;
 
         switch (provider) {
@@ -93,12 +96,19 @@ public class JDBCVectorStoreRecordCollectionTest {
     }
 
     private List<Hotel> getHotels() {
+        ArrayList<Hotel> embeddings = new ArrayList<>();
+
         return List.of(
-                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), 3.0),
-                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0),
-                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), 4.0),
-                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), 5.0)
+                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f),
+                        Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f),4.0),
+                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),
+                        Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),3.0),
+                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f),
+                        Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f),5.0),
+                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f),
+                        Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f),4.0),
+                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f),
+                        Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f),5.0)
         );
     }
 
@@ -305,5 +315,81 @@ public class JDBCVectorStoreRecordCollectionTest {
         for (Hotel hotel : retrievedHotels) {
             assertNotNull(hotel.getDescriptionEmbedding());
         }
+    }
+
+
+    @Test
+    public void postgresExactSearch() {
+        String collectionName = "search";
+        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(QueryProvider.PostgreSQL, collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        // Embeddings similar to the third hotel
+        List<Float> embeddings = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.2f);
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(embeddings, null).block();
+        assertNotNull(results);
+        assertEquals(3, results.size());
+        // The third hotel should be the most similar
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+
+        // Skip the first result
+        results = recordCollection.searchAsync(embeddings, VectorSearchOptions.builder().withOffset(1).withLimit(-100).build()).block();
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        // The first hotel should be the most similar
+        assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
+    }
+
+    @Test
+    public void postgresApproximateSearch() {
+        String collectionName = "searchWithIndex";
+        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(QueryProvider.PostgreSQL, collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions options = VectorSearchOptions.builder()
+            .withVectorFieldName("indexedDescriptionEmbedding")
+            .withLimit(5)
+            .build();
+
+        // Embeddings similar to the third hotel
+        List<Float> embeddings = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.2f);
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(embeddings, options).block();
+        assertNotNull(results);
+        assertEquals(5, results.size());
+        // The third hotel should be the most similar
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+    }
+
+    @Test
+    public void searchIncludeAndNotIncludeVectors() {
+        String collectionName = "searchIncludeAndNotIncludeVectors";
+        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(QueryProvider.PostgreSQL, collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        // Embeddings similar to the third hotel
+        List<Float> embeddings = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.2f);
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(embeddings, null).block();
+        assertNotNull(results);
+        assertEquals(3, results.size());
+        // The third hotel should be the most similar
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertNull(results.get(0).getRecord().getDescriptionEmbedding());
+
+        VectorSearchOptions options = VectorSearchOptions.builder()
+            .withIncludeVectors(true)
+            .build();
+
+        results = recordCollection.searchAsync(embeddings, options).block();
+        assertNotNull(results);
+        assertEquals(3, results.size());
+        // The third hotel should be the most similar
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertNotNull(results.get(0).getRecord().getDescriptionEmbedding());
     }
 }
