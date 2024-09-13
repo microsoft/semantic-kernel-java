@@ -446,7 +446,7 @@ public class JDBCVectorStoreQueryProvider
             List<Record> records = new ArrayList<>();
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                records.add(mapper.mapStorageModeltoRecord(resultSet, options));
+                records.add(mapper.mapStorageModelToRecord(resultSet, options));
             }
 
             return Collections.unmodifiableList(records);
