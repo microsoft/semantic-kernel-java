@@ -203,7 +203,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         // Use custom mapper if available
         if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
             return searchAsyncClient.getDocument(key, SearchDocument.class)
-                .map(record -> mapper.mapStorageModeltoRecord(record, options));
+                .map(record -> mapper.mapStorageModelToRecord(record, options));
         }
 
         return searchAsyncClient
@@ -292,7 +292,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
                 // Use custom mapper if available
                 if (mapper != null && mapper.getStorageModelToRecordMapper() != null) {
                     record = mapper
-                        .mapStorageModeltoRecord(response.getDocument(SearchDocument.class),
+                        .mapStorageModelToRecord(response.getDocument(SearchDocument.class),
                             getRecordOptions);
                 } else {
                     record = response.getDocument(this.options.getRecordClass());

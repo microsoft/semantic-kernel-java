@@ -66,7 +66,7 @@ public class VectorStoreRecordMapper<Record, StorageModel> {
      * @param storageModel the storage model to convert
      * @return the record
      */
-    public Record mapStorageModeltoRecord(StorageModel storageModel, GetRecordOptions options) {
+    public Record mapStorageModelToRecord(StorageModel storageModel, GetRecordOptions options) {
         return getStorageModelToRecordMapper().apply(storageModel, options);
     }
 }

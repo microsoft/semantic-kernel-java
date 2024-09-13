@@ -391,7 +391,7 @@ public class PostgreSQLVectorStoreQueryProvider extends
 
                 while (resultSet.next()) {
                     records.add(new VectorSearchResult<>(
-                        mapper.mapStorageModeltoRecord(resultSet,
+                        mapper.mapStorageModelToRecord(resultSet,
                             new GetRecordOptions(options.isIncludeVectors())),
                         resultSet.getDouble("score")));
                 }

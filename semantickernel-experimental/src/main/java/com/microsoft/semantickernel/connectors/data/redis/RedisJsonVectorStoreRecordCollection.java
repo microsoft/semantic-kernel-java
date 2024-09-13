@@ -233,7 +233,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
                 }
 
                 return Mono.just(this.vectorStoreRecordMapper
-                    .mapStorageModeltoRecord(new SimpleEntry<>(key, jsonNode), options));
+                    .mapStorageModelToRecord(new SimpleEntry<>(key, jsonNode), options));
             } catch (Exception e) {
                 return Mono.error(e);
             }
@@ -280,7 +280,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
                             jsonNode = removeRedisPathPrefix((JSONObject) value);
                         }
                         return this.vectorStoreRecordMapper
-                            .mapStorageModeltoRecord(new SimpleEntry<>(entry.getKey(), jsonNode),
+                            .mapStorageModelToRecord(new SimpleEntry<>(entry.getKey(), jsonNode),
                                 options);
                     })
                     .collect(Collectors.toList()));
