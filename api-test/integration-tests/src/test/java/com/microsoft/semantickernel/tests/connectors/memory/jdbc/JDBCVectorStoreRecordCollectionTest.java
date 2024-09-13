@@ -335,16 +335,27 @@ public class JDBCVectorStoreRecordCollectionTest {
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
 
+        VectorSearchOptions options = VectorSearchOptions.builder()
+            .withVectorFieldName(embeddingName)
+            .withLimit(3)
+            .build();
+
         // Embeddings similar to the third hotel
         List<Float> embeddings = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.2f);
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(embeddings, null).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(embeddings, options).block();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
         assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
 
+        options = VectorSearchOptions.builder()
+            .withVectorFieldName(embeddingName)
+            .withOffset(1)
+            .withLimit(-100)
+            .build();
+
         // Skip the first result
-        results = recordCollection.searchAsync(embeddings, VectorSearchOptions.builder().withOffset(1).withLimit(-100).build()).block();
+        results = recordCollection.searchAsync(embeddings, options).block();
         assertNotNull(results);
         assertEquals(1, results.size());
         // The first hotel should be the most similar
