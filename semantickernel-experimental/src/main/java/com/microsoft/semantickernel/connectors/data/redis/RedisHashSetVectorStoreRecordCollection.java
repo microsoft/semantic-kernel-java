@@ -250,7 +250,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
                         if (options != null && options.isIncludeVectors()) {
                             // Results directly in a Map<String, String>
                             return this.vectorStoreRecordMapper
-                                .mapStorageModeltoRecord(
+                                .mapStorageModelToRecord(
                                     new AbstractMap.SimpleEntry<>(entry.getKey(),
                                         (Map<String, String>) entry.getValue().get()),
                                     options);
@@ -258,7 +258,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
 
                         // Results in a List<String> with the values of the fields
                         return this.vectorStoreRecordMapper
-                            .mapStorageModeltoRecord(
+                            .mapStorageModelToRecord(
                                 new AbstractMap.SimpleEntry<>(entry.getKey(),
                                     addDataFieldNames((List<String>) entry.getValue().get())),
                                 options);
