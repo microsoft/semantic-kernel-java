@@ -33,11 +33,11 @@ public class RedisVectorStoreCollectionCreateMapping {
     private static String getAlgorithmMetric(
         VectorStoreRecordVectorField vectorField) {
         if (vectorField.getDistanceFunction() == null) {
-            return RedisVectorDistanceMetric.COSINE;
+            return RedisVectorDistanceMetric.EUCLIDEAN;
         }
 
         switch (vectorField.getDistanceFunction()) {
-            case COSINE_SIMILARITY:
+            case COSINE_DISTANCE:
                 return RedisVectorDistanceMetric.COSINE;
             case DOT_PRODUCT:
                 return RedisVectorDistanceMetric.DOT_PRODUCT;
@@ -134,7 +134,7 @@ public class RedisVectorStoreCollectionCreateMapping {
     static class RedisVectorDistanceMetric {
         public static final String EUCLIDEAN = "L2";
         public static final String DOT_PRODUCT = "IP";
-        public static final String COSINE = "COSINE";
+        public static final String COSINE = "COSINE"; // Cosine distance
     }
 
 }

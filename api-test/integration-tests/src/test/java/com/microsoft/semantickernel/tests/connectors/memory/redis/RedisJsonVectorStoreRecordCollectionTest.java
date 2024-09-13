@@ -70,10 +70,28 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .withFieldType(String.class)
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
-                .withName("descriptionEmbedding")
-                .withStorageName("summaryEmbedding")
+                .withName("euclidean")
+                .withStorageName("summaryEmbedding1")
                 .withFieldType(List.class)
-                .withDimensions(768)
+                .withDimensions(8)
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("cosineDistance")
+                .withStorageName("summaryEmbedding2")
+                .withFieldType(List.class)
+                .withDimensions(8)
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("dotProduct")
+                .withStorageName("summaryEmbedding3")
+                .withFieldType(List.class)
+                .withDimensions(8)
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("indexedEuclidean")
+                .withStorageName("indexedSummaryEmbedding")
+                .withFieldType(List.class)
+                .withDimensions(8)
                 .build());
         fields.add(VectorStoreRecordDataField.builder()
                 .withName("rating")
