@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreRecordCollectionSearchMapping;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
@@ -369,22 +370,35 @@ public class PostgreSQLVectorStoreQueryProvider extends
                     "Distance function is required for vector field: " + vectorField.getName());
             }
 
+            String filter = SQLVectorStoreRecordCollectionSearchMapping.buildFilter(
+                options.getBasicVectorSearchFilter(),
+                recordDefinition);
+            List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
+                .getFilterParameters(options.getBasicVectorSearchFilter());
+
+            String filterClause = filter.isEmpty() ? "" : "WHERE " + filter;
             String searchQuery = formatQuery(
-                "SELECT %s, %s %s ?::vector AS score FROM %s ORDER BY score LIMIT ? OFFSET ?",
+                "SELECT %s, %s %s ?::vector AS score FROM %s %s ORDER BY score LIMIT ? OFFSET ?",
                 getQueryColumnsFromFields(
                     options.isIncludeVectors() ? recordDefinition.getAllFields()
                         : recordDefinition.getNonVectorFields()),
                 validateSQLidentifier(vectorField.getEffectiveStorageName()),
                 distanceFunction == null ? PostgreSQLVectorDistanceFunction.L2.getOperator()
                     : distanceFunction.getOperator(),
-                getCollectionTableName(collectionName));
+                getCollectionTableName(collectionName),
+                filterClause);
 
             try (Connection connection = dataSource.getConnection();
                 PreparedStatement statement = connection.prepareStatement(searchQuery)) {
-                statement.setString(1,
+                int parameterIndex = 1;
+
+                statement.setString(parameterIndex++,
                     objectMapper.writeValueAsString(vectorizedSearchQuery.getVector()));
-                statement.setInt(2, options.getLimit());
-                statement.setInt(3, options.getOffset());
+                for (Object parameter : parameters) {
+                    statement.setObject(parameterIndex++, parameter);
+                }
+                statement.setInt(parameterIndex++, options.getLimit());
+                statement.setInt(parameterIndex, options.getOffset());
 
                 List<VectorSearchResult<Record>> records = new ArrayList<>();
                 ResultSet resultSet = statement.executeQuery();

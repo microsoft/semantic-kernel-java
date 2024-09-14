@@ -2,8 +2,7 @@
 package com.microsoft.semantickernel.data.vectorstorage.options;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.filtering.BasicVectorSearchFilter;
-import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 
 import javax.annotation.Nullable;
 
@@ -23,16 +22,16 @@ public class VectorSearchOptions {
     }
 
     @Nullable
-    private final BasicVectorSearchFilter basicVectorSearchFilter;
+    private final VectorSearchFilter vectorSearchFilter;
     @Nullable
     private final String vectorFieldName;
     private final int limit;
     private final int offset;
     private final boolean includeVectors;
 
-    public VectorSearchOptions(BasicVectorSearchFilter basicVectorSearchFilter,
+    public VectorSearchOptions(VectorSearchFilter vectorSearchFilter,
         String vectorFieldName, int limit, int offset, boolean includeVectors) {
-        this.basicVectorSearchFilter = basicVectorSearchFilter;
+        this.vectorSearchFilter = vectorSearchFilter;
         this.vectorFieldName = vectorFieldName;
         this.limit = Math.max(1, limit);
         this.offset = Math.max(0, offset);
@@ -45,8 +44,8 @@ public class VectorSearchOptions {
      * @return The basic vector search filter.
      */
     @Nullable
-    public BasicVectorSearchFilter getBasicVectorSearchFilter() {
-        return basicVectorSearchFilter;
+    public VectorSearchFilter getBasicVectorSearchFilter() {
+        return vectorSearchFilter;
     }
 
     /**
@@ -96,7 +95,7 @@ public class VectorSearchOptions {
     }
 
     public static class Builder implements SemanticKernelBuilder<VectorSearchOptions> {
-        private BasicVectorSearchFilter basicVectorSearchFilter;
+        private VectorSearchFilter vectorSearchFilter;
         private String vectorFieldName;
         private int limit;
         private int offset;
@@ -107,8 +106,8 @@ public class VectorSearchOptions {
         }
 
         public Builder withBasicVectorSearchFilter(
-            BasicVectorSearchFilter basicVectorSearchFilter) {
-            this.basicVectorSearchFilter = basicVectorSearchFilter;
+            VectorSearchFilter vectorSearchFilter) {
+            this.vectorSearchFilter = vectorSearchFilter;
             return this;
         }
 
@@ -134,7 +133,7 @@ public class VectorSearchOptions {
 
         @Override
         public VectorSearchOptions build() {
-            return new VectorSearchOptions(basicVectorSearchFilter, vectorFieldName, limit, offset,
+            return new VectorSearchOptions(vectorSearchFilter, vectorFieldName, limit, offset,
                 includeVectors);
         }
     }

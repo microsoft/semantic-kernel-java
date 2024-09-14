@@ -1,24 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.filtering;
+package com.microsoft.semantickernel.data.vectorsearch;
+
+import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
+import com.microsoft.semantickernel.data.filter.FilterClause;
+import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class BasicVectorSearchFilter {
+public class VectorSearchFilter {
 
     /**
      * Creates a new instance of the BasicVectorSearchFilter class.
      *
      * @return A new instance of the BasicVectorSearchFilter class.
      */
-    public static BasicVectorSearchFilter createDefault() {
-        return new BasicVectorSearchFilter();
+    public static VectorSearchFilter createDefault() {
+        return new VectorSearchFilter();
     }
 
     private final List<FilterClause> filterClauses;
 
-    public BasicVectorSearchFilter() {
+    public VectorSearchFilter() {
         this(new ArrayList<>());
     }
 
@@ -27,7 +31,7 @@ public class BasicVectorSearchFilter {
      *
      * @param filterClauses The filter clauses.
      */
-    public BasicVectorSearchFilter(List<FilterClause> filterClauses) {
+    public VectorSearchFilter(List<FilterClause> filterClauses) {
         this.filterClauses = Collections.unmodifiableList(filterClauses);
     }
 
@@ -48,29 +52,30 @@ public class BasicVectorSearchFilter {
         private final List<FilterClause> filterClauses = new ArrayList<>();
 
         /**
-         * Adds an equality filter clause to the filter.
+         * Adds an EqualToFilterClause to the filter.
          *
-         * @param equalityFilterClause The equality filter clause to add.
+         * @param equalToFilterClause The EqualToFilterClause to add.
          * @return The builder.
          */
-        public Builder equality(EqualityFilterClause equalityFilterClause) {
-            filterClauses.add(equalityFilterClause);
+        public Builder withEqualToFilterClause(EqualToFilterClause equalToFilterClause) {
+            filterClauses.add(equalToFilterClause);
             return this;
         }
 
         /**
-         * Adds a tag list contains filter clause to the filter.
+         * Adds an AnyTagEqualToFilterClause to the filter.
          *
-         * @param tagListContainsFilterClause The tag list contains filter clause to add.
+         * @param anyTagEqualToFilterClause The AnyTagEqualToFilterClause clause to add.
          * @return The builder.
          */
-        public Builder tagListContains(TagListContainsFilterClause tagListContainsFilterClause) {
-            filterClauses.add(tagListContainsFilterClause);
+        public Builder withAnyTagEqualToFilterClause(
+            AnyTagEqualToFilterClause anyTagEqualToFilterClause) {
+            filterClauses.add(anyTagEqualToFilterClause);
             return this;
         }
 
-        public BasicVectorSearchFilter build() {
-            return new BasicVectorSearchFilter(filterClauses);
+        public VectorSearchFilter build() {
+            return new VectorSearchFilter(filterClauses);
         }
     }
 }

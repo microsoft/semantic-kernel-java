@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.filtering;
+package com.microsoft.semantickernel.data.filter;
 
-public abstract class TagListContainsFilterClause implements FilterClause {
+public abstract class AnyTagEqualToFilterClause implements FilterClause {
 
     private final String fieldName;
     private final Object value;
 
-    public TagListContainsFilterClause(String fieldName, Object value) {
+    public AnyTagEqualToFilterClause(String fieldName, Object value) {
         this.fieldName = fieldName;
         this.value = value;
     }

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.microsoft.semantickernel.data.filter.FilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
@@ -427,9 +428,10 @@ public class JDBCVectorStoreQueryProvider
         }
     }
 
-    protected <Record> List<Record> getAllRecords(String collectionName,
+    protected <Record> List<Record> getRecordsWithFilter(String collectionName,
         VectorStoreRecordDefinition recordDefinition,
-        VectorStoreRecordMapper<Record, ResultSet> mapper, GetRecordOptions options) {
+        VectorStoreRecordMapper<Record, ResultSet> mapper, GetRecordOptions options, String filter,
+        List<Object> parameters) {
         List<VectorStoreRecordField> fields;
         if (options.isIncludeVectors()) {
             fields = recordDefinition.getAllFields();
@@ -437,12 +439,20 @@ public class JDBCVectorStoreQueryProvider
             fields = recordDefinition.getNonVectorFields();
         }
 
-        String selectQuery = formatQuery("SELECT %s FROM %s",
+        String filterClause = filter == null || filter.isEmpty() ? "" : "WHERE " + filter;
+        String selectQuery = formatQuery("SELECT %s FROM %s %s",
             getQueryColumnsFromFields(fields),
-            getCollectionTableName(collectionName));
+            getCollectionTableName(collectionName),
+            filterClause);
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(selectQuery)) {
+            if (parameters != null) {
+                for (int i = 0; i < parameters.size(); ++i) {
+                    statement.setObject(i + 1, parameters.get(i));
+                }
+            }
+
             List<Record> records = new ArrayList<>();
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -491,8 +501,13 @@ public class JDBCVectorStoreQueryProvider
                 : (VectorStoreRecordVectorField) recordDefinition
                     .getField(options.getVectorFieldName());
 
-            List<Record> records = getAllRecords(collectionName, recordDefinition, mapper,
-                new GetRecordOptions(true));
+            String filter = SQLVectorStoreRecordCollectionSearchMapping
+                .buildFilter(options.getBasicVectorSearchFilter(), recordDefinition);
+            List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
+                .getFilterParameters(options.getBasicVectorSearchFilter());
+
+            List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
+                new GetRecordOptions(true), filter, parameters);
             List<VectorSearchResult<Record>> results = new ArrayList<>();
 
             DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
