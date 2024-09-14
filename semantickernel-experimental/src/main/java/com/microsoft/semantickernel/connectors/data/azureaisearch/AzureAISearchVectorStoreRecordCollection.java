@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
@@ -337,7 +336,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         }
 
         String filter = AzureAISearchVectorStoreCollectionSearchMapping
-            .buildFilterString(options.getBasicVectorSearchFilter(), recordDefinition);
+            .buildFilterString(options.getVectorSearchFilter(), recordDefinition);
 
         SearchOptions searchOptions = new SearchOptions()
             .setFilter(filter)

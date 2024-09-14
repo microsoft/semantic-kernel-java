@@ -12,9 +12,9 @@ import java.util.List;
 public class VectorSearchFilter {
 
     /**
-     * Creates a new instance of the BasicVectorSearchFilter class.
+     * Creates a new instance of the VectorSearchFilter class.
      *
-     * @return A new instance of the BasicVectorSearchFilter class.
+     * @return A new instance of the VectorSearchFilter class.
      */
     public static VectorSearchFilter createDefault() {
         return new VectorSearchFilter();
@@ -23,11 +23,11 @@ public class VectorSearchFilter {
     private final List<FilterClause> filterClauses;
 
     public VectorSearchFilter() {
-        this(new ArrayList<>());
+        this(Collections.emptyList());
     }
 
     /**
-     * Creates a new instance of the BasicVectorSearchFilter class.
+     * Creates a new instance of the VectorSearchFilter class.
      *
      * @param filterClauses The filter clauses.
      */

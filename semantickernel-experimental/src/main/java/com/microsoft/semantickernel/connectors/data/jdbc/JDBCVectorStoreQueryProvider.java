@@ -4,7 +4,6 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.microsoft.semantickernel.data.filter.FilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
@@ -19,7 +18,6 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
-import com.microsoft.semantickernel.services.OrderedAIServiceSelector;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -502,9 +500,9 @@ public class JDBCVectorStoreQueryProvider
                     .getField(options.getVectorFieldName());
 
             String filter = SQLVectorStoreRecordCollectionSearchMapping
-                .buildFilter(options.getBasicVectorSearchFilter(), recordDefinition);
+                .buildFilter(options.getVectorSearchFilter(), recordDefinition);
             List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
-                .getFilterParameters(options.getBasicVectorSearchFilter());
+                .getFilterParameters(options.getVectorSearchFilter());
 
             List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
                 new GetRecordOptions(true), filter, parameters);

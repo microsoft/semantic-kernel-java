@@ -371,10 +371,10 @@ public class PostgreSQLVectorStoreQueryProvider extends
             }
 
             String filter = SQLVectorStoreRecordCollectionSearchMapping.buildFilter(
-                options.getBasicVectorSearchFilter(),
+                options.getVectorSearchFilter(),
                 recordDefinition);
             List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
-                .getFilterParameters(options.getBasicVectorSearchFilter());
+                .getFilterParameters(options.getVectorSearchFilter());
 
             String filterClause = filter.isEmpty() ? "" : "WHERE " + filter;
             String searchQuery = formatQuery(

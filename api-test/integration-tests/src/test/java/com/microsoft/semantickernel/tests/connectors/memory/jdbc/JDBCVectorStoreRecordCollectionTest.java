@@ -406,7 +406,7 @@ public class JDBCVectorStoreRecordCollectionTest {
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName(embeddingName)
             .withLimit(3)
-            .withBasicVectorSearchFilter(
+            .withVectorSearchFilter(
                     VectorSearchFilter.builder().withEqualToFilterClause(new SQLEqualToFilterClause("rating", 4.0)).build())
             .build();
 

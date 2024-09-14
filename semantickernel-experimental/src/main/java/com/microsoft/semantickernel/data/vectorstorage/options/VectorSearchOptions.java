@@ -39,12 +39,12 @@ public class VectorSearchOptions {
     }
 
     /**
-     * Gets the basic vector search filter.
+     * Gets the vector search filter.
      *
-     * @return The basic vector search filter.
+     * @return The vector search filter.
      */
     @Nullable
-    public VectorSearchFilter getBasicVectorSearchFilter() {
+    public VectorSearchFilter getVectorSearchFilter() {
         return vectorSearchFilter;
     }
 
@@ -105,7 +105,7 @@ public class VectorSearchOptions {
             this.limit = DEFAULT_RESULT_LIMIT;
         }
 
-        public Builder withBasicVectorSearchFilter(
+        public Builder withVectorSearchFilter(
             VectorSearchFilter vectorSearchFilter) {
             this.vectorSearchFilter = vectorSearchFilter;
             return this;
