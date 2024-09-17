@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
@@ -175,6 +176,8 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Record> getAsync(String key, GetRecordOptions options) {
+        Objects.requireNonNull(key, "key is required");
+
         return this.getBatchAsync(Collections.singletonList(key), options)
             .mapNotNull(records -> {
                 if (records.isEmpty()) {
@@ -193,12 +196,13 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @throws SKException if the operation fails
      */
     @Override
-    public Mono<List<Record>> getBatchAsync(List<String> keys, GetRecordOptions options) {
+    public Mono<List<Record>> getBatchAsync(@Nonnull List<String> keys, GetRecordOptions options) {
+        Objects.requireNonNull(keys, "keys is required");
+
         return Mono.fromCallable(
-            () -> {
-                return queryProvider.getRecords(this.collectionName, keys, recordDefinition,
-                    vectorStoreRecordMapper, options);
-            }).subscribeOn(Schedulers.boundedElastic());
+            () -> queryProvider.getRecords(this.collectionName, keys, recordDefinition,
+                vectorStoreRecordMapper, options))
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
     protected String getKeyFromRecord(Record data) {
@@ -222,6 +226,8 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
+        Objects.requireNonNull(data, "data is required");
+
         return this.upsertBatchAsync(Collections.singletonList(data), options)
             .mapNotNull(keys -> {
                 if (keys.isEmpty()) {
@@ -241,6 +247,8 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<List<String>> upsertBatchAsync(List<Record> data, UpsertRecordOptions options) {
+        Objects.requireNonNull(data, "data is required");
+
         return Mono.fromCallable(
             () -> {
                 queryProvider.upsertRecords(this.collectionName, data, recordDefinition, options);
@@ -293,10 +301,9 @@ public class JDBCVectorStoreRecordCollection<Record>
     @Override
     public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
         return Mono.fromCallable(
-            () -> {
-                return queryProvider.search(this.collectionName, query, recordDefinition,
-                    vectorStoreRecordMapper);
-            }).subscribeOn(Schedulers.boundedElastic());
+            () -> queryProvider.search(this.collectionName, query, recordDefinition,
+                vectorStoreRecordMapper))
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
     /**

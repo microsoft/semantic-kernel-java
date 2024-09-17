@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.data.azureaisearch;
+package com.microsoft.semantickernel.connectors.data.azureaisearch.filter;
 
-import com.microsoft.semantickernel.data.filtering.TagListContainsFilterClause;
+import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
 
-public class AzureAISearchTagListContainsFilterClause extends TagListContainsFilterClause {
+public class AzureAISearchAnyTagEqualToFilterClause extends AnyTagEqualToFilterClause {
 
     /**
      * Initializes a new instance of the AzureAISearchTagListContainsFilterClause class.
@@ -11,7 +11,7 @@ public class AzureAISearchTagListContainsFilterClause extends TagListContainsFil
      * @param fieldName The field name to filter on.
      * @param value The value.
      */
-    public AzureAISearchTagListContainsFilterClause(String fieldName, Object value) {
+    public AzureAISearchAnyTagEqualToFilterClause(String fieldName, Object value) {
         super(fieldName, value);
     }
 

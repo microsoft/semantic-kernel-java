@@ -70,10 +70,28 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .withFieldType(String.class)
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
-                .withName("descriptionEmbedding")
-                .withStorageName("summaryEmbedding")
+                .withName("euclidean")
+                .withStorageName("summaryEmbedding1")
                 .withFieldType(List.class)
-                .withDimensions(768)
+                .withDimensions(8)
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("cosineDistance")
+                .withStorageName("summaryEmbedding2")
+                .withFieldType(List.class)
+                .withDimensions(8)
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("dotProduct")
+                .withStorageName("summaryEmbedding3")
+                .withFieldType(List.class)
+                .withDimensions(8)
+                .build());
+        fields.add(VectorStoreRecordVectorField.builder()
+                .withName("indexedEuclidean")
+                .withStorageName("indexedSummaryEmbedding")
+                .withFieldType(List.class)
+                .withDimensions(8)
                 .build());
         fields.add(VectorStoreRecordDataField.builder()
                 .withName("rating")
@@ -98,11 +116,11 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
     private List<Hotel> getHotels() {
         return List.of(
-                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),4.0),
-                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),3.0),
-                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),5.0),
-                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),4.0),
-                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), Arrays.asList(1.0f, 2.0f, 3.0f),5.0)
+                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(1.0f, 2.0f, 3.0f), null, null, null, 4.0),
+                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(1.0f, 2.0f, 3.0f), null, null, null, 3.0),
+                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(1.0f, 2.0f, 3.0f), null, null, null, 2.0),
+                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(1.0f, 2.0f, 3.0f), null, null, null, 4.0),
+                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(1.0f, 2.0f, 3.0f), null, null, null, 5.0)
         );
     }
 
@@ -236,7 +254,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         for (Hotel hotel : hotels) {
             Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), new GetRecordOptions(true)).block();
             assertNotNull(retrievedHotel);
-            assertNotNull(retrievedHotel.getDescriptionEmbedding());
+            assertNotNull(retrievedHotel.getEuclidean());
             assertEquals(hotel.getId(), retrievedHotel.getId());
             assertEquals(hotel.getDescription(), retrievedHotel.getDescription());
         }
@@ -260,7 +278,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         for (int i = 0; i < hotels.size(); i++) {
             assertEquals(hotels.get(i).getId(), retrievedHotels.get(i).getId());
             assertEquals(hotels.get(i).getDescription(), retrievedHotels.get(i).getDescription());
-            assertNotNull(retrievedHotels.get(i).getDescriptionEmbedding());
+            assertNotNull(retrievedHotels.get(i).getEuclidean());
         }
     }
 
@@ -276,7 +294,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         for (Hotel hotel : hotels) {
             Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), getRecordOptions).block();
             assertNotNull(retrievedHotel);
-            assertNull(retrievedHotel.getDescriptionEmbedding());
+            assertNull(retrievedHotel.getEuclidean());
             assertEquals(hotel.getId(), retrievedHotel.getId());
             assertEquals(hotel.getDescription(), retrievedHotel.getDescription());
         }
@@ -301,7 +319,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         for (int i = 0; i < hotels.size(); i++) {
             assertEquals(hotels.get(i).getId(), retrievedHotels.get(i).getId());
             assertEquals(hotels.get(i).getDescription(), retrievedHotels.get(i).getDescription());
-            assertNull(retrievedHotels.get(i).getDescriptionEmbedding());
+            assertNull(retrievedHotels.get(i).getEuclidean());
         }
     }
 }

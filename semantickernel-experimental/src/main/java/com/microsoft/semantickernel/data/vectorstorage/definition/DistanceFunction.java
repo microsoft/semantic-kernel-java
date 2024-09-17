@@ -5,15 +5,19 @@ public enum DistanceFunction {
     /**
      * Cosine (angular) similarity function.
      */
-    COSINE("cosine"),
+    COSINE_SIMILARITY("cosineSimilarity"),
+    /**
+     * Cosine distance function. 1 - cosine similarity.
+     */
+    COSINE_DISTANCE("cosineDistance"),
     /**
      * Dot product between two vectors.
      */
     DOT_PRODUCT("dotProduct"),
     /**
-     * Euclidean distance function. Also known as L2 norm.
+     * Euclidean distance function. Also known as L2 distance.
      */
-    EUCLIDEAN("euclidean");
+    EUCLIDEAN_DISTANCE("euclidean");
 
     private final String value;
 

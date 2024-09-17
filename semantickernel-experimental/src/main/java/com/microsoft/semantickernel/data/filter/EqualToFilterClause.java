@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.filtering;
+package com.microsoft.semantickernel.data.filter;
 
-public abstract class EqualityFilterClause implements FilterClause {
+public abstract class EqualToFilterClause implements FilterClause {
 
     private final String fieldName;
     private final Object value;
 
-    public EqualityFilterClause(String fieldName, Object value) {
+    public EqualToFilterClause(String fieldName, Object value) {
         this.fieldName = fieldName;
         this.value = value;
     }

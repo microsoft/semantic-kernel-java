@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
@@ -84,7 +83,6 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
     // List of non-vector fields. Used to fetch only non-vector fields when vectors are not requested
     private final List<String> nonVectorFields = new ArrayList<>();
-    private final Map<String, String> storageNames;
     private final String firstVectorFieldName;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -119,7 +117,6 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             .map(VectorStoreRecordDataField::getEffectiveStorageName)
             .collect(Collectors.toList()));
 
-        storageNames = recordDefinition.getFieldStorageNames();
         firstVectorFieldName = recordDefinition.getVectorFields().isEmpty() ? null
             : recordDefinition.getVectorFields().get(0).getName();
     }
@@ -323,25 +320,23 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         if (query instanceof VectorizedSearchQuery) {
             vectorQueries.add(new VectorizedQuery(((VectorizedSearchQuery) query).getVector())
-                .setFields(
-                    storageNames
-                        .get(options.getVectorFieldName() != null ? options.getVectorFieldName()
-                            : firstVectorFieldName))
+                .setFields(recordDefinition.getField(options.getVectorFieldName() != null
+                    ? options.getVectorFieldName()
+                    : firstVectorFieldName).getEffectiveStorageName())
                 .setKNearestNeighborsCount(options.getLimit()));
         } else if (query instanceof VectorizableTextSearchQuery) {
             vectorQueries
                 .add(new VectorizableTextQuery(((VectorizableTextSearchQuery) query).getQueryText())
-                    .setFields(
-                        storageNames
-                            .get(options.getVectorFieldName() != null ? options.getVectorFieldName()
-                                : firstVectorFieldName))
+                    .setFields(recordDefinition.getField(options.getVectorFieldName() != null
+                        ? options.getVectorFieldName()
+                        : firstVectorFieldName).getEffectiveStorageName())
                     .setKNearestNeighborsCount(options.getLimit()));
         } else {
             throw new SKException("Unsupported query type: " + query.getQueryType());
         }
 
         String filter = AzureAISearchVectorStoreCollectionSearchMapping
-            .buildFilterString(options.getBasicVectorSearchFilter(), storageNames);
+            .buildFilterString(options.getVectorSearchFilter(), recordDefinition);
 
         SearchOptions searchOptions = new SearchOptions()
             .setFilter(filter)

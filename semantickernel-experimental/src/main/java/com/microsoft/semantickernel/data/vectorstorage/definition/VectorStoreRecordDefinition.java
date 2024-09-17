@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -61,18 +62,25 @@ public class VectorStoreRecordDefinition {
         return nonVectorFields;
     }
 
-    public VectorStoreRecordField getField(String fieldName) {
-        return allFieldsMap.get(fieldName);
+    /**
+     * Checks if the record definition contains a field with the specified name.
+     * @param fieldName The name of the field to check.
+     * @return boolean
+     */
+    public boolean containsField(String fieldName) {
+        return allFieldsMap.containsKey(fieldName);
     }
 
     /**
-     * Gets the storage names of the fields in the record definition.
-     * @return Map of field names to storage names
+     * Gets the field with the specified name.
+     * @param fieldName The name of the field to get.
+     * @return VectorStoreRecordField
      */
-    public Map<String, String> getFieldStorageNames() {
-        return allFields.stream()
-            .collect(Collectors.toMap(VectorStoreRecordField::getName,
-                VectorStoreRecordField::getEffectiveStorageName));
+    public VectorStoreRecordField getField(String fieldName) {
+        if (!allFieldsMap.containsKey(fieldName)) {
+            throw new SKException("Field not found: " + fieldName);
+        }
+        return allFieldsMap.get(fieldName);
     }
 
     private VectorStoreRecordDefinition(

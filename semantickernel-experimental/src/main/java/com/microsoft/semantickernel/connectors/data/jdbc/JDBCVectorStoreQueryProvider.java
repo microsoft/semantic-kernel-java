@@ -1,16 +1,26 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
@@ -22,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +41,8 @@ import java.util.stream.Stream;
 
 public class JDBCVectorStoreQueryProvider
     implements SQLVectorStoreQueryProvider {
+    private static final Logger LOGGER = LoggerFactory
+        .getLogger(JDBCVectorStoreQueryProvider.class);
 
     private final Map<Class<?>, String> supportedKeyTypes;
     private final Map<Class<?>, String> supportedDataTypes;
@@ -234,6 +247,14 @@ public class JDBCVectorStoreQueryProvider
     public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
 
+        // No approximate search is supported in JDBCVectorStoreQueryProvider
+        if (recordDefinition.getVectorFields().stream()
+            .anyMatch(field -> field.getIndexKind() != null)) {
+            LOGGER
+                .warn(String.format("Indexes are not supported in %s. Ignoring indexKind property.",
+                    this.getClass().getName()));
+        }
+
         String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
             + "%s VARCHAR(255) PRIMARY KEY, "
             + "%s, "
@@ -405,22 +426,146 @@ public class JDBCVectorStoreQueryProvider
         }
     }
 
+    protected <Record> List<Record> getRecordsWithFilter(String collectionName,
+        VectorStoreRecordDefinition recordDefinition,
+        VectorStoreRecordMapper<Record, ResultSet> mapper, GetRecordOptions options, String filter,
+        List<Object> parameters) {
+        List<VectorStoreRecordField> fields;
+        if (options.isIncludeVectors()) {
+            fields = recordDefinition.getAllFields();
+        } else {
+            fields = recordDefinition.getNonVectorFields();
+        }
+
+        String filterClause = filter == null || filter.isEmpty() ? "" : "WHERE " + filter;
+        String selectQuery = formatQuery("SELECT %s FROM %s %s",
+            getQueryColumnsFromFields(fields),
+            getCollectionTableName(collectionName),
+            filterClause);
+
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(selectQuery)) {
+            if (parameters != null) {
+                for (int i = 0; i < parameters.size(); ++i) {
+                    statement.setObject(i + 1, parameters.get(i));
+                }
+            }
+
+            List<Record> records = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                records.add(mapper.mapStorageModelToRecord(resultSet, options));
+            }
+
+            return Collections.unmodifiableList(records);
+        } catch (SQLException e) {
+            throw new SKException("Failed to set statement values", e);
+        }
+    }
+
     /**
-     * Searches for records.
+     * Vector search.
+     * Executes a vector search query and returns the results.
+     * The results are mapped to the specified record type using the provided mapper.
+     * The query is executed against the specified collection.
      *
-     * @param collectionName the collection name
-     * @param query the query
-     * @param recordDefinition the record definition
-     * @param mapper the mapper
      * @param <Record> the record type
+     * @param collectionName the collection name
+     * @param query the vectorized search query, containing the vector and search options
+     * @param recordDefinition the record definition
+     * @param mapper the mapper, responsible for mapping the result set to the record type.
      * @return the search results
      */
     @Override
     public <Record> List<VectorSearchResult<Record>> search(String collectionName,
         VectorSearchQuery query, VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
-        throw new UnsupportedOperationException(
-            "Search is not supported. Try with a specific query provider.");
+        if (recordDefinition.getVectorFields().isEmpty()) {
+            throw new SKException("No vector fields defined. Cannot perform vector search");
+        }
+
+        if (query instanceof VectorizedSearchQuery) {
+            VectorizedSearchQuery vectorizedSearchQuery = (VectorizedSearchQuery) query;
+            VectorSearchOptions options = query.getSearchOptions();
+
+            VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
+                .get(0);
+            if (options == null) {
+                options = VectorSearchOptions.createDefault(firstVectorField.getName());
+            }
+
+            VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
+                ? firstVectorField
+                : (VectorStoreRecordVectorField) recordDefinition
+                    .getField(options.getVectorFieldName());
+
+            String filter = SQLVectorStoreRecordCollectionSearchMapping
+                .buildFilter(options.getVectorSearchFilter(), recordDefinition);
+            List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
+                .getFilterParameters(options.getVectorSearchFilter());
+
+            List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
+                new GetRecordOptions(true), filter, parameters);
+            List<VectorSearchResult<Record>> results = new ArrayList<>();
+
+            DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
+                ? DistanceFunction.EUCLIDEAN_DISTANCE
+                : vectorField.getDistanceFunction();
+
+            for (Record record : records) {
+                List<Float> vector;
+                try {
+                    String json = new ObjectMapper().writeValueAsString(record);
+                    ArrayNode arrayNode = (ArrayNode) new ObjectMapper().readTree(json)
+                        .get(vectorField.getEffectiveStorageName());
+
+                    vector = Stream.iterate(0, i -> i + 1)
+                        .limit(arrayNode.size())
+                        .map(i -> arrayNode.get(i).floatValue())
+                        .collect(Collectors.toList());
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+
+                double score;
+                switch (distanceFunction) {
+                    case COSINE_SIMILARITY:
+                        score = VectorOperations.cosineSimilarity(vectorizedSearchQuery.getVector(),
+                            vector);
+                        break;
+                    case COSINE_DISTANCE:
+                        score = VectorOperations.cosineDistance(vectorizedSearchQuery.getVector(),
+                            vector);
+                        break;
+                    case EUCLIDEAN_DISTANCE:
+                        score = VectorOperations
+                            .euclideanDistance(vectorizedSearchQuery.getVector(), vector);
+                        break;
+                    case DOT_PRODUCT:
+                        score = VectorOperations.dot(vectorizedSearchQuery.getVector(), vector);
+                        break;
+                    default:
+                        throw new SKException("Unsupported distance function");
+                }
+
+                results.add(new VectorSearchResult<>(record, score));
+            }
+
+            Comparator<VectorSearchResult<Record>> comparator = Comparator
+                .comparingDouble(VectorSearchResult::getScore);
+            // Higher scores are better
+            if (distanceFunction == DistanceFunction.COSINE_SIMILARITY
+                || distanceFunction == DistanceFunction.DOT_PRODUCT) {
+                comparator = comparator.reversed();
+            }
+            return results.stream()
+                .sorted(comparator)
+                .skip(options.getOffset())
+                .limit(options.getLimit())
+                .collect(Collectors.toList());
+        }
+
+        throw new SKException("Unsupported query type");
     }
 
     /**

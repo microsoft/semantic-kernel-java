@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.services.textembedding;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -58,65 +57,5 @@ public class Embedding {
      */
     public List<Float> getVector() {
         return Collections.unmodifiableList(this.vector);
-    }
-
-    /**
-     * Calculates the dot product of this {@code Embedding} with another.
-     *
-     * @param other The other {@code Embedding} to compute the dot product with
-     * @return The dot product between the {@code Embedding} vectors
-     */
-    public float dot(@Nonnull Embedding other) {
-        Objects.requireNonNull(other);
-        return VectorOperations.dot(this.vector, other.getVector());
-    }
-
-    /**
-     * Calculates the Euclidean length of this vector.
-     *
-     * @return Euclidean length
-     */
-    public float euclideanLength() {
-        return VectorOperations.euclideanLength(this.vector);
-    }
-
-    /**
-     * Calculates the cosine similarity of this vector with another.
-     *
-     * @param other The other vector to compute cosine similarity with.
-     * @return Cosine similarity between vectors
-     */
-    public float cosineSimilarity(@Nonnull Embedding other) {
-        Objects.requireNonNull(other);
-        return VectorOperations.cosineSimilarity(this.vector, other.getVector());
-    }
-
-    /**
-     * Multiply the {@code Embedding} vector by a multiplier.
-     *
-     * @param multiplier The multiplier to multiply the {@code Embedding} vector by
-     * @return A new {@code Embedding} with the vector multiplied by the multiplier
-     */
-    public Embedding multiply(float multiplier) {
-        return new Embedding(VectorOperations.multiply(this.vector, multiplier));
-    }
-
-    /**
-     * Divide the {@code Embedding} vector by a divisor.
-     *
-     * @param divisor The divisor to divide the {@code Embedding} vector by
-     * @return A new {@code Embedding} with the vector divided by the divisor
-     */
-    public Embedding divide(float divisor) {
-        return new Embedding(VectorOperations.divide(this.vector, divisor));
-    }
-
-    /**
-     * Normalizes the underlying vector, such that the Euclidean length is 1.
-     *
-     * @return A new {@code Embedding} with the normalized vector
-     */
-    public Embedding normalize() {
-        return new Embedding(VectorOperations.normalize(this.vector));
     }
 }

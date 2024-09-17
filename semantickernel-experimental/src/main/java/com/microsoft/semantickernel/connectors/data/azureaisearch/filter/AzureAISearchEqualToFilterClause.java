@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.connectors.data.azureaisearch;
+package com.microsoft.semantickernel.connectors.data.azureaisearch.filter;
 
-import com.microsoft.semantickernel.data.filtering.EqualityFilterClause;
+import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class AzureAISearchEqualityFilterClause extends EqualityFilterClause {
+public class AzureAISearchEqualToFilterClause extends EqualToFilterClause {
 
     /**
      * Initializes a new instance of the AzureAISearchEqualityFilterClause class.
@@ -15,7 +15,7 @@ public class AzureAISearchEqualityFilterClause extends EqualityFilterClause {
      * @param fieldName The field name to filter on.
      * @param value The value.
      */
-    public AzureAISearchEqualityFilterClause(String fieldName, Object value) {
+    public AzureAISearchEqualToFilterClause(String fieldName, Object value) {
         super(fieldName, value);
     }
 
