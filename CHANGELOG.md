@@ -2,7 +2,7 @@
 
 - Added support for Json Schema to Open AI Chat Completions
 - Upgraded to openai sdk 1.0.0-beta.11
-- Added convinience method `FunctionInvocation.withResultTypeAutoConversion` which sets the return type and registers a
+- Added convenience method `FunctionInvocation.withResultTypeAutoConversion` which sets the return type and registers a
   type converter based on Jackson for the return type.
 
 ### Bug Fixes
