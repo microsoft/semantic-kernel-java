@@ -1,5 +1,4 @@
 [![Builds](https://github.com/microsoft/semantic-kernel-java/actions/workflows/java-build.yml/badge.svg?branch=main)](https://github.com/microsoft/semantic-kernel-java/actions/workflows/java-build.yml)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.microsoft.semantic-kernel/semantickernel-api)
 [![License: MIT](https://img.shields.io/github/license/microsoft/semantic-kernel)](https://github.com/microsoft/semantic-kernel-java/blob/main/LICENSE)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
