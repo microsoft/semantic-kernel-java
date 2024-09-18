@@ -1,4 +1,4 @@
-package com.microsoft.semantickernel.tests.connectors.memory;
+package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,7 +12,7 @@ public class Hotel {
     @VectorStoreRecordKeyAttribute
     private final String id;
 
-    @VectorStoreRecordDataAttribute
+    @VectorStoreRecordDataAttribute(isFilterable = true)
     private final String name;
 
     @VectorStoreRecordDataAttribute
@@ -33,15 +33,11 @@ public class Hotel {
     @JsonProperty("summaryEmbedding3")
     @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "dotProduct")
     private final List<Float> dotProduct;
-
-    @JsonProperty("indexedSummaryEmbedding")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = "hnsw", distanceFunction = "euclidean")
-    private final List<Float> indexedEuclidean;
     @VectorStoreRecordDataAttribute
     private double rating;
 
     public Hotel() {
-        this(null, null, 0, null, null, null, null, null, 0.0);
+        this(null, null, 0, null, null, null, null, 0.0);
     }
 
     @JsonCreator
@@ -53,7 +49,6 @@ public class Hotel {
             @JsonProperty("summaryEmbedding1") List<Float> euclidean,
             @JsonProperty("summaryEmbedding2") List<Float> cosineDistance,
             @JsonProperty("summaryEmbedding3") List<Float> dotProduct,
-            @JsonProperty("indexedSummaryEmbedding") List<Float> indexedEuclidean,
             @JsonProperty("rating") double rating) {
         this.id = id;
         this.name = name;
@@ -62,7 +57,6 @@ public class Hotel {
         this.euclidean = euclidean;
         this.cosineDistance = euclidean;
         this.dotProduct = euclidean;
-        this.indexedEuclidean = euclidean;
         this.rating = rating;
     }
 
@@ -86,8 +80,12 @@ public class Hotel {
         return euclidean;
     }
 
-    public List<Float> getIndexedEuclidean() {
-        return indexedEuclidean;
+    public List<Float> getCosineDistance() {
+        return cosineDistance;
+    }
+
+    public List<Float> getDotProduct() {
+        return dotProduct;
     }
 
     public double getRating() {

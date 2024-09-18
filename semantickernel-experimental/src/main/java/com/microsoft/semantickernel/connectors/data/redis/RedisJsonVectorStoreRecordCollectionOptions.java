@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.exceptions.SKException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,16 +20,19 @@ public class RedisJsonVectorStoreRecordCollectionOptions<Record>
     @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
+    private final ObjectMapper objectMapper;
 
     private RedisJsonVectorStoreRecordCollectionOptions(
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper,
         @Nullable VectorStoreRecordDefinition recordDefinition,
-        boolean prefixCollectionName) {
+        boolean prefixCollectionName,
+        @Nullable ObjectMapper objectMapper) {
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
         this.recordDefinition = recordDefinition;
         this.prefixCollectionName = prefixCollectionName;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -89,6 +94,15 @@ public class RedisJsonVectorStoreRecordCollectionOptions<Record>
     }
 
     /**
+     * Gets the object mapper.
+     *
+     * @return the object mapper
+     */
+    ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    /**
      * Builder for {@link RedisJsonVectorStoreRecordCollectionOptions}.
      *
      * @param <Record> the record type
@@ -101,6 +115,8 @@ public class RedisJsonVectorStoreRecordCollectionOptions<Record>
         @Nullable
         private VectorStoreRecordDefinition recordDefinition;
         private boolean prefixCollectionName = true;
+        @Nullable
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         /**
          * Sets the record class.
@@ -137,14 +153,27 @@ public class RedisJsonVectorStoreRecordCollectionOptions<Record>
         }
 
         /**
-         * Sets whether to prefix the collection name to the redis key.
-         * Default is true.
-         *
-         * @param prefixCollectionName whether to prefix the collection name to the redis key
+         * Sets whether the collection name should be prefixed to the key names before reading or writing to the Redis store. Default is true.
+         * <p>
+         * For a record to be indexed by a specific Redis index, the key name must be prefixed with the matching prefix configured on the Redis index.
+         * You can either pass in keys that are already prefixed, or set this option to true to have the collection name prefixed to the key names automatically.
+         * @param prefixCollectionName whether to prefix the collection name to the key
          * @return the builder
          */
         public Builder<Record> withPrefixCollectionName(boolean prefixCollectionName) {
             this.prefixCollectionName = prefixCollectionName;
+            return this;
+        }
+
+        /**
+         * Sets the object mapper to use for serialization and deserialization.
+         *
+         * @param objectMapper the object mapper
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public Builder<Record> withObjectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
             return this;
         }
 
@@ -162,7 +191,8 @@ public class RedisJsonVectorStoreRecordCollectionOptions<Record>
                 recordClass,
                 vectorStoreRecordMapper,
                 recordDefinition,
-                prefixCollectionName);
+                prefixCollectionName,
+                objectMapper);
         }
     }
 }

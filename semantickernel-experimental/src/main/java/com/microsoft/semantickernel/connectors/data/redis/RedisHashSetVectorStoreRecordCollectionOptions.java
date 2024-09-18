@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.exceptions.SKException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,16 +21,20 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
     @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
+    @Nullable
+    private final ObjectMapper objectMapper;
 
     private RedisHashSetVectorStoreRecordCollectionOptions(
         @Nonnull Class<Record> recordClass,
         @Nullable VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> vectorStoreRecordMapper,
         @Nullable VectorStoreRecordDefinition recordDefinition,
-        boolean prefixCollectionName) {
+        boolean prefixCollectionName,
+        @Nullable ObjectMapper objectMapper) {
         this.recordClass = recordClass;
         this.vectorStoreRecordMapper = vectorStoreRecordMapper;
         this.recordDefinition = recordDefinition;
         this.prefixCollectionName = prefixCollectionName;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -90,6 +96,16 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
     }
 
     /**
+     * Gets the object mapper.
+     *
+     * @return the object mapper
+     */
+    @Nullable
+    ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    /**
      * Builder for {@link RedisHashSetVectorStoreRecordCollectionOptions}.
      *
      * @param <Record> the record type
@@ -102,6 +118,8 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
         @Nullable
         private VectorStoreRecordDefinition recordDefinition;
         private boolean prefixCollectionName = true;
+        @Nullable
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         /**
          * Sets the record class.
@@ -150,6 +168,18 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
         }
 
         /**
+         * Sets the object mapper.
+         *
+         * @param objectMapper the object mapper
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public Builder<Record> withObjectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        /**
          * Builds the options.
          *
          * @return the options
@@ -163,7 +193,8 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
                 recordClass,
                 vectorStoreRecordMapper,
                 recordDefinition,
-                prefixCollectionName);
+                prefixCollectionName,
+                objectMapper);
         }
     }
 }

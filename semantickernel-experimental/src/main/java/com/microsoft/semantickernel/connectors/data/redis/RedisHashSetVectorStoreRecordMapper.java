@@ -12,6 +12,7 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
 import java.util.AbstractMap;
@@ -50,9 +51,10 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
         implements SemanticKernelBuilder<RedisHashSetVectorStoreRecordMapper<Record>> {
         @Nullable
         private Class<Record> recordClass;
-
         @Nullable
         private VectorStoreRecordDefinition recordDefinition;
+        @Nullable
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         /**
          * Sets the record class.
@@ -78,6 +80,18 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
         }
 
         /**
+         * Sets the object mapper.
+         *
+         * @param objectMapper the object mapper
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public Builder<Record> withObjectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        /**
          * Builds the {@link RedisHashSetVectorStoreRecordMapper}.
          *
          * @return the {@link RedisHashSetVectorStoreRecordMapper}
@@ -91,11 +105,9 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                 throw new SKException("vectorStoreRecordDefinition is required");
             }
 
-            ObjectMapper mapper = new ObjectMapper();
-
             return new RedisHashSetVectorStoreRecordMapper<>(record -> {
                 try {
-                    ObjectNode jsonNode = mapper.valueToTree(record);
+                    ObjectNode jsonNode = objectMapper.valueToTree(record);
                     String key = jsonNode
                         .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
                     jsonNode.remove(recordDefinition.getKeyField().getEffectiveStorageName());
@@ -108,7 +120,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                             resultMap.put(field.getKey(), field.getValue().asText());
                         } else {
                             resultMap.put(field.getKey(),
-                                mapper.valueToTree(field.getValue()).toString());
+                                objectMapper.valueToTree(field.getValue()).toString());
                         }
                     }
 
@@ -125,9 +137,9 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                         return null;
                     }
 
-                    ObjectNode jsonNode = mapper.createObjectNode();
+                    ObjectNode jsonNode = objectMapper.createObjectNode();
                     jsonNode.set(recordDefinition.getKeyField().getEffectiveStorageName(),
-                        mapper.valueToTree(storageModel.getKey()));
+                        objectMapper.valueToTree(storageModel.getKey()));
 
                     for (VectorStoreRecordDataField field : recordDefinition.getDataFields()) {
                         jsonNode.put(field.getEffectiveStorageName(),
@@ -140,6 +152,11 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                             String value = storageModel.getValue()
                                 .get(field.getEffectiveStorageName());
 
+                            // No vector found
+                            if (value == null) {
+                                continue;
+                            }
+
                             Class<?> valueType = field.getFieldType();
 
                             if (valueType.equals(String.class)) {
@@ -147,12 +164,13 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                             } else {
                                 // Convert the String stored in Redis back to the correct type and then put the JSON node
                                 jsonNode.set(field.getEffectiveStorageName(),
-                                    mapper.valueToTree(mapper.readValue(value, valueType)));
+                                    objectMapper
+                                        .valueToTree(objectMapper.readValue(value, valueType)));
                             }
                         }
                     }
 
-                    return mapper.convertValue(jsonNode, recordClass);
+                    return objectMapper.convertValue(jsonNode, recordClass);
                 } catch (JsonProcessingException e) {
                     throw new SKException(
                         "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
