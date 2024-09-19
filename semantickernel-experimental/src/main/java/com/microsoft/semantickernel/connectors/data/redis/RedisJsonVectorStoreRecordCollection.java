@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import reactor.core.publisher.Mono;
@@ -40,6 +42,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.IndexDefinition;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
@@ -105,8 +108,8 @@ public class RedisJsonVectorStoreRecordCollection<Record>
         // If mapper is not provided, set a default one
         if (options.getVectorStoreRecordMapper() == null) {
             vectorStoreRecordMapper = new RedisJsonVectorStoreRecordMapper.Builder<Record>()
-                .withKeyFieldName(recordDefinition.getKeyField().getEffectiveStorageName())
                 .withRecordClass(options.getRecordClass())
+                .withRecordDefinition(recordDefinition)
                 .withObjectMapper(objectMapper)
                 .build();
         } else {
@@ -160,7 +163,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
     public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(() -> {
             Schema schema = RedisVectorStoreCollectionCreateMapping
-                .mapToSchema(recordDefinition.getAllFields());
+                .mapToSchema(recordDefinition.getAllFields(), true);
 
             IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.JSON)
                 .setPrefixes(collectionName + ":");
@@ -410,9 +413,12 @@ public class RedisJsonVectorStoreRecordCollection<Record>
             if (query instanceof VectorizedSearchQuery) {
                 VectorSearchOptions options = query.getSearchOptions();
 
-                Query redisQuery = RedisVectorStoreCollectionSearchMapping
-                    .buildQuery((VectorizedSearchQuery) query, recordDefinition);
-                SearchResult searchResult = client.ftSearch(collectionName, redisQuery);
+                Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
+                    .buildQuery((VectorizedSearchQuery) query, recordDefinition,
+                        RedisStorageType.JSON);
+
+                SearchResult searchResult = client.ftSearch(collectionName,
+                    ftSearchParams.getLeft(), ftSearchParams.getRight());
 
                 return searchResult.getDocuments().stream()
                     .map(doc -> {

@@ -17,7 +17,7 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
     implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     @Nullable
-    private final VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> vectorStoreRecordMapper;
+    private final VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> vectorStoreRecordMapper;
     @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
     private final boolean prefixCollectionName;
@@ -26,7 +26,7 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
 
     private RedisHashSetVectorStoreRecordCollectionOptions(
         @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> vectorStoreRecordMapper,
+        @Nullable VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> vectorStoreRecordMapper,
         @Nullable VectorStoreRecordDefinition recordDefinition,
         boolean prefixCollectionName,
         @Nullable ObjectMapper objectMapper) {
@@ -82,7 +82,7 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
      * @return the vector store record mapper
      */
     @Nullable
-    public VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> getVectorStoreRecordMapper() {
+    public VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> getVectorStoreRecordMapper() {
         return vectorStoreRecordMapper;
     }
 
@@ -112,7 +112,7 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
      */
     public static class Builder<Record> {
         @Nullable
-        private VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> vectorStoreRecordMapper;
+        private VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> vectorStoreRecordMapper;
         @Nullable
         private Class<Record> recordClass;
         @Nullable
@@ -139,7 +139,7 @@ public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
          * @return the builder
          */
         public Builder<Record> withVectorStoreRecordMapper(
-            VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> vectorStoreRecordMapper) {
+            VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> vectorStoreRecordMapper) {
             this.vectorStoreRecordMapper = vectorStoreRecordMapper;
             return this;
         }

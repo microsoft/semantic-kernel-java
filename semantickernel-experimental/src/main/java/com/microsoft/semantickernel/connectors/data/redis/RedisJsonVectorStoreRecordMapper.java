@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -42,21 +44,11 @@ public class RedisJsonVectorStoreRecordMapper<Record>
     public static class Builder<Record>
         implements SemanticKernelBuilder<RedisJsonVectorStoreRecordMapper<Record>> {
         @Nullable
-        private String keyFieldName;
-        @Nullable
         private Class<Record> recordClass;
-        private ObjectMapper objectMapper = new ObjectMapper();
+        @Nullable
+        private VectorStoreRecordDefinition recordDefinition;
 
-        /**
-         * Sets the key field name in the record.
-         *
-         * @param keyFieldName the key field
-         * @return the builder
-         */
-        public Builder<Record> withKeyFieldName(String keyFieldName) {
-            this.keyFieldName = keyFieldName;
-            return this;
-        }
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         /**
          * Sets the record class.
@@ -66,6 +58,17 @@ public class RedisJsonVectorStoreRecordMapper<Record>
          */
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
+            return this;
+        }
+
+        /**
+         * Sets the record definition.
+         *
+         * @param recordDefinition the record definition
+         * @return the builder
+         */
+        public Builder<Record> withRecordDefinition(VectorStoreRecordDefinition recordDefinition) {
+            this.recordDefinition = recordDefinition;
             return this;
         }
 
@@ -88,15 +91,16 @@ public class RedisJsonVectorStoreRecordMapper<Record>
          */
         @Override
         public RedisJsonVectorStoreRecordMapper<Record> build() {
-            if (keyFieldName == null) {
-                throw new SKException("keyFieldName is required");
-            }
             if (recordClass == null) {
                 throw new SKException("recordClass is required");
+            }
+            if (recordDefinition == null) {
+                throw new SKException("recordDefinition is required");
             }
 
             return new RedisJsonVectorStoreRecordMapper<>(record -> {
                 try {
+                    String keyFieldName = recordDefinition.getKeyField().getEffectiveStorageName();
                     ObjectNode jsonNode = objectMapper.valueToTree(record);
                     String key = jsonNode.get(keyFieldName).asText();
                     jsonNode.remove(keyFieldName);
@@ -109,9 +113,19 @@ public class RedisJsonVectorStoreRecordMapper<Record>
                 }
             }, (storageModel, options) -> {
                 try {
+                    String keyFieldName = recordDefinition.getKeyField().getEffectiveStorageName();
                     ObjectNode jsonNode = objectMapper.valueToTree(storageModel.getValue());
                     // Add the key back to the record
                     jsonNode.put(keyFieldName, storageModel.getKey());
+                    // Make sure to exclude the vectors if needed
+                    if (options == null || !options.isIncludeVectors()) {
+                        for (VectorStoreRecordVectorField vectorField : recordDefinition
+                            .getVectorFields()) {
+                            if (jsonNode.has(vectorField.getEffectiveStorageName())) {
+                                jsonNode.remove(vectorField.getEffectiveStorageName());
+                            }
+                        }
+                    }
                     return objectMapper.convertValue(jsonNode, recordClass);
                 } catch (Exception e) {
                     throw new SKException(

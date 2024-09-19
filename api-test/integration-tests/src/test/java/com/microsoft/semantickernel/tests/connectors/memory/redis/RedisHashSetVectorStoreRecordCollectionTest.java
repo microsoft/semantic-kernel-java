@@ -189,7 +189,7 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
         List<String> ids = new ArrayList<>();
         hotels.forEach(hotel -> ids.add(hotel.getId()));
 
-        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(ids, null).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(ids, new GetRecordOptions(true)).block();
 
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
@@ -341,38 +341,71 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
         );
     }
 
-//    @ParameterizedTest
-//    @MethodSource("provideSearchParameters")
-//    public void search(RecordCollectionOptions options, String embeddingName) {
-//        String collectionName = "search" + embeddingName;
-//        RedisHashSetVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
-//
-//        List<Hotel> hotels = getHotels();
-//        recordCollection.upsertBatchAsync(hotels, null).block();
-//
-//        VectorSearchOptions searchOptions = VectorSearchOptions.builder()
-//                .withVectorFieldName(embeddingName)
-//                .withLimit(3)
-//                .build();
-//
-//        // Embeddings similar to the third hotel
-//        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
-//        assertNotNull(results);
-//        assertEquals(3, results.size());
-//        // The third hotel should be the most similar
-//        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
-//
-//        searchOptions = VectorSearchOptions.builder()
-//                .withVectorFieldName(embeddingName)
-//                .withOffset(1)
-//                .withLimit(-100)
-//                .build();
-//
-//        // Skip the first result
-//        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
-//        assertNotNull(results);
-//        assertEquals(1, results.size());
-//        // The first hotel should be the most similar
-//        assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
-//    }
+    @ParameterizedTest
+    @MethodSource("provideSearchParameters")
+    public void search(RecordCollectionOptions options, String embeddingName) {
+        String collectionName = "search" + embeddingName;
+        RedisHashSetVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions searchOptions = VectorSearchOptions.builder()
+                .withVectorFieldName(embeddingName)
+                .build();
+
+        // Embeddings similar to the third hotel
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
+        assertNotNull(results);
+        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size());
+        // The third hotel should be the most similar
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertNull(results.get(0).getRecord().getEuclidean());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSearchParameters")
+    public void searchWithVectors(RecordCollectionOptions options, String embeddingName) {
+        String collectionName = "search" + embeddingName;
+        RedisHashSetVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions searchOptions = VectorSearchOptions.builder()
+                .withVectorFieldName(embeddingName)
+                .withIncludeVectors(true)
+                .build();
+
+        // Embeddings similar to the third hotel
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
+        assertNotNull(results);
+        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size());
+        // The third hotel should be the most similar
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertNotNull(results.get(0).getRecord().getEuclidean());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSearchParameters")
+    public void searchWithOffSet(RecordCollectionOptions options, String embeddingName) {
+        String collectionName = "search" + embeddingName;
+        RedisHashSetVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions searchOptions = VectorSearchOptions.builder()
+                .withVectorFieldName(embeddingName)
+                .withOffset(1)
+                .withLimit(4)
+                .build();
+
+        // Embeddings similar to the third hotel
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
+        assertNotNull(results);
+        assertEquals(4, results.size());
+        // The first hotel should be the most similar
+        assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
+    }
 }

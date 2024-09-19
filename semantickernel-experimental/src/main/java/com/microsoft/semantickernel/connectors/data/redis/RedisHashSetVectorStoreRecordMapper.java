@@ -4,31 +4,37 @@ package com.microsoft.semantickernel.connectors.data.redis;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RedisHashSetVectorStoreRecordMapper<Record>
-    extends VectorStoreRecordMapper<Record, Entry<String, Map<String, String>>> {
+    extends VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> {
 
     private RedisHashSetVectorStoreRecordMapper(
-        Function<Record, Entry<String, Map<String, String>>> toStorageModelMapper,
-        BiFunction<Entry<String, Map<String, String>>, GetRecordOptions, Record> toRecordMapper) {
+        Function<Record, Entry<String, Map<byte[], byte[]>>> toStorageModelMapper,
+        BiFunction<Entry<String, Map<byte[], byte[]>>, GetRecordOptions, Record> toRecordMapper) {
         super(toStorageModelMapper, toRecordMapper);
     }
 
@@ -108,23 +114,32 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
             return new RedisHashSetVectorStoreRecordMapper<>(record -> {
                 try {
                     ObjectNode jsonNode = objectMapper.valueToTree(record);
+
                     String key = jsonNode
                         .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
                     jsonNode.remove(recordDefinition.getKeyField().getEffectiveStorageName());
 
-                    Map<String, String> resultMap = new HashMap<>();
-                    Iterator<Entry<String, JsonNode>> fields = jsonNode.fields();
-                    while (fields.hasNext()) {
-                        Map.Entry<String, JsonNode> field = fields.next();
-                        if (field.getValue().isTextual()) {
-                            resultMap.put(field.getKey(), field.getValue().asText());
-                        } else {
-                            resultMap.put(field.getKey(),
-                                objectMapper.valueToTree(field.getValue()).toString());
+                    Map<byte[], byte[]> storage = new HashMap<>();
+                    for (VectorStoreRecordDataField field : recordDefinition.getDataFields()) {
+                        JsonNode value = jsonNode.get(field.getEffectiveStorageName());
+                        if (value != null) {
+                            storage.put(
+                                field.getEffectiveStorageName().getBytes(StandardCharsets.UTF_8),
+                                objectMapper.writeValueAsBytes(value));
+                        }
+                    }
+                    for (VectorStoreRecordVectorField field : recordDefinition.getVectorFields()) {
+                        ArrayNode value = (ArrayNode) jsonNode.get(field.getEffectiveStorageName());
+                        List<Float> vector = objectMapper.convertValue(value, List.class);
+                        if (value != null) {
+                            storage.put(
+                                field.getEffectiveStorageName().getBytes(StandardCharsets.UTF_8),
+                                RedisVectorStoreCollectionSearchMapping
+                                    .convertListToByteArray(vector));
                         }
                     }
 
-                    return new AbstractMap.SimpleEntry<>(key, resultMap);
+                    return new AbstractMap.SimpleEntry<>(key, storage);
                 } catch (Exception e) {
                     throw new SKException(
                         "Failure to serialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
@@ -141,31 +156,27 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                     jsonNode.set(recordDefinition.getKeyField().getEffectiveStorageName(),
                         objectMapper.valueToTree(storageModel.getKey()));
 
-                    for (VectorStoreRecordDataField field : recordDefinition.getDataFields()) {
-                        jsonNode.put(field.getEffectiveStorageName(),
-                            storageModel.getValue().get(field.getEffectiveStorageName()));
-                    }
+                    // byte[] as key is not useful, convert to String
+                    Map<String, byte[]> storage = new HashMap<>();
+                    storageModel.getValue()
+                        .forEach((k, v) -> storage.put(new String(k, StandardCharsets.UTF_8), v));
 
+                    for (VectorStoreRecordDataField field : recordDefinition.getDataFields()) {
+                        byte[] value = storage.get(field.getEffectiveStorageName());
+                        if (value != null) {
+                            jsonNode.set(field.getEffectiveStorageName(),
+                                objectMapper.valueToTree(
+                                    objectMapper.readValue(value, field.getFieldType())));
+                        }
+                    }
                     if (options != null && options.isIncludeVectors()) {
                         for (VectorStoreRecordVectorField field : recordDefinition
                             .getVectorFields()) {
-                            String value = storageModel.getValue()
-                                .get(field.getEffectiveStorageName());
-
-                            // No vector found
-                            if (value == null) {
-                                continue;
-                            }
-
-                            Class<?> valueType = field.getFieldType();
-
-                            if (valueType.equals(String.class)) {
-                                jsonNode.put(field.getEffectiveStorageName(), value);
-                            } else {
-                                // Convert the String stored in Redis back to the correct type and then put the JSON node
+                            byte[] value = storage.get(field.getEffectiveStorageName());
+                            if (value != null) {
                                 jsonNode.set(field.getEffectiveStorageName(),
-                                    objectMapper
-                                        .valueToTree(objectMapper.readValue(value, valueType)));
+                                    objectMapper.valueToTree(RedisVectorStoreCollectionSearchMapping
+                                        .convertByteArrayToList(value)));
                             }
                         }
                     }
@@ -175,6 +186,8 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                     throw new SKException(
                         "Failure to deserialize object, by default the Redis connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                         e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             });
         }

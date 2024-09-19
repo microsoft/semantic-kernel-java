@@ -9,6 +9,9 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
+import org.apache.commons.lang3.tuple.Pair;
+import redis.clients.jedis.args.SortingOrder;
+import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.Query;
 
 import java.nio.ByteBuffer;
@@ -19,12 +22,11 @@ import java.util.stream.Collectors;
 public class RedisVectorStoreCollectionSearchMapping {
     static final String VECTOR_SCORE_FIELD = "vector_score";
 
-    public static Query buildQuery(VectorizedSearchQuery query,
-        VectorStoreRecordDefinition recordDefinition) {
+    public static Pair<String, FTSearchParams> buildQuery(VectorizedSearchQuery query,
+        VectorStoreRecordDefinition recordDefinition,
+        RedisStorageType storageType) {
         VectorSearchOptions options = query.getSearchOptions();
-
-        VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
-            .get(0);
+        VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields().get(0);
         if (options == null) {
             options = VectorSearchOptions.createDefault(firstVectorField.getName());
         }
@@ -38,20 +40,30 @@ public class RedisVectorStoreCollectionSearchMapping {
 
         String knn = String.format("%s=>[KNN $K @%s $BLOB AS %s]", filter,
             vectorField.getEffectiveStorageName(), VECTOR_SCORE_FIELD);
-        Query redisQuery = new Query(knn)
+
+        FTSearchParams searchParams = new FTSearchParams()
             .addParam("K", options.getLimit() + options.getOffset())
             .addParam("BLOB", convertListToByteArray(query.getVector()))
             .limit(options.getOffset(), options.getLimit())
-            .setSortBy(VECTOR_SCORE_FIELD, true)
+            .sortBy(VECTOR_SCORE_FIELD, SortingOrder.ASC)
             .dialect(2);
 
-        if (options.isIncludeVectors()) {
-            redisQuery.returnFields(recordDefinition.getDataFields().stream()
-                .map(VectorStoreRecordDataField::getEffectiveStorageName)
-                .toArray(String[]::new));
+        // For hash set storage is possible to select what fields to return without them being filterable
+        if (storageType == RedisStorageType.HASH_SET) {
+            // We also need to tell Redis to return the fields without decoding them
+            // Vector fields specially need to be returned as raw bytes
+            searchParams.returnField(VECTOR_SCORE_FIELD, false);
+            for (VectorStoreRecordDataField dataField : recordDefinition.getDataFields()) {
+                searchParams.returnField(dataField.getEffectiveStorageName(), false);
+            }
+            if (options.isIncludeVectors()) {
+                for (VectorStoreRecordVectorField vector : recordDefinition.getVectorFields()) {
+                    searchParams.returnField(vector.getEffectiveStorageName(), false);
+                }
+            }
         }
 
-        return redisQuery;
+        return Pair.of(knn, searchParams);
     }
 
     public static byte[] convertListToByteArray(List<Float> embeddings) {
@@ -59,6 +71,15 @@ public class RedisVectorStoreCollectionSearchMapping {
         bytes.order(ByteOrder.LITTLE_ENDIAN);
         embeddings.iterator().forEachRemaining(bytes::putFloat);
         return bytes.array();
+    }
+
+    public static List<Float> convertByteArrayToList(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+        List<Float> embeddings = new java.util.ArrayList<>();
+        while (buffer.hasRemaining()) {
+            embeddings.add(buffer.getFloat());
+        }
+        return embeddings;
     }
 
     public static String buildFilter(VectorSearchFilter vectorSearchFilter,
