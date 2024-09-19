@@ -344,7 +344,7 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void search(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search" + options.name() + embeddingName;
+        String collectionName = "search";
         RedisHashSetVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
@@ -366,7 +366,7 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithVectors(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "searchWithVectors" + options.name() + embeddingName;
+        String collectionName = "search";
         RedisHashSetVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
@@ -389,7 +389,7 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithOffSet(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "searchWithOffSet" + options.name() + embeddingName;
+        String collectionName = "search";
         RedisHashSetVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
