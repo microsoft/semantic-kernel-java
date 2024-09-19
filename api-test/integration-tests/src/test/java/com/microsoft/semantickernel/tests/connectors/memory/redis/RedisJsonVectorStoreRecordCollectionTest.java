@@ -102,7 +102,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .build());
     }
 
-    private RedisJsonVectorStoreRecordCollection<Hotel> buildrecordCollection(@Nonnull RedisJsonVectorStoreRecordCollectionOptions<Hotel> options, @Nonnull String collectionName) {
+    private RedisJsonVectorStoreRecordCollection<Hotel> buildRecordCollection(@Nonnull RedisJsonVectorStoreRecordCollectionOptions<Hotel> options, @Nonnull String collectionName) {
         return new RedisJsonVectorStoreRecordCollection<>(new JedisPooled(redisContainer.getRedisURI()), collectionName, RedisJsonVectorStoreRecordCollectionOptions.<Hotel>builder()
                 .withRecordClass(options.getRecordClass())
                 .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
@@ -114,7 +114,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     private List<Hotel> getHotels() {
         return List.of(
                 new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f),null, null, 4.0),
-                new Hotel("id_2", "Hotel2", 2, "Hotel 2 description", Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),null, null, 4.0),
+                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),null, null, 4.0),
                 new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f),null, null, 5.0),
                 new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f),null, null, 4.0),
                 new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f),null, null, 4.0)
@@ -133,15 +133,15 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @Order(1)
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
-    public void buildrecordCollection(RecordCollectionOptions options) {
-        assertNotNull(buildrecordCollection(optionsMap.get(options), options.name()));
+    public void buildRecordCollection(RecordCollectionOptions options) {
+        assertNotNull(buildRecordCollection(optionsMap.get(options), options.name()));
     }
 
     @Order(2)
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void createCollectionAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         assertEquals(false, recordCollection.collectionExistsAsync().block());
         recordCollection.createCollectionAsync().block();
@@ -150,7 +150,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
     @Test
     public void deleteCollectionAsync() {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(RecordCollectionOptions.DEFAULT), "deleteCollectionAsync");
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(RecordCollectionOptions.DEFAULT), "deleteCollectionAsync");
 
         assertEquals(false, recordCollection.collectionExistsAsync().block());
         recordCollection.createCollectionAsync().block();
@@ -161,7 +161,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void upsertAndGetRecordAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -178,7 +178,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getBatchAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -200,7 +200,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void upsertBatchAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         List<String> keys = recordCollection.upsertBatchAsync(hotels, null).block();
@@ -218,7 +218,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void deleteAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -233,7 +233,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void deleteBatchAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -252,7 +252,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getAsyncWithVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -269,7 +269,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getBatchAsyncWithVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -291,7 +291,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getAsyncWithNoVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -309,7 +309,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getBatchAsyncWithNoVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildrecordCollection(optionsMap.get(options), options.name());
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -344,7 +344,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @MethodSource("provideSearchParameters")
     public void search(RecordCollectionOptions options, String embeddingName) {
         String collectionName = "search" + embeddingName;
-        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildrecordCollection(optionsMap.get(options), collectionName);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -366,7 +366,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @MethodSource("provideSearchParameters")
     public void searchWithVectors(RecordCollectionOptions options, String embeddingName) {
         String collectionName = "search" + embeddingName;
-        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildrecordCollection(optionsMap.get(options), collectionName);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -389,7 +389,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @MethodSource("provideSearchParameters")
     public void searchWithOffSet(RecordCollectionOptions options, String embeddingName) {
         String collectionName = "search" + embeddingName;
-        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildrecordCollection(optionsMap.get(options), collectionName);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
