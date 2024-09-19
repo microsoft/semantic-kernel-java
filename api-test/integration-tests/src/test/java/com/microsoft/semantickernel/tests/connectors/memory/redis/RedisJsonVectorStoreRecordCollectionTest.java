@@ -369,7 +369,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithVectors(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search" + options.name() + embeddingName;
+        String collectionName = "searchWithVectors" + options.name() + embeddingName;
         RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
@@ -392,7 +392,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithOffSet(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search" + options.name() + embeddingName;
+        String collectionName = "searchWithOffSet" + options.name() + embeddingName;
         RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
