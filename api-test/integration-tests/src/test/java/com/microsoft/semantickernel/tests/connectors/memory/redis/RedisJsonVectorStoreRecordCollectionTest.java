@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
-import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
@@ -41,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RedisJsonVectorStoreRecordCollectionTest {
 
-    @Container private static final RedisContainer redisContainer = new RedisContainer("redis/redis-stack:7.4.0-v0");
+    @Container private static final RedisContainer redisContainer = new RedisContainer("redis/redis-stack:latest");
 
     private static final Map<RecordCollectionOptions, RedisJsonVectorStoreRecordCollectionOptions<Hotel>> optionsMap = new HashMap<>();
 
@@ -76,21 +75,18 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("euclidean")
                 .withStorageName("summaryEmbedding1")
-                .withDistanceFunction(DistanceFunction.EUCLIDEAN_DISTANCE)
                 .withFieldType(List.class)
                 .withDimensions(8)
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("cosineDistance")
                 .withStorageName("summaryEmbedding2")
-                .withDistanceFunction(DistanceFunction.COSINE_DISTANCE)
                 .withFieldType(List.class)
                 .withDimensions(8)
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("dotProduct")
                 .withStorageName("summaryEmbedding3")
-                .withDistanceFunction(DistanceFunction.DOT_PRODUCT)
                 .withFieldType(List.class)
                 .withDimensions(8)
                 .build());
@@ -104,9 +100,29 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .withRecordClass(Hotel.class)
                 .withRecordDefinition(recordDefinition)
                 .build());
+
+        // Search configuration
+        List<Hotel> hotels = getHotels();
+
+        for (RecordCollectionOptions options : RecordCollectionOptions.values()) {
+            String collectionName = getCollectionName("search", options);
+            RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
+
+            recordCollection.createCollectionAsync().block();
+            assertEquals(true, recordCollection.collectionExistsAsync().block());
+
+            recordCollection.upsertBatchAsync(hotels, null).block();
+        }
+
+        // Wait for data to be indexed
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private RedisJsonVectorStoreRecordCollection<Hotel> buildRecordCollection(@Nonnull RedisJsonVectorStoreRecordCollectionOptions<Hotel> options, @Nonnull String collectionName) {
+    private static RedisJsonVectorStoreRecordCollection<Hotel> createCollection(@Nonnull RedisJsonVectorStoreRecordCollectionOptions<Hotel> options, @Nonnull String collectionName) {
         return new RedisJsonVectorStoreRecordCollection<>(new JedisPooled(redisContainer.getRedisURI()), collectionName, RedisJsonVectorStoreRecordCollectionOptions.<Hotel>builder()
                 .withRecordClass(options.getRecordClass())
                 .withVectorStoreRecordMapper(options.getVectorStoreRecordMapper())
@@ -115,7 +131,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .build());
     }
 
-    private List<Hotel> getHotels() {
+    private static List<Hotel> getHotels() {
         return List.of(
                 new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f),null, null, 4.0),
                 new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),null, null, 4.0),
@@ -134,18 +150,16 @@ public class RedisJsonVectorStoreRecordCollectionTest {
      */
     private static final List<Float> SEARCH_EMBEDDINGS = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.2f);
 
+    private static String getCollectionName(String id, RecordCollectionOptions options) {
+        return id + options.name();
+    }
+
     @Order(1)
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
-    public void buildRecordCollection(RecordCollectionOptions options) {
-        assertNotNull(buildRecordCollection(optionsMap.get(options), options.name()));
-    }
-
-    @Order(2)
-    @ParameterizedTest
-    @EnumSource(RecordCollectionOptions.class)
     public void createCollectionAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("createCollectionAsync", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         assertEquals(false, recordCollection.collectionExistsAsync().block());
         recordCollection.createCollectionAsync().block();
@@ -154,7 +168,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
     @Test
     public void deleteCollectionAsync() {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(RecordCollectionOptions.DEFAULT), "deleteCollectionAsync");
+        String collectionName = getCollectionName("deleteCollectionAsync", RecordCollectionOptions.DEFAULT);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(RecordCollectionOptions.DEFAULT), collectionName);
 
         assertEquals(false, recordCollection.collectionExistsAsync().block());
         recordCollection.createCollectionAsync().block();
@@ -165,7 +180,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void upsertAndGetRecordAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("upsertAndGetRecordAsync", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -182,7 +198,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getBatchAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("getBatchAsync", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -192,7 +209,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         List<String> ids = new ArrayList<>();
         hotels.forEach(hotel -> ids.add(hotel.getId()));
 
-        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(ids, null).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(ids, new GetRecordOptions(true)).block();
 
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
@@ -204,7 +221,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void upsertBatchAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("upsertBatchAsync", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         List<String> keys = recordCollection.upsertBatchAsync(hotels, null).block();
@@ -222,7 +240,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void deleteAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("deleteAsync", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -237,7 +256,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void deleteBatchAsync(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("deleteBatchAsync", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -256,7 +276,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getAsyncWithVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("getAsyncWithVectors", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -273,7 +294,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getBatchAsyncWithVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("getBatchAsyncWithVectors", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -295,7 +317,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getAsyncWithNoVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("getAsyncWithNoVectors", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -313,7 +336,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @EnumSource(RecordCollectionOptions.class)
     public void getBatchAsyncWithNoVectors(RecordCollectionOptions options) {
-        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(optionsMap.get(options), options.name());
+        String collectionName = getCollectionName("getBatchAsyncWithNoVectors", options);
+        RedisJsonVectorStoreRecordCollection<Hotel> recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -347,8 +371,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void search(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search";
-        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
+        String collectionName = getCollectionName("search", options);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -369,8 +393,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithVectors(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search";
-        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
+        String collectionName = getCollectionName("search", options);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -392,8 +416,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithOffSet(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search";
-        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
+        String collectionName = getCollectionName("search", options);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = createCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -411,5 +435,4 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         // The first hotel should be the most similar
         assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
     }
-
 }

@@ -209,7 +209,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
         return key;
     }
 
-    private byte[] stringToBytes(String value) {
+    static byte[] stringToBytes(String value) {
         return value.getBytes(StandardCharsets.UTF_8);
     }
 

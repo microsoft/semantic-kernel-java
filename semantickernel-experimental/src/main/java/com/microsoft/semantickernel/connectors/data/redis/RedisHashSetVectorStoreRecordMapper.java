@@ -22,12 +22,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import static com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollection.stringToBytes;
 
 public class RedisHashSetVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> {
@@ -124,7 +125,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                         JsonNode value = jsonNode.get(field.getEffectiveStorageName());
                         if (value != null) {
                             storage.put(
-                                field.getEffectiveStorageName().getBytes(StandardCharsets.UTF_8),
+                                stringToBytes(field.getEffectiveStorageName()),
                                 objectMapper.writeValueAsBytes(value));
                         }
                     }
@@ -133,7 +134,7 @@ public class RedisHashSetVectorStoreRecordMapper<Record>
                         List<Float> vector = objectMapper.convertValue(value, List.class);
                         if (value != null) {
                             storage.put(
-                                field.getEffectiveStorageName().getBytes(StandardCharsets.UTF_8),
+                                stringToBytes(field.getEffectiveStorageName()),
                                 RedisVectorStoreCollectionSearchMapping
                                     .convertListToByteArray(vector));
                         }

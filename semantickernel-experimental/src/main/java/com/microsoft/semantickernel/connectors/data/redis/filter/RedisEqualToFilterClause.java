@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis.filter;
 
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.exceptions.SKException;
 
@@ -28,8 +27,7 @@ public class RedisEqualToFilterClause extends EqualToFilterClause {
             formattedValue = String.format("\"%s\"", value);
         } else if (value instanceof Boolean) {
             formattedValue = value.toString().toLowerCase();
-        } else if (value instanceof Integer || value instanceof Long || value instanceof Float
-            || value instanceof Double) {
+        } else if (value instanceof Number) {
             formattedValue = value.toString();
         } else if (value instanceof OffsetDateTime) {
             formattedValue = ((OffsetDateTime) value)
