@@ -156,7 +156,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
     public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(() -> {
             Schema schema = RedisVectorStoreCollectionCreateMapping
-                .mapToSchema(recordDefinition.getAllFields(), false);
+                .mapToSchema(recordDefinition.getAllFields(), RedisStorageType.HASH_SET);
 
             IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.HASH)
                 .setPrefixes(collectionName + ":");
@@ -264,7 +264,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
                     .add(new AbstractMap.SimpleEntry<>(key,
                         pipeline.hgetAll(stringToBytes(redisKey))));
             } else {
-                // Returns List<String> with the values of the fields
+                // Returns List<byte[]> with the values of the fields
                 responses
                     .add(new AbstractMap.SimpleEntry<>(key,
                         pipeline.hmget(stringToBytes(redisKey), dataFields)));
@@ -411,6 +411,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
                                     (byte[]) entry.getValue());
                             } else if (entry.getKey().equals(
                                 RedisVectorStoreCollectionSearchMapping.VECTOR_SCORE_FIELD)) {
+                                // Score is stored as a string in one of the fields
                                 score = Double.parseDouble((String) entry.getValue());
                             }
                         }

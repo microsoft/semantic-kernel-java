@@ -71,8 +71,9 @@ public class RedisVectorStoreCollectionCreateMapping {
     }
 
     public static Schema mapToSchema(List<VectorStoreRecordField> fields,
-        boolean withRedisJsonRoot) {
+        RedisStorageType storageType) {
         Schema schema = new Schema();
+        boolean withRedisJsonRoot = storageType == RedisStorageType.JSON;
 
         for (VectorStoreRecordField field : fields) {
             if (field instanceof VectorStoreRecordKeyField) {

@@ -163,7 +163,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
     public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(() -> {
             Schema schema = RedisVectorStoreCollectionCreateMapping
-                .mapToSchema(recordDefinition.getAllFields(), true);
+                .mapToSchema(recordDefinition.getAllFields(), RedisStorageType.JSON);
 
             IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.JSON)
                 .setPrefixes(collectionName + ":");
