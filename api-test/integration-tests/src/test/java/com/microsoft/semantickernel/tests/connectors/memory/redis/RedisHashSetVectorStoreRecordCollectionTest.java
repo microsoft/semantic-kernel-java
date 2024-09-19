@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class RedisHashSetVectorStoreRecordCollectionTest {
 
-    @Container private static final RedisContainer redisContainer = new RedisContainer("redis/redis-stack:latest");
+    @Container private static final RedisContainer redisContainer = new RedisContainer("redis/redis-stack:7.4.0-v0");
 
     private static final Map<RecordCollectionOptions, RedisHashSetVectorStoreRecordCollectionOptions<Hotel>> optionsMap = new HashMap<>();
 
