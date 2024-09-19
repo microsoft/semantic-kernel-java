@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
@@ -75,18 +76,21 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("euclidean")
                 .withStorageName("summaryEmbedding1")
+                .withDistanceFunction(DistanceFunction.EUCLIDEAN_DISTANCE)
                 .withFieldType(List.class)
                 .withDimensions(8)
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("cosineDistance")
                 .withStorageName("summaryEmbedding2")
+                .withDistanceFunction(DistanceFunction.COSINE_DISTANCE)
                 .withFieldType(List.class)
                 .withDimensions(8)
                 .build());
         fields.add(VectorStoreRecordVectorField.builder()
                 .withName("dotProduct")
                 .withStorageName("summaryEmbedding3")
+                .withDistanceFunction(DistanceFunction.DOT_PRODUCT)
                 .withFieldType(List.class)
                 .withDimensions(8)
                 .build());
@@ -343,7 +347,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void search(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search" + embeddingName;
+        String collectionName = "search" + options.name() + embeddingName;
         RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
@@ -365,7 +369,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithVectors(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search" + embeddingName;
+        String collectionName = "search" + options.name() + embeddingName;
         RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
@@ -388,7 +392,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void searchWithOffSet(RecordCollectionOptions options, String embeddingName) {
-        String collectionName = "search" + embeddingName;
+        String collectionName = "search" + options.name() + embeddingName;
         RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(optionsMap.get(options), collectionName);
 
         List<Hotel> hotels = getHotels();
