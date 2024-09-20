@@ -56,6 +56,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import com.microsoft.semantickernel.services.chatcompletion.StreamingChatContent;
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageContentType;
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageImageContent;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
@@ -64,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -177,6 +179,92 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     return Mono.error(e);
                 }
             });
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
+        if (invocationContext != null && invocationContext.getToolCallBehavior()
+            .isAutoInvokeAllowed()) {
+            throw new SKException(
+                "Auto invoke is not supported for streaming chat message contents");
+        }
+
+        if (invocationContext != null
+            && invocationContext.returnMode() != InvocationReturnMode.NEW_MESSAGES_ONLY) {
+            throw new SKException(
+                "Streaming chat message contents only supports NEW_MESSAGES_ONLY return mode");
+        }
+
+        List<ChatRequestMessage> chatRequestMessages = getChatRequestMessages(chatHistory);
+
+        ChatMessages messages = new ChatMessages(chatRequestMessages);
+
+        List<OpenAIFunction> functions = new ArrayList<>();
+        if (kernel != null) {
+            kernel.getPlugins()
+                .forEach(plugin -> plugin.getFunctions().forEach((name, function) -> functions
+                    .add(OpenAIFunction.build(function.getMetadata(), plugin.getName()))));
+        }
+
+        ChatCompletionsOptions options = executeHook(
+            invocationContext,
+            kernel,
+            new PreChatCompletionEvent(
+                getCompletionsOptions(
+                    this,
+                    messages.allMessages,
+                    functions,
+                    invocationContext)))
+            .getOptions();
+
+        return getClient()
+            .getChatCompletionsStreamWithResponse(
+                getDeploymentName(),
+                options,
+                OpenAIRequestSettings.getRequestOptions())
+            .flatMap(completionsResult -> {
+                if (completionsResult.getStatusCode() >= 400) {
+                    //SemanticKernelTelemetry.endSpanWithError(span);
+                    return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
+                        "Request failed: " + completionsResult.getStatusCode()));
+                }
+                //SemanticKernelTelemetry.endSpanWithUsage(span, completionsResult.getValue().getUsage());
+
+                return Mono.just(completionsResult.getValue());
+            })
+            .flatMap(completions -> {
+                return Flux.fromIterable(completions.getChoices())
+                    .map(message -> {
+                        AuthorRole role = message.getDelta().getRole() == null
+                            ? AuthorRole.ASSISTANT
+                            : AuthorRole.valueOf(message.getDelta().getRole().toString()
+                                .toUpperCase(Locale.ROOT));
+
+                        return new OpenAIStreamingChatMessageContent<>(
+                            completions.getId(),
+                            role,
+                            message.getDelta().getContent(),
+                            getModelId(),
+                            null,
+                            null,
+                            null,
+                            Arrays.asList());
+                    });
+            });
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(
+        String prompt,
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
+        return getStreamingChatMessageContentsAsync(
+            new ChatHistory().addUserMessage(prompt),
+            kernel,
+            invocationContext);
     }
 
     // Holds messages temporarily as we build up our result

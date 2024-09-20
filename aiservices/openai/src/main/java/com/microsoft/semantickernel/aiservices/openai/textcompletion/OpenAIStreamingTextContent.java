@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.services.textcompletion;
+package com.microsoft.semantickernel.aiservices.openai.textcompletion;
 
-import com.microsoft.semantickernel.services.StreamingKernelContent;
+import com.microsoft.semantickernel.services.StreamingTextContent;
+import com.microsoft.semantickernel.services.textcompletion.TextContent;
+
 import javax.annotation.Nullable;
 
 /**
  * StreamingTextContent is a wrapper for TextContent that allows for streaming.
  */
-public class StreamingTextContent extends StreamingKernelContent<TextContent> {
+public class OpenAIStreamingTextContent extends StreamingTextContent<TextContent> {
 
     /**
      * Initializes a new instance of the {@code StreamingTextContent} class with a provided text
@@ -15,7 +17,7 @@ public class StreamingTextContent extends StreamingKernelContent<TextContent> {
      *
      * @param content The text content.
      */
-    public StreamingTextContent(TextContent content) {
+    public OpenAIStreamingTextContent(TextContent content) {
         super(content, 0, null, null);
     }
 

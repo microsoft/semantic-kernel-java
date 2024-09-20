@@ -16,6 +16,7 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
+import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
@@ -36,7 +37,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
+import com.microsoft.semantickernel.services.chatcompletion.StreamingChatContent;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -73,6 +74,53 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
         return this.getChatMessageContentsAsync(parsedPrompt.getChatHistory(), kernel,
             invocationContext);
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
+
+        LOGGER.warn("Streaming has been called on GeminiChatCompletion service. "
+            + "This is currently not supported in Gemini. "
+            + "The results will be returned in a non streaming fashion.");
+
+        return getChatMessageContentsAsync(chatHistory, kernel, invocationContext)
+            .flatMapIterable(chatMessageContents -> chatMessageContents)
+            .map(content -> {
+                return new GeminiStreamingChatMessageContent(
+                    content.getAuthorRole(),
+                    content.getContent(),
+                    getModelId(),
+                    content.getInnerContent(),
+                    content.getEncoding(),
+                    content.getMetadata(),
+                    null,
+                    UUID.randomUUID().toString());
+            });
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(String prompt,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+        LOGGER.warn("Streaming has been called on GeminiChatCompletion service. "
+            + "This is currently not supported in Gemini. "
+            + "The results will be returned in a non streaming fashion.");
+
+        return getChatMessageContentsAsync(prompt, kernel, invocationContext)
+            .flatMapIterable(chatMessageContents -> chatMessageContents)
+            .map(content -> {
+                return new GeminiStreamingChatMessageContent(
+                    content.getAuthorRole(),
+                    content.getContent(),
+                    getModelId(),
+                    content.getInnerContent(),
+                    content.getEncoding(),
+                    content.getMetadata(),
+                    null,
+                    UUID.randomUUID().toString());
+            });
     }
 
     @Override

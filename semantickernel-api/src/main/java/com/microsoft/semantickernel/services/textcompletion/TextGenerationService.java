@@ -5,6 +5,7 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.implementation.ServiceLoadUtil;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.services.StreamingTextContent;
 import com.microsoft.semantickernel.services.TextAIService;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import java.util.List;
