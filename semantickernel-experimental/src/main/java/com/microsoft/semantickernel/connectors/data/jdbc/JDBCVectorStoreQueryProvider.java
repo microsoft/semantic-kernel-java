@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -471,101 +469,94 @@ public class JDBCVectorStoreQueryProvider
      *
      * @param <Record> the record type
      * @param collectionName the collection name
-     * @param query the vectorized search query, containing the vector and search options
+     * @param vector the vector to search with
+     * @param options the search options
      * @param recordDefinition the record definition
      * @param mapper the mapper, responsible for mapping the result set to the record type.
      * @return the search results
      */
     @Override
     public <Record> List<VectorSearchResult<Record>> search(String collectionName,
-        VectorSearchQuery query, VectorStoreRecordDefinition recordDefinition,
+        List<Float> vector, VectorSearchOptions options,
+        VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
         if (recordDefinition.getVectorFields().isEmpty()) {
             throw new SKException("No vector fields defined. Cannot perform vector search");
         }
 
-        if (query instanceof VectorizedSearchQuery) {
-            VectorizedSearchQuery vectorizedSearchQuery = (VectorizedSearchQuery) query;
-            VectorSearchOptions options = query.getSearchOptions();
-
-            VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
-                .get(0);
-            if (options == null) {
-                options = VectorSearchOptions.createDefault(firstVectorField.getName());
-            }
-
-            VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
-                ? firstVectorField
-                : (VectorStoreRecordVectorField) recordDefinition
-                    .getField(options.getVectorFieldName());
-
-            String filter = SQLVectorStoreRecordCollectionSearchMapping
-                .buildFilter(options.getVectorSearchFilter(), recordDefinition);
-            List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
-                .getFilterParameters(options.getVectorSearchFilter());
-
-            List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
-                new GetRecordOptions(true), filter, parameters);
-            List<VectorSearchResult<Record>> results = new ArrayList<>();
-
-            DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
-                ? DistanceFunction.EUCLIDEAN_DISTANCE
-                : vectorField.getDistanceFunction();
-
-            for (Record record : records) {
-                List<Float> vector;
-                try {
-                    String json = new ObjectMapper().writeValueAsString(record);
-                    ArrayNode arrayNode = (ArrayNode) new ObjectMapper().readTree(json)
-                        .get(vectorField.getEffectiveStorageName());
-
-                    vector = Stream.iterate(0, i -> i + 1)
-                        .limit(arrayNode.size())
-                        .map(i -> arrayNode.get(i).floatValue())
-                        .collect(Collectors.toList());
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-
-                double score;
-                switch (distanceFunction) {
-                    case COSINE_SIMILARITY:
-                        score = VectorOperations.cosineSimilarity(vectorizedSearchQuery.getVector(),
-                            vector);
-                        break;
-                    case COSINE_DISTANCE:
-                        score = VectorOperations.cosineDistance(vectorizedSearchQuery.getVector(),
-                            vector);
-                        break;
-                    case EUCLIDEAN_DISTANCE:
-                        score = VectorOperations
-                            .euclideanDistance(vectorizedSearchQuery.getVector(), vector);
-                        break;
-                    case DOT_PRODUCT:
-                        score = VectorOperations.dot(vectorizedSearchQuery.getVector(), vector);
-                        break;
-                    default:
-                        throw new SKException("Unsupported distance function");
-                }
-
-                results.add(new VectorSearchResult<>(record, score));
-            }
-
-            Comparator<VectorSearchResult<Record>> comparator = Comparator
-                .comparingDouble(VectorSearchResult::getScore);
-            // Higher scores are better
-            if (distanceFunction == DistanceFunction.COSINE_SIMILARITY
-                || distanceFunction == DistanceFunction.DOT_PRODUCT) {
-                comparator = comparator.reversed();
-            }
-            return results.stream()
-                .sorted(comparator)
-                .skip(options.getOffset())
-                .limit(options.getLimit())
-                .collect(Collectors.toList());
+        VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
+            .get(0);
+        if (options == null) {
+            options = VectorSearchOptions.createDefault(firstVectorField.getName());
         }
 
-        throw new SKException("Unsupported query type");
+        VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
+            ? firstVectorField
+            : (VectorStoreRecordVectorField) recordDefinition
+                .getField(options.getVectorFieldName());
+
+        String filter = SQLVectorStoreRecordCollectionSearchMapping
+            .buildFilter(options.getVectorSearchFilter(), recordDefinition);
+        List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
+            .getFilterParameters(options.getVectorSearchFilter());
+
+        List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
+            new GetRecordOptions(true), filter, parameters);
+        List<VectorSearchResult<Record>> results = new ArrayList<>();
+
+        DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
+            ? DistanceFunction.EUCLIDEAN_DISTANCE
+            : vectorField.getDistanceFunction();
+
+        for (Record record : records) {
+            List<Float> recordVector;
+            try {
+                String json = new ObjectMapper().writeValueAsString(record);
+                ArrayNode arrayNode = (ArrayNode) new ObjectMapper().readTree(json)
+                    .get(vectorField.getEffectiveStorageName());
+
+                recordVector = Stream.iterate(0, i -> i + 1)
+                    .limit(arrayNode.size())
+                    .map(i -> arrayNode.get(i).floatValue())
+                    .collect(Collectors.toList());
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+
+            double score;
+            switch (distanceFunction) {
+                case COSINE_SIMILARITY:
+                    score = VectorOperations.cosineSimilarity(vector, recordVector);
+                    break;
+                case COSINE_DISTANCE:
+                    score = VectorOperations.cosineDistance(vector, recordVector);
+                    break;
+                case EUCLIDEAN_DISTANCE:
+                    score = VectorOperations
+                        .euclideanDistance(vector, recordVector);
+                    break;
+                case DOT_PRODUCT:
+                    score = VectorOperations.dot(vector, recordVector);
+                    break;
+                default:
+                    throw new SKException("Unsupported distance function");
+            }
+
+            results.add(new VectorSearchResult<>(record, score));
+        }
+
+        Comparator<VectorSearchResult<Record>> comparator = Comparator
+            .comparingDouble(VectorSearchResult::getScore);
+        // Higher scores are better
+        if (distanceFunction == DistanceFunction.COSINE_SIMILARITY
+            || distanceFunction == DistanceFunction.DOT_PRODUCT) {
+            comparator = comparator.reversed();
+        }
+        return results.stream()
+            .sorted(comparator)
+            .skip(options.getOffset())
+            .limit(options.getLimit())
+            .collect(Collectors.toList());
     }
 
     /**

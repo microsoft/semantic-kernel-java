@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.microsoft.semantickernel.connectors.data.redis.filter.RedisEqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -22,10 +21,10 @@ import java.util.stream.Collectors;
 public class RedisVectorStoreCollectionSearchMapping {
     static final String VECTOR_SCORE_FIELD = "vector_score";
 
-    public static Pair<String, FTSearchParams> buildQuery(VectorizedSearchQuery query,
+    public static Pair<String, FTSearchParams> buildQuery(List<Float> vector,
+        VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,
         RedisStorageType storageType) {
-        VectorSearchOptions options = query.getSearchOptions();
         VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields().get(0);
         if (options == null) {
             options = VectorSearchOptions.createDefault(firstVectorField.getName());
@@ -43,7 +42,7 @@ public class RedisVectorStoreCollectionSearchMapping {
 
         FTSearchParams searchParams = new FTSearchParams()
             .addParam("K", options.getLimit() + options.getOffset())
-            .addParam("BLOB", convertListToByteArray(query.getVector()))
+            .addParam("BLOB", convertListToByteArray(vector))
             .limit(options.getOffset(), options.getLimit())
             .sortBy(VECTOR_SCORE_FIELD, SortingOrder.ASC)
             .dialect(2);
@@ -57,8 +56,8 @@ public class RedisVectorStoreCollectionSearchMapping {
                 searchParams.returnField(dataField.getEffectiveStorageName(), false);
             }
             if (options.isIncludeVectors()) {
-                for (VectorStoreRecordVectorField vector : recordDefinition.getVectorFields()) {
-                    searchParams.returnField(vector.getEffectiveStorageName(), false);
+                for (VectorStoreRecordVectorField v : recordDefinition.getVectorFields()) {
+                    searchParams.returnField(v.getEffectiveStorageName(), false);
                 }
             }
         }

@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface VectorizableSearch<Record> extends VectorSearch<Record> {
+public interface VectorizableTextSearch<Record> {
     /**
      * Vectorizable text search. This method searches for records that are similar to the given text.
      *
