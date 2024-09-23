@@ -66,12 +66,14 @@ public class RedisVectorStoreCollectionCreateMapping {
         }
     }
 
-    private static String getRedisPath(String name) {
-        return "$." + name;
+    private static String getRedisPath(String name, boolean withRedisJsonRoot) {
+        return withRedisJsonRoot ? "$." + name : name;
     }
 
-    public static Schema mapToSchema(List<VectorStoreRecordField> fields) {
+    public static Schema mapToSchema(List<VectorStoreRecordField> fields,
+        RedisStorageType storageType) {
         Schema schema = new Schema();
+        boolean withRedisJsonRoot = storageType == RedisStorageType.JSON;
 
         for (VectorStoreRecordField field : fields) {
             if (field instanceof VectorStoreRecordKeyField) {
@@ -89,9 +91,14 @@ public class RedisVectorStoreCollectionCreateMapping {
                 }
 
                 if (dataField.getFieldType().equals(String.class)) {
-                    schema.addTextField(getRedisPath(dataField.getEffectiveStorageName()), 1.0);
+                    schema.addTextField(
+                        getRedisPath(dataField.getEffectiveStorageName(), withRedisJsonRoot), 1.0)
+                        .as(dataField.getEffectiveStorageName());
                 } else if (supportedFilterableNumericTypes.contains(dataField.getFieldType())) {
-                    schema.addNumericField(getRedisPath(dataField.getEffectiveStorageName()));
+                    schema
+                        .addNumericField(
+                            getRedisPath(dataField.getEffectiveStorageName(), withRedisJsonRoot))
+                        .as(dataField.getEffectiveStorageName());
                 } else {
                     throw new SKException(
                         "Unsupported field type for numeric filterable fields: "
@@ -117,8 +124,9 @@ public class RedisVectorStoreCollectionCreateMapping {
                 attributes.put(RedisIndexSchemaParams.DIMENSIONS, vectorField.getDimensions());
                 attributes.put(RedisIndexSchemaParams.DISTANCE_METRIC, metric);
 
-                schema.addVectorField(getRedisPath(vectorField.getEffectiveStorageName()),
-                    algorithm, attributes);
+                schema.addVectorField(
+                    getRedisPath(vectorField.getEffectiveStorageName(), withRedisJsonRoot),
+                    algorithm, attributes).as(vectorField.getEffectiveStorageName());
             }
         }
 

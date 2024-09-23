@@ -118,17 +118,19 @@ public class AzureAISearchVectorStore {
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
         // Create a new Azure AI Search vector store
-        var azureAISearchVectorStore = com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore.builder()
+        var azureAISearchVectorStore = com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStore
+            .builder()
             .withSearchIndexAsyncClient(searchClient)
             .withOptions(new AzureAISearchVectorStoreOptions())
             .build();
 
         String collectionName = "skgithubfiles";
-        var collection = (AzureAISearchVectorStoreRecordCollection<GitHubFile>) azureAISearchVectorStore.getCollection(
-            collectionName,
-            AzureAISearchVectorStoreRecordCollectionOptions.<GitHubFile>builder()
-                .withRecordClass(GitHubFile.class)
-                .build());
+        var collection = (AzureAISearchVectorStoreRecordCollection<GitHubFile>) azureAISearchVectorStore
+            .getCollection(
+                collectionName,
+                AzureAISearchVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+                    .withRecordClass(GitHubFile.class)
+                    .build());
 
         // Create collection if it does not exist and store data
         collection
@@ -146,17 +148,17 @@ public class AzureAISearchVectorStore {
         }
         var searchResult = results.get(0);
         System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
-                searchResult.getScore(), searchResult.getRecord().link, searchResult.getRecord().description);
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
     }
 
-
     private static Mono<List<VectorSearchResult<GitHubFile>>> search(
-            String searchText,
-            AzureAISearchVectorStoreRecordCollection<GitHubFile> recordCollection,
-            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        String searchText,
+        AzureAISearchVectorStoreRecordCollection<GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
 
         return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
+            .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(

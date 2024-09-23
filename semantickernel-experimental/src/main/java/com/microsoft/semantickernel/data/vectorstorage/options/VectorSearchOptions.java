@@ -103,6 +103,7 @@ public class VectorSearchOptions {
 
         public Builder() {
             this.limit = DEFAULT_RESULT_LIMIT;
+            this.includeVectors = false;
         }
 
         public Builder withVectorSearchFilter(

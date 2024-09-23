@@ -1,9 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
+import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
@@ -11,18 +16,23 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import reactor.core.publisher.Mono;
@@ -32,12 +42,16 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.search.FTSearchParams;
 import redis.clients.jedis.search.IndexDefinition;
 import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 
 public class RedisJsonVectorStoreRecordCollection<Record>
-    implements VectorStoreRecordCollection<String, Record> {
+    implements VectorStoreRecordCollection<String, Record>,
+    VectorizedSearch<Record> {
 
     private static final HashSet<Class<?>> supportedKeyTypes = new HashSet<>(
         Collections.singletonList(
@@ -54,7 +68,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
     private final VectorStoreRecordMapper<Record, Entry<String, Object>> vectorStoreRecordMapper;
     private final VectorStoreRecordDefinition recordDefinition;
     private final Path2[] dataFields;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     /**
      * Creates a new instance of the RedisVectorRecordStore.
@@ -87,11 +101,16 @@ public class RedisJsonVectorStoreRecordCollection<Record>
             new ArrayList<>(recordDefinition.getVectorFields()),
             supportedVectorTypes);
 
+        // If object mapper is not provided, set a default one
+        this.objectMapper = options.getObjectMapper() != null ? options.getObjectMapper()
+            : new ObjectMapper();
+
         // If mapper is not provided, set a default one
         if (options.getVectorStoreRecordMapper() == null) {
             vectorStoreRecordMapper = new RedisJsonVectorStoreRecordMapper.Builder<Record>()
-                .withKeyFieldName(recordDefinition.getKeyField().getEffectiveStorageName())
                 .withRecordClass(options.getRecordClass())
+                .withRecordDefinition(recordDefinition)
+                .withObjectMapper(objectMapper)
                 .build();
         } else {
             vectorStoreRecordMapper = options.getVectorStoreRecordMapper();
@@ -144,7 +163,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
     public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(() -> {
             Schema schema = RedisVectorStoreCollectionCreateMapping
-                .mapToSchema(recordDefinition.getAllFields());
+                .mapToSchema(recordDefinition.getAllFields(), RedisStorageType.JSON);
 
             IndexDefinition indexDefinition = new IndexDefinition(IndexDefinition.Type.JSON)
                 .setPrefixes(collectionName + ":");
@@ -181,8 +200,15 @@ public class RedisJsonVectorStoreRecordCollection<Record>
             .then();
     }
 
-    private String getRedisKey(String key, String collectionName) {
+    private String prefixKeyIfNeeded(String key, String collectionName) {
         return options.isPrefixCollectionName() ? collectionName + ":" + key : key;
+    }
+
+    private String removeKeyPrefixIfNeeded(String key, String collectionName) {
+        if (options.isPrefixCollectionName() && key.startsWith(collectionName + ":")) {
+            return key.substring(collectionName.length() + 1);
+        }
+        return key;
     }
 
     private JsonNode removeRedisPathPrefix(JSONObject object) {
@@ -209,7 +235,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Record> getAsync(String key, GetRecordOptions options) {
-        String redisKey = getRedisKey(key, collectionName);
+        String redisKey = prefixKeyIfNeeded(key, collectionName);
 
         return Mono.defer(() -> {
             try {
@@ -253,7 +279,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
         Pipeline pipeline = client.pipelined();
         List<Entry<String, Response<Object>>> responses = new ArrayList<>(keys.size());
         keys.forEach(key -> {
-            String redisKey = getRedisKey(key, collectionName);
+            String redisKey = prefixKeyIfNeeded(key, collectionName);
 
             if (options != null && options.isIncludeVectors()) {
                 responses.add(new SimpleEntry<>(key, pipeline.jsonGet(redisKey)));
@@ -301,7 +327,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
         Entry<String, Object> redisObject = this.vectorStoreRecordMapper
             .mapRecordToStorageModel(data);
-        String redisKey = getRedisKey(redisObject.getKey(), collectionName);
+        String redisKey = prefixKeyIfNeeded(redisObject.getKey(), collectionName);
 
         return Mono.fromRunnable(() -> client.jsonSet(redisKey, redisObject.getValue()))
             .subscribeOn(Schedulers.boundedElastic())
@@ -323,7 +349,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
         data.forEach(record -> {
             Entry<String, Object> redisObject = this.vectorStoreRecordMapper
                 .mapRecordToStorageModel(record);
-            String redisKey = getRedisKey(redisObject.getKey(), collectionName);
+            String redisKey = prefixKeyIfNeeded(redisObject.getKey(), collectionName);
 
             keys.add(redisObject.getKey());
             pipeline.jsonSet(redisKey, redisObject.getValue());
@@ -343,7 +369,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Void> deleteAsync(String key, DeleteRecordOptions options) {
-        String redisKey = getRedisKey(key, collectionName);
+        String redisKey = prefixKeyIfNeeded(key, collectionName);
 
         return Mono.fromRunnable(() -> client.del(redisKey))
             .subscribeOn(Schedulers.boundedElastic())
@@ -361,12 +387,80 @@ public class RedisJsonVectorStoreRecordCollection<Record>
     public Mono<Void> deleteBatchAsync(List<String> strings, DeleteRecordOptions options) {
         Pipeline pipeline = client.pipelined();
         strings.forEach(key -> {
-            String redisKey = getRedisKey(key, collectionName);
+            String redisKey = prefixKeyIfNeeded(key, collectionName);
             pipeline.del(redisKey);
         });
 
         return Mono.fromRunnable(pipeline::sync)
             .subscribeOn(Schedulers.boundedElastic())
             .then();
+    }
+
+    /**
+     * Vector search. This method searches for records that are similar to the given vector using the index defined when creating the collection.
+     *
+     * @param query The search query.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
+        if (recordDefinition.getVectorFields().isEmpty()) {
+            return Mono
+                .error(new SKException("No vector fields defined. Cannot perform vector search"));
+        }
+
+        return createCollectionIfNotExistsAsync().flatMap(collection -> Mono.fromCallable(() -> {
+            if (query instanceof VectorizedSearchQuery) {
+                VectorSearchOptions options = query.getSearchOptions();
+
+                Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
+                    .buildQuery((VectorizedSearchQuery) query, recordDefinition,
+                        RedisStorageType.JSON);
+
+                SearchResult searchResult = client.ftSearch(collectionName,
+                    ftSearchParams.getLeft(), ftSearchParams.getRight());
+
+                return searchResult.getDocuments().stream()
+                    .map(doc -> {
+                        Map<String, Object> properties = new HashMap<>();
+                        for (Map.Entry<String, Object> entry : doc.getProperties()) {
+                            properties.put(entry.getKey(), entry.getValue());
+                        }
+
+                        String key = removeKeyPrefixIfNeeded(doc.getId(), collectionName);
+                        String value = (String) properties.get("$");
+                        double score = Double.parseDouble((String) properties
+                            .get(RedisVectorStoreCollectionSearchMapping.VECTOR_SCORE_FIELD));
+
+                        try {
+                            JsonNode jsonNode = objectMapper.readTree(value);
+                            Record record = this.vectorStoreRecordMapper
+                                .mapStorageModelToRecord(new SimpleEntry<>(key, jsonNode),
+                                    new GetRecordOptions(
+                                        options != null && options.isIncludeVectors()));
+
+                            return new VectorSearchResult<>(record, score);
+                        } catch (JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            }
+
+            throw new SKException("Unsupported query type");
+        }).subscribeOn(Schedulers.boundedElastic()));
+    }
+
+    /**
+     * Vectorized search. This method searches for records that are similar to the given vector.
+     *
+     * @param vector  The vector to search with.
+     * @param options The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+        VectorSearchOptions options) {
+        return this.searchAsync(VectorSearchQuery.createQuery(vector, options));
     }
 }
