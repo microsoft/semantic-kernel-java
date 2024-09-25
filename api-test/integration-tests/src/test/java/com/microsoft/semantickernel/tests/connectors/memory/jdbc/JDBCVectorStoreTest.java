@@ -6,10 +6,12 @@ import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProv
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.sqlite.SQLiteVectorStoreQueryProvider;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.postgresql.ds.PGSimpleDataSource;
+import org.sqlite.SQLiteDataSource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -57,6 +59,14 @@ public class JDBCVectorStoreTest {
                 dataSource = pgSimpleDataSource;
                 queryProvider = PostgreSQLVectorStoreQueryProvider.builder()
                         .withDataSource(dataSource)
+                        .build();
+                break;
+            case SQLite:
+                SQLiteDataSource sqliteDataSource = new SQLiteDataSource();
+                sqliteDataSource.setUrl("jdbc:sqlite:file:test");
+                dataSource = sqliteDataSource;
+                queryProvider = SQLiteVectorStoreQueryProvider.builder()
+                        .withDataSource(sqliteDataSource)
                         .build();
                 break;
             default:
