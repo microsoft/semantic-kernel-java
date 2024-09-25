@@ -8,17 +8,16 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
-import org.apache.commons.lang3.tuple.Pair;
-import redis.clients.jedis.args.SortingOrder;
-import redis.clients.jedis.search.FTSearchParams;
-import redis.clients.jedis.search.Query;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
+import redis.clients.jedis.args.SortingOrder;
+import redis.clients.jedis.search.FTSearchParams;
 
 public class RedisVectorStoreCollectionSearchMapping {
+
     static final String VECTOR_SCORE_FIELD = "vector_score";
 
     public static Pair<String, FTSearchParams> buildQuery(List<Float> vector,

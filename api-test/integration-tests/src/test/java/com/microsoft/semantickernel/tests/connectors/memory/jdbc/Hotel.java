@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 
 import java.util.List;
 
@@ -24,19 +25,19 @@ public class Hotel {
     private final String description;
 
     @JsonProperty("summaryEmbedding1")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "euclidean")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> euclidean;
 
     @JsonProperty("summaryEmbedding2")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "cosineDistance")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE)
     private final List<Float> cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "dotProduct")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT)
     private final List<Float> dotProduct;
 
     @JsonProperty("indexedSummaryEmbedding")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = "hnsw", distanceFunction = "euclidean")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = "hnsw", distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> indexedEuclidean;
     @VectorStoreRecordDataAttribute
     private double rating;

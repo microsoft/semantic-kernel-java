@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -43,7 +44,7 @@ public class InMemoryVolatileVectorStore {
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = "cosineDistance")
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile(
@@ -60,12 +61,15 @@ public class InMemoryVolatileVectorStore {
         public String getId() {
             return id;
         }
+
         public String getDescription() {
             return description;
         }
+
         public String getLink() {
             return link;
         }
+
         public List<Float> getEmbedding() {
             return embedding;
         }
@@ -130,17 +134,17 @@ public class InMemoryVolatileVectorStore {
         }
         var searchResult = results.get(0);
         System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
-                searchResult.getScore(), searchResult.getRecord().link,
-                searchResult.getRecord().description);
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
     }
 
     private static Mono<List<VectorSearchResult<GitHubFile>>> search(
-            String searchText,
-            VectorStoreRecordCollection<String, GitHubFile> recordCollection,
-            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        String searchText,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
         // Generate embeddings for the search text and search for the closest records
         return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
+            .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(

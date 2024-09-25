@@ -20,6 +20,7 @@ import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollecti
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -27,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -49,14 +49,16 @@ public class VectorStoreWithAzureAISearch {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
+
         @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute()
+        @VectorStoreRecordVectorAttribute(distanceFunction = DistanceFunction.COSINE_DISTANCE, dimensions = EMBEDDING_DIMENSIONS)
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw")
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {

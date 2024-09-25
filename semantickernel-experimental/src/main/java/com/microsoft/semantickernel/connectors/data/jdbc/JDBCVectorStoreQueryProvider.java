@@ -1,27 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,22 +22,26 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JDBCVectorStoreQueryProvider
     implements SQLVectorStoreQueryProvider {
+
     private static final Logger LOGGER = LoggerFactory
         .getLogger(JDBCVectorStoreQueryProvider.class);
 
     private final Map<Class<?>, String> supportedKeyTypes;
     private final Map<Class<?>, String> supportedDataTypes;
     private final Map<Class<?>, String> supportedVectorTypes;
-    private final DataSource dataSource;
+    protected final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
 
@@ -81,8 +77,24 @@ public class JDBCVectorStoreQueryProvider
         supportedVectorTypes.put(Collection.class, "TEXT");
     }
 
+    public JDBCVectorStoreQueryProvider(
+        @SuppressFBWarnings("EI_EXPOSE_REP2") @Nonnull DataSource dataSource,
+        @Nonnull String collectionsTable,
+        @Nonnull String prefixForCollectionTables,
+        @Nonnull HashMap<Class<?>, String> supportedKeyTypes,
+        @Nonnull Map<Class<?>, String> supportedDataTypes,
+        @Nonnull Map<Class<?>, String> supportedVectorTypes) {
+        this.dataSource = dataSource;
+        this.collectionsTable = collectionsTable;
+        this.prefixForCollectionTables = prefixForCollectionTables;
+        this.supportedKeyTypes = new HashMap<>(supportedKeyTypes);
+        this.supportedDataTypes = new HashMap<>(supportedDataTypes);
+        this.supportedVectorTypes = new HashMap<>(supportedVectorTypes);
+    }
+
     /**
      * Creates a new builder.
+     *
      * @return the builder
      */
     public static Builder builder() {
@@ -91,6 +103,7 @@ public class JDBCVectorStoreQueryProvider
 
     /**
      * Formats a wildcard string for a query.
+     *
      * @param wildcards the number of wildcards
      * @return the formatted wildcard string
      */
@@ -102,6 +115,7 @@ public class JDBCVectorStoreQueryProvider
 
     /**
      * Gets the key column name from a key field.
+     *
      * @param keyField the key field
      * @return the key column name
      */
@@ -111,6 +125,7 @@ public class JDBCVectorStoreQueryProvider
 
     /**
      * Formats the query columns from a record definition.
+     *
      * @param fields the fields to get the columns from
      * @return the formatted query columns
      */
@@ -123,8 +138,9 @@ public class JDBCVectorStoreQueryProvider
 
     /**
      * Formats the column names and types for a table.
+     *
      * @param fields the fields
-     * @param types the types
+     * @param types  the types
      * @return the formatted column names and types
      */
     protected String getColumnNamesAndTypes(List<VectorStoreRecordField> fields,
@@ -172,8 +188,7 @@ public class JDBCVectorStoreQueryProvider
     }
 
     /**
-     * Prepares the vector store.
-     * Executes any necessary setup steps for the vector store.
+     * Prepares the vector store. Executes any necessary setup steps for the vector store.
      *
      * @throws SKException if an error occurs while preparing the vector store
      */
@@ -236,12 +251,13 @@ public class JDBCVectorStoreQueryProvider
     /**
      * Creates a collection.
      *
-     * @param collectionName the collection name
+     * @param collectionName   the collection name
      * @param recordDefinition the record definition
      * @throws SKException if an error occurs while creating the collection
      */
     @Override
-    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    // SQL query is generated dynamically with valid identifiers
     public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
 
@@ -342,13 +358,13 @@ public class JDBCVectorStoreQueryProvider
     /**
      * Gets a list of records from the store.
      *
-     * @param collectionName the collection name
-     * @param keys the keys
+     * @param collectionName   the collection name
+     * @param keys             the keys
      * @param recordDefinition the record definition
-     * @param mapper the mapper
-     * @param options the options
+     * @param mapper           the mapper
+     * @param options          the options
+     * @param <Record>         the record type
      * @return the records
-     * @param <Record> the record type
      * @throws SKException if an error occurs while getting the records
      */
     @Override
@@ -363,7 +379,18 @@ public class JDBCVectorStoreQueryProvider
             fields = recordDefinition.getNonVectorFields();
         }
 
-        String query = formatQuery("SELECT %s FROM %s WHERE %s IN (%s)",
+        String query;
+
+        if (options != null && options.isWildcardKeyMatching()) {
+            if (keys.size() > 1) {
+                throw new SKException("If using wildcard key matching, only one key is allowed");
+            }
+            query = "SELECT %s FROM %s WHERE %s LIKE (%s)";
+        } else {
+            query = "SELECT %s FROM %s WHERE %s IN (%s)";
+        }
+
+        query = formatQuery(query,
             getQueryColumnsFromFields(fields),
             getCollectionTableName(collectionName),
             getKeyColumnName(recordDefinition.getKeyField()),
@@ -398,10 +425,10 @@ public class JDBCVectorStoreQueryProvider
     /**
      * Deletes records.
      *
-     * @param collectionName the collection name
-     * @param keys the keys
+     * @param collectionName   the collection name
+     * @param keys             the keys
      * @param recordDefinition the record definition
-     * @param options the options
+     * @param options          the options
      * @throws SKException if an error occurs while deleting the records
      */
     @Override
@@ -426,7 +453,9 @@ public class JDBCVectorStoreQueryProvider
 
     protected <Record> List<Record> getRecordsWithFilter(String collectionName,
         VectorStoreRecordDefinition recordDefinition,
-        VectorStoreRecordMapper<Record, ResultSet> mapper, GetRecordOptions options, String filter,
+        VectorStoreRecordMapper<Record, ResultSet> mapper,
+        GetRecordOptions options,
+        String filter,
         List<Object> parameters) {
         List<VectorStoreRecordField> fields;
         if (options.isIncludeVectors()) {
@@ -462,17 +491,17 @@ public class JDBCVectorStoreQueryProvider
     }
 
     /**
-     * Vector search.
-     * Executes a vector search query and returns the results.
-     * The results are mapped to the specified record type using the provided mapper.
-     * The query is executed against the specified collection.
+     * Vector search. Executes a vector search query and returns the results. The results are mapped
+     * to the specified record type using the provided mapper. The query is executed against the
+     * specified collection.
      *
-     * @param <Record> the record type
-     * @param collectionName the collection name
+     * @param <Record>         the record type
+     * @param collectionName   the collection name
      * @param vector the vector to search with
      * @param options the search options
      * @param recordDefinition the record definition
-     * @param mapper the mapper, responsible for mapping the result set to the record type.
+     * @param mapper           the mapper, responsible for mapping the result set to the record
+     *                         type.
      * @return the search results
      */
     @Override
@@ -529,7 +558,7 @@ public class JDBCVectorStoreQueryProvider
      * Formats a query.
      *
      * @param query the query
-     * @param args the arguments
+     * @param args  the arguments
      * @return the formatted query
      */
     public String formatQuery(String query, String... args) {
@@ -541,12 +570,14 @@ public class JDBCVectorStoreQueryProvider
      */
     public static class Builder
         implements SQLVectorStoreQueryProvider.Builder {
+
         private DataSource dataSource;
         private String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
         /**
          * Sets the data source.
+         *
          * @param dataSource the data source
          * @return the builder
          */
@@ -558,6 +589,7 @@ public class JDBCVectorStoreQueryProvider
 
         /**
          * Sets the collections table name.
+         *
          * @param collectionsTable the collections table name
          * @return the builder
          */
@@ -568,6 +600,7 @@ public class JDBCVectorStoreQueryProvider
 
         /**
          * Sets the prefix for collection tables.
+         *
          * @param prefixForCollectionTables the prefix for collection tables
          * @return the builder
          */

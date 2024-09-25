@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -37,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.text.StringEscapeUtils;
 import reactor.core.publisher.Mono;
 
 /**
@@ -89,8 +89,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 if ("role".equalsIgnoreCase(name)) {
                     return ((ChatMessageContent) context).getAuthorRole().name();
                 } else if ("content".equalsIgnoreCase(name)) {
-                    return ContextVariableTypeConverter
-                        .escapeXmlString(((ChatMessageContent) context).getContent());
+                    return ((ChatMessageContent) context).getContent();
                 }
             }
             return UNRESOLVED;
@@ -131,17 +130,24 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         @Override
         public Object resolve(Object context, String name) {
             Object value = null;
+            ContextVariable<?> variable = null;
             if (context instanceof KernelFunctionArguments) {
-                ContextVariable<?> variable = ((KernelFunctionArguments) context).get(name);
-                value = variable != null ? variable.getValue() : UNRESOLVED;
+                variable = ((KernelFunctionArguments) context).get(name);
+            } else if (context instanceof ContextVariable) {
+                variable = ((ContextVariable<?>) context);
             }
-            if (context instanceof ContextVariable) {
-                value = ((ContextVariable<?>) context).getValue();
-            }
-            if (value == null) {
+
+            if (variable == null || variable.getValue() == null) {
                 return UNRESOLVED;
-            } else {
+            }
+
+            value = variable.getValue();
+
+            if (value instanceof Iterable) {
                 return value;
+            } else {
+                // It is likely this will come escaped, but will be re escaped by the handlebars engine
+                return promptString(variable);
             }
         }
 
@@ -149,9 +155,21 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         public Object resolve(Object context) {
             if (context instanceof ContextVariable) {
                 Object result = ((ContextVariable<?>) context).getValue();
-                return result != null ? result : UNRESOLVED;
+
+                if (result == null) {
+                    return UNRESOLVED;
+                } else if (result instanceof Iterable) {
+                    return result;
+                } else {
+                    return promptString(((ContextVariable<?>) context));
+                }
             }
             return UNRESOLVED;
+        }
+
+        private String promptString(ContextVariable<?> context) {
+            // This will come escaped, but will be re escaped by the handlebars engine
+            return StringEscapeUtils.unescapeXml(context.toPromptString());
         }
 
         @Override
@@ -192,22 +210,19 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         }
 
         private Helper<Object> handleEach(InvocationContext invocationContext) {
-            return (context, options) -> {
-                if (context instanceof ContextVariable) {
-                    return ((ContextVariable<?>) context)
+            return (variable, options) -> {
+                if (variable instanceof ContextVariable) {
+                    return ((ContextVariable<?>) variable)
                         .toPromptString(invocationContext.getContextVariableTypes());
                 }
 
-                if (context instanceof Iterable) {
+                if (variable instanceof Iterable) {
                     StringBuilder sb = new StringBuilder();
-                    Iterator<?> iterator = ((Iterable<?>) context).iterator();
-                    while (iterator.hasNext()) {
-                        Object element = iterator.next();
+
+                    for (Object element : (Iterable<?>) variable) {
                         if (element instanceof KernelPlugin) {
                             KernelPlugin plugin = (KernelPlugin) element;
-                            Iterator<KernelFunction<?>> functions = plugin.iterator();
-                            while (functions.hasNext()) {
-                                KernelFunction<?> function = functions.next();
+                            for (KernelFunction<?> function : plugin) {
                                 sb.append(options.fn(function));
                             }
                         } else {
@@ -218,10 +233,11 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 }
 
                 ContextVariableType type = invocationContext.getContextVariableTypes()
-                    .getVariableTypeForClass(context.getClass());
+                    .getVariableTypeForClass(variable.getClass());
                 if (type != null) {
-                    return type.getConverter()
-                        .toPromptString(invocationContext.getContextVariableTypes(), context);
+                    return type
+                        .getConverter()
+                        .toPromptString(invocationContext.getContextVariableTypes(), variable);
                 }
                 return null;
             };
@@ -248,7 +264,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
                 return new Handlebars.SafeString(
                     String.format(
                         "<message role=\"%s\">%s</message>",
-                        role.toLowerCase(Locale.ROOT), content));
+                        role.toLowerCase(Locale.ROOT),
+                        content));
             }
             return null;
         }

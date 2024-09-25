@@ -28,8 +28,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 public class JDBCVectorStoreRecordCollection<Record>
-    implements SQLVectorStoreRecordCollection<String, Record>,
-    VectorizedSearch<Record> {
+    implements SQLVectorStoreRecordCollection<String, Record> {
 
     private final String collectionName;
     private final VectorStoreRecordDefinition recordDefinition;

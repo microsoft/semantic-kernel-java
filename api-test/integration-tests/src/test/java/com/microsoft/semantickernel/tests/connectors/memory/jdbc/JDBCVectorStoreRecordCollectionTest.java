@@ -1,17 +1,33 @@
 package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
-import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import com.microsoft.semantickernel.connectors.data.hsqldb.HSQLDBVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.filter.SQLEqualToFilterClause;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.connectors.data.jdbc.filter.SQLEqualToFilterClause;
 import com.microsoft.semantickernel.connectors.data.sqlite.SQLiteVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
+import org.hsqldb.jdbc.JDBCDataSourceFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,17 +41,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 
 @Testcontainers
 public class JDBCVectorStoreRecordCollectionTest {
@@ -43,17 +48,21 @@ public class JDBCVectorStoreRecordCollectionTest {
     @Container
     private static final MySQLContainer<?> MYSQL_CONTAINER = new MySQLContainer<>("mysql:5.7.34");
 
-    private static final DockerImageName PGVECTOR = DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres");
+    private static final DockerImageName PGVECTOR = DockerImageName.parse("pgvector/pgvector:pg16")
+        .asCompatibleSubstituteFor("postgres");
     @Container
-    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(PGVECTOR);
+    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(
+        PGVECTOR);
 
     public enum QueryProvider {
         MySQL,
         PostgreSQL,
-        SQLite
+        SQLite,
+        HSQLDB
     }
 
-    private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(QueryProvider provider, @Nonnull String collectionName) {
+    private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(QueryProvider provider,
+        @Nonnull String collectionName) {
         SQLVectorStoreQueryProvider queryProvider;
         DataSource dataSource;
 
@@ -65,8 +74,8 @@ public class JDBCVectorStoreRecordCollectionTest {
                 mysqlDataSource.setPassword(MYSQL_CONTAINER.getPassword());
                 dataSource = mysqlDataSource;
                 queryProvider = MySQLVectorStoreQueryProvider.builder()
-                        .withDataSource(dataSource)
-                        .build();
+                    .withDataSource(dataSource)
+                    .build();
                 break;
             case PostgreSQL:
                 PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
@@ -75,29 +84,52 @@ public class JDBCVectorStoreRecordCollectionTest {
                 pgSimpleDataSource.setPassword(POSTGRESQL_CONTAINER.getPassword());
                 dataSource = pgSimpleDataSource;
                 queryProvider = PostgreSQLVectorStoreQueryProvider.builder()
-                        .withDataSource(dataSource)
-                        .build();
+                    .withDataSource(dataSource)
+                    .build();
                 break;
             case SQLite:
                 SQLiteDataSource sqliteDataSource = new SQLiteDataSource();
                 sqliteDataSource.setUrl("jdbc:sqlite:file:testdb");
                 dataSource = sqliteDataSource;
                 queryProvider = SQLiteVectorStoreQueryProvider.builder()
-                        .withDataSource(sqliteDataSource)
-                        .build();
+                    .withDataSource(sqliteDataSource)
+                    .build();
+                break;
+            case HSQLDB:
+                try {
+                    Path file = Files.createTempFile("testdb", ".db");
+                    file.toFile().deleteOnExit();
+
+                    Properties properties = new Properties();
+                    properties.putAll(
+                        Map.of(
+                            "url", "jdbc:hsqldb:file:" + file.toFile().getAbsolutePath()
+                                + ";sql.syntax_mys=true",
+                            "user", "SA",
+                            "password", ""
+                        )
+                    );
+
+                    dataSource = JDBCDataSourceFactory.createDataSource(properties);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                queryProvider = HSQLDBVectorStoreQueryProvider.builder()
+                    .withDataSource(dataSource)
+                    .build();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown query provider: " + provider);
         }
 
-
-        JDBCVectorStoreRecordCollection<Hotel> recordCollection =  new JDBCVectorStoreRecordCollection<>(
-                dataSource,
-                collectionName,
-                JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
-                        .withRecordClass(Hotel.class)
-                        .withQueryProvider(queryProvider)
-                        .build());
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = new JDBCVectorStoreRecordCollection<>(
+            dataSource,
+            collectionName,
+            JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
+                .withRecordClass(Hotel.class)
+                .withQueryProvider(queryProvider)
+                .build());
 
         recordCollection.prepareAsync().block();
         recordCollection.createCollectionIfNotExistsAsync().block();
@@ -112,32 +144,41 @@ public class JDBCVectorStoreRecordCollectionTest {
 
     private List<Hotel> getHotels() {
         return Arrays.asList(
-                new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description", Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f),null, null, null, 4.0),
-                new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description", Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),null, null, null, 4.0),
-                new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description", Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f),null, null, null, 5.0),
-                new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description", Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f),null, null, null, 4.0),
-                new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description", Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f),null, null, null, 4.0)
+            new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description",
+                Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f), null, null, null,
+                4.0),
+            new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description",
+                Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f), null, null, null,
+                4.0),
+            new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description",
+                Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f), null, null, null,
+                5.0),
+            new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description",
+                Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f), null, null, null,
+                4.0),
+            new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description",
+                Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f), null, null, null,
+                4.0)
         );
     }
 
     /**
-     * Search embeddings similar to the third hotel embeddings.
-     * In order of similarity:
-     * 1. Hotel 3
-     * 2. Hotel 1
-     * 3. Hotel 4
+     * Search embeddings similar to the third hotel embeddings. In order of similarity: 1. Hotel 3
+     * 2. Hotel 1 3. Hotel 4
      */
-    private static final List<Float> SEARCH_EMBEDDINGS = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.2f);
+    private static final List<Float> SEARCH_EMBEDDINGS = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f,
+        -0.8f, 1.1f, -2.2f, 8.2f);
 
     @ParameterizedTest
     @EnumSource(QueryProvider.class)
     public void upsertAndGetRecordAsync(QueryProvider provider) {
         String collectionName = "upsertAndGetRecordAsync";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
-             recordCollection.upsertAsync(hotel, null).block();
+            recordCollection.upsertAsync(hotel, null).block();
         }
 
         // Upsert the first time
@@ -168,11 +209,12 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void getBatchAsync(QueryProvider provider) {
         String collectionName = "getBatchAsync";
-        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
-             recordCollection.upsertAsync(hotel, null).block();
+            recordCollection.upsertAsync(hotel, null).block();
         }
 
         List<String> keys = new ArrayList<>();
@@ -189,10 +231,11 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void upsertBatchAndGetBatchAsync(QueryProvider provider) {
         String collectionName = "upsertBatchAndGetBatchAsync";
-        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
-         recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
 
         List<String> keys = new ArrayList<>();
         for (Hotel hotel : hotels) {
@@ -208,12 +251,13 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void insertAndReplaceAsync(QueryProvider provider) {
         String collectionName = "insertAndReplaceAsync";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
-         recordCollection.upsertBatchAsync(hotels, null).block();
-         recordCollection.upsertBatchAsync(hotels, null).block();
-         recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
 
         List<String> keys = new ArrayList<>();
         for (Hotel hotel : hotels) {
@@ -229,13 +273,14 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void deleteRecordAsync(QueryProvider provider) {
         String collectionName = "deleteRecordAsync";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
-         recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
 
         for (Hotel hotel : hotels) {
-             recordCollection.deleteAsync(hotel.getId(), null).block();
+            recordCollection.deleteAsync(hotel.getId(), null).block();
             Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), null).block();
             assertNull(retrievedHotel);
         }
@@ -245,17 +290,18 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void deleteBatchAsync(QueryProvider provider) {
         String collectionName = "deleteBatchAsync";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
-         recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
 
         List<String> keys = new ArrayList<>();
         for (Hotel hotel : hotels) {
             keys.add(hotel.getId());
         }
 
-         recordCollection.deleteBatchAsync(keys, null).block();
+        recordCollection.deleteBatchAsync(keys, null).block();
 
         for (String key : keys) {
             Hotel retrievedHotel = recordCollection.getAsync(key, null).block();
@@ -267,10 +313,11 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void getWithNoVectors(QueryProvider provider) {
         String collectionName = "getWithNoVectors";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
-         recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
 
         GetRecordOptions options = GetRecordOptions.builder()
             .includeVectors(false)
@@ -299,10 +346,11 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void getBatchWithNoVectors(QueryProvider provider) {
         String collectionName = "getBatchWithNoVectors";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
-         recordCollection.upsertBatchAsync(hotels, null).block();
+        recordCollection.upsertBatchAsync(hotels, null).block();
 
         GetRecordOptions options = GetRecordOptions.builder()
             .includeVectors(false)
@@ -349,7 +397,8 @@ public class JDBCVectorStoreRecordCollectionTest {
     @MethodSource("provideSearchParameters")
     public void exactSearch(QueryProvider provider, String embeddingName) {
         String collectionName = "search" + embeddingName;
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -360,7 +409,8 @@ public class JDBCVectorStoreRecordCollectionTest {
             .build();
 
         // Embeddings similar to the third hotel
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
+            options).block();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
@@ -384,7 +434,8 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void approximateSearch(QueryProvider provider) {
         String collectionName = "searchWithIndex";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -395,7 +446,8 @@ public class JDBCVectorStoreRecordCollectionTest {
             .build();
 
         // Embeddings similar to the third hotel
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
+            options).block();
         assertNotNull(results);
         assertEquals(5, results.size());
         // The third hotel should be the most similar
@@ -406,7 +458,8 @@ public class JDBCVectorStoreRecordCollectionTest {
     @MethodSource("provideSearchParameters")
     public void searchWithFilter(QueryProvider provider, String embeddingName) {
         String collectionName = "searchWithFilter";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+            collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
@@ -415,11 +468,13 @@ public class JDBCVectorStoreRecordCollectionTest {
             .withVectorFieldName(embeddingName)
             .withLimit(3)
             .withVectorSearchFilter(
-                    VectorSearchFilter.builder().withEqualToFilterClause(new SQLEqualToFilterClause("rating", 4.0)).build())
+                VectorSearchFilter.builder()
+                    .withEqualToFilterClause(new SQLEqualToFilterClause("rating", 4.0)).build())
             .build();
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
+            options).block();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The first hotel should be the most similar
@@ -430,12 +485,14 @@ public class JDBCVectorStoreRecordCollectionTest {
     @Test
     public void postgresSearchIncludeAndNotIncludeVectors() {
         String collectionName = "searchIncludeAndNotIncludeVectors";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(QueryProvider.PostgreSQL, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(
+            QueryProvider.PostgreSQL, collectionName);
 
         List<Hotel> hotels = getHotels();
         recordCollection.upsertBatchAsync(hotels, null).block();
 
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, null).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
+            null).block();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar

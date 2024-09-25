@@ -16,6 +16,7 @@ import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollecti
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
@@ -40,7 +41,6 @@ public class VectorStoreWithJDBC {
         .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
-
     static class GitHubFile {
         @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
@@ -49,7 +49,7 @@ public class VectorStoreWithJDBC {
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = "cosineDistance")
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {
@@ -70,12 +70,15 @@ public class VectorStoreWithJDBC {
         public String getId() {
             return id;
         }
+
         public String getDescription() {
             return description;
         }
+
         public String getLink() {
             return link;
         }
+
         public List<Float> getEmbedding() {
             return embedding;
         }
@@ -161,17 +164,17 @@ public class VectorStoreWithJDBC {
         }
         var searchResult = results.get(0);
         System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
-                searchResult.getScore(), searchResult.getRecord().link,
-                searchResult.getRecord().description);
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
     }
 
     private static Mono<List<VectorSearchResult<GitHubFile>>> search(
-            String searchText,
-            VectorStoreRecordCollection<String, GitHubFile> recordCollection,
-            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        String searchText,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
         // Generate embeddings for the search text and search for the closest records
         return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
+            .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
