@@ -4,8 +4,6 @@ package com.microsoft.semantickernel.connectors.data.redis;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -380,57 +378,6 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
             .then();
     }
 
-    @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
-        if (recordDefinition.getVectorFields().isEmpty()) {
-            return Mono
-                .error(new SKException("No vector fields defined. Cannot perform vector search"));
-        }
-
-        return createCollectionIfNotExistsAsync().flatMap(collection -> Mono.fromCallable(() -> {
-            if (query instanceof VectorizedSearchQuery) {
-                VectorSearchOptions options = query.getSearchOptions();
-
-                Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
-                    .buildQuery((VectorizedSearchQuery) query, recordDefinition,
-                        RedisStorageType.HASH_SET);
-
-                SearchResult searchResult = client.ftSearch(collectionName,
-                    ftSearchParams.getLeft(), ftSearchParams.getRight());
-
-                return searchResult.getDocuments().stream()
-                    .map(doc -> {
-                        String key = removeKeyPrefixIfNeeded(doc.getId(), collectionName);
-                        double score = 0;
-
-                        // Convert from Map<String, Object> to Map<byte[], byte[]>
-                        Map<byte[], byte[]> storage = new HashMap<>();
-                        for (Map.Entry<String, Object> entry : doc.getProperties()) {
-                            if (entry.getValue() instanceof byte[]) {
-                                storage.put(stringToBytes(entry.getKey()),
-                                    (byte[]) entry.getValue());
-                            } else if (entry.getKey().equals(
-                                RedisVectorStoreCollectionSearchMapping.VECTOR_SCORE_FIELD)) {
-                                // Score is stored as a string in one of the fields
-                                score = Double.parseDouble((String) entry.getValue());
-                            }
-                        }
-
-                        Record record = this.vectorStoreRecordMapper
-                            .mapStorageModelToRecord(
-                                new AbstractMap.SimpleEntry<>(key, storage),
-                                new GetRecordOptions(
-                                    options != null && options.isIncludeVectors()));
-
-                        return new VectorSearchResult<>(record, score);
-                    })
-                    .collect(Collectors.toList());
-            }
-
-            throw new SKException("Unsupported query type");
-        }).subscribeOn(Schedulers.boundedElastic()));
-    }
-
     /**
      * Vectorized search. This method searches for records that are similar to the given vector.
      *
@@ -441,6 +388,45 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
     @Override
     public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
         VectorSearchOptions options) {
-        return this.searchAsync(VectorSearchQuery.createQuery(vector, options));
+        if (recordDefinition.getVectorFields().isEmpty()) {
+            return Mono
+                .error(new SKException("No vector fields defined. Cannot perform vector search"));
+        }
+
+        return createCollectionIfNotExistsAsync().flatMap(collection -> Mono.fromCallable(() -> {
+            Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
+                .buildQuery(vector, options, recordDefinition, RedisStorageType.HASH_SET);
+
+            SearchResult searchResult = client.ftSearch(collectionName,
+                ftSearchParams.getLeft(), ftSearchParams.getRight());
+
+            return searchResult.getDocuments().stream()
+                .map(doc -> {
+                    String key = removeKeyPrefixIfNeeded(doc.getId(), collectionName);
+                    double score = 0;
+
+                    // Convert from Map<String, Object> to Map<byte[], byte[]>
+                    Map<byte[], byte[]> storage = new HashMap<>();
+                    for (Map.Entry<String, Object> entry : doc.getProperties()) {
+                        if (entry.getValue() instanceof byte[]) {
+                            storage.put(stringToBytes(entry.getKey()),
+                                (byte[]) entry.getValue());
+                        } else if (entry.getKey().equals(
+                            RedisVectorStoreCollectionSearchMapping.VECTOR_SCORE_FIELD)) {
+                            // Score is stored as a string in one of the fields
+                            score = Double.parseDouble((String) entry.getValue());
+                        }
+                    }
+
+                    Record record = this.vectorStoreRecordMapper
+                        .mapStorageModelToRecord(
+                            new AbstractMap.SimpleEntry<>(key, storage),
+                            new GetRecordOptions(
+                                options != null && options.isIncludeVectors()));
+
+                    return new VectorSearchResult<>(record, score);
+                })
+                .collect(Collectors.toList());
+        }).subscribeOn(Schedulers.boundedElastic()));
     }
 }

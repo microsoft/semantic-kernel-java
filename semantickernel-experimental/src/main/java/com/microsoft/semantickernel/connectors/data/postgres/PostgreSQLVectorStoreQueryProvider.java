@@ -8,8 +8,6 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryPro
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreRecordCollectionSearchMapping;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorizedSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
@@ -329,94 +327,89 @@ public class PostgreSQLVectorStoreQueryProvider extends
      *
      * @param <Record> the record type
      * @param collectionName the collection name
-     * @param query the vectorized search query, containing the vector and search options
+     * @param vector the vector to search with
+     * @param options the search options
      * @param recordDefinition the record definition
      * @param mapper the mapper, responsible for mapping the result set to the record type.
      * @return the search results
      */
     @Override
     public <Record> List<VectorSearchResult<Record>> search(String collectionName,
-        VectorSearchQuery query, VectorStoreRecordDefinition recordDefinition,
+        List<Float> vector, VectorSearchOptions options,
+        VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
         if (recordDefinition.getVectorFields().isEmpty()) {
             throw new SKException("No vector fields defined. Cannot perform vector search");
         }
 
-        if (query instanceof VectorizedSearchQuery) {
-            VectorizedSearchQuery vectorizedSearchQuery = (VectorizedSearchQuery) query;
-            VectorSearchOptions options = query.getSearchOptions();
-
-            VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
-                .get(0);
-            if (options == null) {
-                options = VectorSearchOptions.createDefault(firstVectorField.getName());
-            }
-
-            VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
-                ? firstVectorField
-                : (VectorStoreRecordVectorField) recordDefinition
-                    .getField(options.getVectorFieldName());
-
-            PostgreSQLVectorIndexKind indexKind = PostgreSQLVectorIndexKind
-                .fromIndexKind(vectorField.getIndexKind());
-            PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
-                .fromDistanceFunction(vectorField.getDistanceFunction());
-
-            // If indexKind is not specified, there is no index associated to the vector field
-            // and pgvector performs exact nearest neighbor search.
-            // If indexKind is specified, a distance function is required.
-            if (indexKind != null && distanceFunction == null) {
-                throw new SKException(
-                    "Distance function is required for vector field: " + vectorField.getName());
-            }
-
-            String filter = SQLVectorStoreRecordCollectionSearchMapping.buildFilter(
-                options.getVectorSearchFilter(),
-                recordDefinition);
-            List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
-                .getFilterParameters(options.getVectorSearchFilter());
-
-            String filterClause = filter.isEmpty() ? "" : "WHERE " + filter;
-            String searchQuery = formatQuery(
-                "SELECT %s, %s %s ?::vector AS score FROM %s %s ORDER BY score LIMIT ? OFFSET ?",
-                getQueryColumnsFromFields(
-                    options.isIncludeVectors() ? recordDefinition.getAllFields()
-                        : recordDefinition.getNonVectorFields()),
-                validateSQLidentifier(vectorField.getEffectiveStorageName()),
-                distanceFunction == null ? PostgreSQLVectorDistanceFunction.L2.getOperator()
-                    : distanceFunction.getOperator(),
-                getCollectionTableName(collectionName),
-                filterClause);
-
-            try (Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement(searchQuery)) {
-                int parameterIndex = 1;
-
-                statement.setString(parameterIndex++,
-                    objectMapper.writeValueAsString(vectorizedSearchQuery.getVector()));
-                for (Object parameter : parameters) {
-                    statement.setObject(parameterIndex++, parameter);
-                }
-                statement.setInt(parameterIndex++, options.getLimit());
-                statement.setInt(parameterIndex, options.getOffset());
-
-                List<VectorSearchResult<Record>> records = new ArrayList<>();
-                ResultSet resultSet = statement.executeQuery();
-
-                while (resultSet.next()) {
-                    records.add(new VectorSearchResult<>(
-                        mapper.mapStorageModelToRecord(resultSet,
-                            new GetRecordOptions(options.isIncludeVectors())),
-                        resultSet.getDouble("score")));
-                }
-
-                return records;
-            } catch (SQLException | JsonProcessingException e) {
-                throw new SKException("Failed to search records", e);
-            }
+        VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
+            .get(0);
+        if (options == null) {
+            options = VectorSearchOptions.createDefault(firstVectorField.getName());
         }
 
-        throw new SKException("Unsupported query type");
+        VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
+            ? firstVectorField
+            : (VectorStoreRecordVectorField) recordDefinition
+                .getField(options.getVectorFieldName());
+
+        PostgreSQLVectorIndexKind indexKind = PostgreSQLVectorIndexKind
+            .fromIndexKind(vectorField.getIndexKind());
+        PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
+            .fromDistanceFunction(vectorField.getDistanceFunction());
+
+        // If indexKind is not specified, there is no index associated to the vector field
+        // and pgvector performs exact nearest neighbor search.
+        // If indexKind is specified, a distance function is required.
+        if (indexKind != null && distanceFunction == null) {
+            throw new SKException(
+                "Distance function is required for vector field: " + vectorField.getName());
+        }
+
+        String filter = SQLVectorStoreRecordCollectionSearchMapping.buildFilter(
+            options.getVectorSearchFilter(),
+            recordDefinition);
+        List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
+            .getFilterParameters(options.getVectorSearchFilter());
+
+        String filterClause = filter.isEmpty() ? "" : "WHERE " + filter;
+        String searchQuery = formatQuery(
+            "SELECT %s, %s %s ?::vector AS score FROM %s %s ORDER BY score LIMIT ? OFFSET ?",
+            getQueryColumnsFromFields(
+                options.isIncludeVectors() ? recordDefinition.getAllFields()
+                    : recordDefinition.getNonVectorFields()),
+            validateSQLidentifier(vectorField.getEffectiveStorageName()),
+            distanceFunction == null ? PostgreSQLVectorDistanceFunction.L2.getOperator()
+                : distanceFunction.getOperator(),
+            getCollectionTableName(collectionName),
+            filterClause);
+
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(searchQuery)) {
+            int parameterIndex = 1;
+
+            statement.setString(parameterIndex++,
+                objectMapper.writeValueAsString(vector));
+            for (Object parameter : parameters) {
+                statement.setObject(parameterIndex++, parameter);
+            }
+            statement.setInt(parameterIndex++, options.getLimit());
+            statement.setInt(parameterIndex, options.getOffset());
+
+            List<VectorSearchResult<Record>> records = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                records.add(new VectorSearchResult<>(
+                    mapper.mapStorageModelToRecord(resultSet,
+                        new GetRecordOptions(options.isIncludeVectors())),
+                    resultSet.getDouble("score")));
+            }
+
+            return records;
+        } catch (SQLException | JsonProcessingException e) {
+            throw new SKException("Failed to search records", e);
+        }
     }
 
     public static class Builder

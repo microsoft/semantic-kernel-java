@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorSto
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -298,14 +297,6 @@ public class JDBCVectorStoreRecordCollection<Record>
             .subscribeOn(Schedulers.boundedElastic()).then();
     }
 
-    @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(VectorSearchQuery query) {
-        return Mono.fromCallable(
-            () -> queryProvider.search(this.collectionName, query, recordDefinition,
-                vectorStoreRecordMapper))
-            .subscribeOn(Schedulers.boundedElastic());
-    }
-
     /**
      * Vectorized search. This method searches for records that are similar to the given vector.
      *
@@ -316,7 +307,11 @@ public class JDBCVectorStoreRecordCollection<Record>
     @Override
     public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
         VectorSearchOptions vectorSearchOptions) {
-        return this.searchAsync(VectorSearchQuery.createQuery(vector, vectorSearchOptions));
+        return Mono.fromCallable(
+            () -> queryProvider.search(this.collectionName, vector, vectorSearchOptions,
+                recordDefinition,
+                vectorStoreRecordMapper))
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
     public static class Builder<Record>

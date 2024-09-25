@@ -3,12 +3,12 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
-import com.microsoft.semantickernel.data.vectorsearch.queries.VectorSearchQuery;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -138,13 +138,15 @@ public interface SQLVectorStoreQueryProvider {
      *
      * @param <Record> the record type
      * @param collectionName the collection name
-     * @param query the vectorized search query, containing the vector and search options
+     * @param vector the vector to search with
+     * @param options the vector search options
      * @param recordDefinition the record definition
      * @param mapper the mapper, responsible for mapping the result set to the record type.
      * @return the search results
      */
     <Record> List<VectorSearchResult<Record>> search(String collectionName,
-        VectorSearchQuery query,
+        List<Float> vector,
+        VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper);
 
