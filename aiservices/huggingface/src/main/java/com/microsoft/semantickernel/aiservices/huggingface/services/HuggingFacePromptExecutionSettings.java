@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.aiservices.huggingface.services;
 
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.responseformat.ResponseFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,7 +39,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             copy.getUser(),
             copy.getStopSequences(),
             copy.getTokenSelectionBiases(),
-            copy.getResponseFormat() == null ? null : copy.getResponseFormat().toString());
+            copy.getResponseFormat() == null ? null : copy.getResponseFormat());
         this.topK = null;
         this.repetitionPenalty = null;
         this.maxTime = null;
@@ -78,7 +79,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
         String user,
         @Nullable List<String> stopSequences,
         @Nullable Map<Integer, Integer> tokenSelectionBiases,
-        @Nullable String responseFormat,
+        @Nullable ResponseFormat responseFormat,
         @Nullable Integer topK,
         @Nullable Double repetitionPenalty,
         @Nullable Double maxTime,
@@ -119,7 +120,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             promptExecutionSettings.getStopSequences(),
             promptExecutionSettings.getTokenSelectionBiases(),
             promptExecutionSettings.getResponseFormat() != null
-                ? promptExecutionSettings.getResponseFormat().toString()
+                ? promptExecutionSettings.getResponseFormat()
                 : null,
             null,
             null,

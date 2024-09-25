@@ -8,28 +8,35 @@ import java.util.ResourceBundle;
 
 public class SemanticKernelResources {
 
+    private static final String RESOURCE_BUNDLE_CLASS = "com.microsoft.semantickernel.localization.ResourceBundle";
+
     private static ResourceBundle RESOURCE_BUNDLE;
     private static Locale LOCALE;
 
     static {
-        LOCALE = new Locale(
+        LOCALE = setLocale(new Locale(
             System.getProperty("semantickernel.locale",
-                String.valueOf(Locale.getDefault().getLanguage())));
-
-        setLocale(LOCALE);
+                String.valueOf(Locale.getDefault().getLanguage()))));
+        RESOURCE_BUNDLE = setResourceBundle(LOCALE);
     }
 
-    public static void setLocale(Locale locale) {
-        LOCALE = locale;
+    public static ResourceBundle setResourceBundle(Locale locale) {
         ResourceBundle resourceBundle;
         try {
             resourceBundle = PropertyResourceBundle.getBundle(
-                "com.microsoft.semantickernel.localization.ResourceBundle", locale);
+                RESOURCE_BUNDLE_CLASS, locale);
         } catch (MissingResourceException e) {
             resourceBundle = PropertyResourceBundle.getBundle(
-                "com.microsoft.semantickernel.localization.ResourceBundle");
+                RESOURCE_BUNDLE_CLASS);
         }
         RESOURCE_BUNDLE = resourceBundle;
+        return resourceBundle;
+    }
+
+    public static Locale setLocale(Locale locale) {
+        LOCALE = locale;
+        setResourceBundle(locale);
+        return locale;
     }
 
     public static String localize(String id, String defaultValue) {
