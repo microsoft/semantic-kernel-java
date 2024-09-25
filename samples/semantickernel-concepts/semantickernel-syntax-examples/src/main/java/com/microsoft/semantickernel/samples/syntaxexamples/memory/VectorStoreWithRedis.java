@@ -5,51 +5,54 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.azure.core.util.ClientOptions;
+import com.azure.core.util.MetricsOptions;
+import com.azure.core.util.TracingOptions;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.connectors.data.redis.RedisStorageType;
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
+import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
-import com.mysql.cj.jdbc.MysqlDataSource;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
+
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import redis.clients.jedis.JedisPooled;
 
-public class JDBC_DataStorage {
+public class VectorStoreWithRedis {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
+
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
-    // Run a MySQL server with:
-    // docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sk -p 3306:3306 mysql:latest
 
-    static class GitHubFile {
-
+    public static class GitHubFile {
+        @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute()
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw")
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = "cosineDistance")
         private final List<Float> embedding;
 
         public GitHubFile() {
@@ -70,20 +73,24 @@ public class JDBC_DataStorage {
         public String getId() {
             return id;
         }
-
         public String getDescription() {
             return description;
         }
+        public String getLink() { return link; }
+        public List<Float> getEmbedding() { return embedding; }
 
         static String encodeId(String realId) {
-            byte[] bytes = Base64.getUrlEncoder().encode(realId.getBytes(StandardCharsets.UTF_8));
-            return new String(bytes, StandardCharsets.UTF_8);
+            return VectorStoreWithAzureAISearch.GitHubFile.encodeId(realId);
         }
     }
 
-    public static void main(String[] args) throws SQLException {
+    // Can start a test server with:
+    // docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+    private static final String REDIS_URL = "redis://127.0.0.1:6379";
+
+    public static void main(String[] args) {
         System.out.println("==============================================================");
-        System.out.println("========== JDBC Vector Store Example ==============");
+        System.out.println("================ Redis Vector Store Example ==================");
         System.out.println("==============================================================");
 
         OpenAIAsyncClient client;
@@ -106,46 +113,55 @@ public class JDBC_DataStorage {
             .withDimensions(EMBEDDING_DIMENSIONS)
             .build();
 
-        var dataSource = new MysqlDataSource();
-        dataSource.setUrl("jdbc:mysql://localhost:3306/sk");
-        dataSource.setPassword("root");
-        dataSource.setUser("root");
-
-        dataStorageWithMySQL(dataSource, embeddingGeneration);
+        storeAndSearch(embeddingGeneration);
     }
 
-    public static void dataStorageWithMySQL(
-        DataSource dataSource,
+    public static void storeAndSearch(
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Configure redis client
+        JedisPooled jedis = new JedisPooled(REDIS_URL);
 
-        // Build a query provider
-        var queryProvider = MySQLVectorStoreQueryProvider.builder()
-            .withDataSource(dataSource)
+        // Build a vector store
+        // Available storage types are JSON and HASHSET. Default is JSON.
+        var vectorStore = RedisVectorStore.builder()
+            .withClient(jedis)
+            .withOptions(RedisVectorStoreOptions.builder().withStorageType(RedisStorageType.JSON).build())
             .build();
 
-        // Create a new vector store
-        var jdbcVectorStore = JDBCVectorStore.builder()
-            .withDataSource(dataSource)
-            .withOptions(JDBCVectorStoreOptions.builder()
-                .withQueryProvider(queryProvider)
-                .build())
-            .build();
-
+        // Set up the record collection to use
         String collectionName = "skgithubfiles";
-        var collection = jdbcVectorStore.getCollection(collectionName,
-            JDBCVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+        var collection = vectorStore.getCollection(collectionName,
+            RedisJsonVectorStoreRecordCollectionOptions.<GitHubFile>builder()
                 .withRecordClass(GitHubFile.class)
                 .build());
 
         // Create collection if it does not exist and store data
-        List<String> ids = collection
+        collection
             .createCollectionIfNotExistsAsync()
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        List<GitHubFile> data = collection.getBatchAsync(ids, null).block();
+        // Search for results
+        // Might need to wait for the data to be indexed
+        var results = search("How to get started", collection, embeddingGeneration).block();
 
-        data.forEach(gitHubFile -> System.out.println("Retrieved: " + gitHubFile.getDescription()));
+        if (results == null || results.isEmpty()) {
+            System.out.println("No search results found.");
+            return;
+        }
+        var searchResult = results.get(0);
+        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
+                searchResult.getScore(), searchResult.getRecord().link,
+                searchResult.getRecord().description);
+    }
+
+    private static Mono<List<VectorSearchResult<GitHubFile>>> search(
+            String searchText,
+            VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Generate embeddings for the search text and search for the closest records
+        return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
+                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
@@ -157,6 +173,7 @@ public class JDBC_DataStorage {
             .flatMap(entry -> {
                 System.out.println("Save '" + entry.getKey() + "' to memory.");
 
+                // Generate embeddings for the data and store it
                 return embeddingGeneration
                     .generateEmbeddingsAsync(Collections.singletonList(entry.getValue()))
                     .flatMap(embeddings -> {

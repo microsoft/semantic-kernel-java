@@ -207,7 +207,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     protected String getKeyFromRecord(Record data) {
         try {
             Field keyField = data.getClass()
-                .getDeclaredField(recordDefinition.getKeyField().getEffectiveStorageName());
+                .getDeclaredField(recordDefinition.getKeyField().getName());
             keyField.setAccessible(true);
             return (String) keyField.get(data);
         } catch (NoSuchFieldException | IllegalAccessException e) {

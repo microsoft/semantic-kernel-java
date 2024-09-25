@@ -397,8 +397,8 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
             Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
                 .buildQuery(vector, options, recordDefinition, RedisStorageType.HASH_SET);
 
-            SearchResult searchResult = client.ftSearch(collectionName,
-                ftSearchParams.getLeft(), ftSearchParams.getRight());
+            SearchResult searchResult = client.ftSearch(collectionName, ftSearchParams.getLeft(),
+                ftSearchParams.getRight());
 
             return searchResult.getDocuments().stream()
                 .map(doc -> {
@@ -408,10 +408,13 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
                     // Convert from Map<String, Object> to Map<byte[], byte[]>
                     Map<byte[], byte[]> storage = new HashMap<>();
                     for (Map.Entry<String, Object> entry : doc.getProperties()) {
+                        // Data and vector fields are returned as byte[]
                         if (entry.getValue() instanceof byte[]) {
                             storage.put(stringToBytes(entry.getKey()),
                                 (byte[]) entry.getValue());
-                        } else if (entry.getKey().equals(
+                        }
+                        // Score is returned as a string
+                        else if (entry.getKey().equals(
                             RedisVectorStoreCollectionSearchMapping.VECTOR_SCORE_FIELD)) {
                             // Score is stored as a string in one of the fields
                             score = Double.parseDouble((String) entry.getValue());
