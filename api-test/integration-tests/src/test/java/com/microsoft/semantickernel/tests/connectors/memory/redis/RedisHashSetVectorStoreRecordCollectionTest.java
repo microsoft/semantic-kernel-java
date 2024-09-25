@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -387,6 +388,8 @@ public class RedisHashSetVectorStoreRecordCollectionTest {
         assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size());
         // The third hotel should be the most similar
         assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        // Score should be different than zero
+        assertNotEquals(0.0, results.get(0).getScore());
         assertNull(results.get(0).getRecord().getEuclidean());
     }
 

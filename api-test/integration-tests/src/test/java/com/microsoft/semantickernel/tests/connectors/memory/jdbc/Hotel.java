@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRec
 import java.util.List;
 
 public class Hotel {
+    @JsonProperty("hotelId")
     @VectorStoreRecordKeyAttribute
     private final String id;
 
@@ -46,7 +47,7 @@ public class Hotel {
 
     @JsonCreator
     public Hotel(
-            @JsonProperty("id") String id,
+            @JsonProperty("hotelId") String id,
             @JsonProperty("name") String name,
             @JsonProperty("code") int code,
             @JsonProperty("summary") String description,

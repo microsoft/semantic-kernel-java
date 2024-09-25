@@ -51,7 +51,6 @@ public class RedisVectorStoreCollectionSearchMapping {
         if (storageType == RedisStorageType.HASH_SET) {
             // We also need to tell Redis to return the fields without decoding them
             // Vector fields specially need to be returned as raw bytes
-            searchParams.returnField(VECTOR_SCORE_FIELD, false);
             for (VectorStoreRecordDataField dataField : recordDefinition.getDataFields()) {
                 searchParams.returnField(dataField.getEffectiveStorageName(), false);
             }
@@ -60,6 +59,9 @@ public class RedisVectorStoreCollectionSearchMapping {
                     searchParams.returnField(v.getEffectiveStorageName(), false);
                 }
             }
+
+            // Also, return the score field, this can be decoded.
+            searchParams.returnField(VECTOR_SCORE_FIELD, true);
         }
 
         return Pair.of(knn, searchParams);

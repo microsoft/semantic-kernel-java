@@ -5,44 +5,56 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
+import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VolatileVectorStore;
-import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.mysql.cj.jdbc.MysqlDataSource;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public class InMemory_DataStorage {
+public class VectorStoreWithJDBC {
 
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
-
-    // Embedding model configuration
     private static final String MODEL_ID = System.getenv()
         .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
-    static class GitHubFile {
 
+    static class GitHubFile {
+        @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
         private final String id;
         @VectorStoreRecordDataAttribute()
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw")
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = "cosineDistance")
         private final List<Float> embedding;
+
+        public GitHubFile() {
+            this(null, null, null, Collections.emptyList());
+        }
 
         public GitHubFile(
             String id,
@@ -58,20 +70,29 @@ public class InMemory_DataStorage {
         public String getId() {
             return id;
         }
-
         public String getDescription() {
             return description;
         }
+        public String getLink() {
+            return link;
+        }
+        public List<Float> getEmbedding() {
+            return embedding;
+        }
 
         static String encodeId(String realId) {
-            return AzureAISearchVectorStore.GitHubFile.encodeId(realId);
+            byte[] bytes = Base64.getUrlEncoder().encode(realId.getBytes(StandardCharsets.UTF_8));
+            return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 
-    public static void main(String[] args) {
-        System.out.println("===================================================================");
-        System.out.println("========== Volatile (In memory) Vector Store Example ==============");
-        System.out.println("===================================================================");
+    // Run a MySQL server with:
+    // docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sk -p 3306:3306 mysql:latest
+
+    public static void main(String[] args) throws SQLException {
+        System.out.println("==============================================================");
+        System.out.println("=============== JDBC Vector Store Example ====================");
+        System.out.println("==============================================================");
 
         OpenAIAsyncClient client;
 
@@ -87,40 +108,74 @@ public class InMemory_DataStorage {
                 .buildAsyncClient();
         }
 
+        // Create an OpenAI text embedding generation service
         var embeddingGeneration = OpenAITextEmbeddingGenerationService.builder()
             .withOpenAIAsyncClient(client)
             .withModelId(MODEL_ID)
             .withDimensions(EMBEDDING_DIMENSIONS)
             .build();
 
-        inMemoryDataStorage(embeddingGeneration);
+        storeAndSearch(embeddingGeneration);
     }
 
-    public static void inMemoryDataStorage(
-        OpenAITextEmbeddingGenerationService embeddingGeneration) {
-        // Create a new Volatile vector store
-        var volatileVectorStore = new VolatileVectorStore();
+    public static void storeAndSearch(OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Configure the data source
+        var dataSource = new MysqlDataSource();
+        dataSource.setUrl("jdbc:mysql://localhost:3306/sk");
+        dataSource.setPassword("root");
+        dataSource.setUser("root");
 
+        // Build a query provider
+        // Other available query providers are PostgreSQLVectorStoreQueryProvider and SQLiteVectorStoreQueryProvider
+        var queryProvider = MySQLVectorStoreQueryProvider.builder()
+            .withDataSource(dataSource)
+            .build();
+
+        // Build a vector store
+        var jdbcVectorStore = JDBCVectorStore.builder()
+            .withDataSource(dataSource)
+            .withOptions(JDBCVectorStoreOptions.builder()
+                .withQueryProvider(queryProvider)
+                .build())
+            .build();
+
+        // Set up the record collection to use
         String collectionName = "skgithubfiles";
-        var collection = volatileVectorStore.getCollection(collectionName,
-            VolatileVectorStoreRecordCollectionOptions.<GitHubFile>builder()
+        var collection = jdbcVectorStore.getCollection(collectionName,
+            JDBCVectorStoreRecordCollectionOptions.<GitHubFile>builder()
                 .withRecordClass(GitHubFile.class)
                 .build());
 
         // Create collection if it does not exist and store data
-        List<String> ids = collection
+        collection
             .createCollectionIfNotExistsAsync()
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        // Retrieve all records from the collection
-        List<GitHubFile> data = collection.getBatchAsync(ids, null).block();
+        // Search for results
+        var results = search("How to get started", collection, embeddingGeneration).block();
 
-        data.forEach(gitHubFile -> System.out.println("Retrieved: " + gitHubFile.getDescription()));
+        if (results == null || results.isEmpty()) {
+            System.out.println("No search results found.");
+            return;
+        }
+        var searchResult = results.get(0);
+        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
+                searchResult.getScore(), searchResult.getRecord().link,
+                searchResult.getRecord().description);
+    }
+
+    private static Mono<List<VectorSearchResult<GitHubFile>>> search(
+            String searchText,
+            VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Generate embeddings for the search text and search for the closest records
+        return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
+                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
-        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        VectorStoreRecordCollection<String, GitHubFile> recordStore,
         OpenAITextEmbeddingGenerationService embeddingGeneration,
         Map<String, String> data) {
 
@@ -128,6 +183,7 @@ public class InMemory_DataStorage {
             .flatMap(entry -> {
                 System.out.println("Save '" + entry.getKey() + "' to memory.");
 
+                // Generate embeddings for the data and store it
                 return embeddingGeneration
                     .generateEmbeddingsAsync(Collections.singletonList(entry.getValue()))
                     .flatMap(embeddings -> {
@@ -136,7 +192,7 @@ public class InMemory_DataStorage {
                             entry.getValue(),
                             entry.getKey(),
                             embeddings.get(0).getVector());
-                        return recordCollection.upsertAsync(gitHubFile, null);
+                        return recordStore.upsertAsync(gitHubFile, null);
                     });
             })
             .collectList();
