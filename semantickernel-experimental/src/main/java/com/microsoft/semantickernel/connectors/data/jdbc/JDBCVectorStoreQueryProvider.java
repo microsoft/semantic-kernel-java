@@ -502,61 +502,13 @@ public class JDBCVectorStoreQueryProvider
 
         List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
             new GetRecordOptions(true), filter, parameters);
-        List<VectorSearchResult<Record>> results = new ArrayList<>();
 
         DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
             ? DistanceFunction.EUCLIDEAN_DISTANCE
             : vectorField.getDistanceFunction();
 
-        for (Record record : records) {
-            List<Float> recordVector;
-            try {
-                String json = new ObjectMapper().writeValueAsString(record);
-                ArrayNode arrayNode = (ArrayNode) new ObjectMapper().readTree(json)
-                    .get(vectorField.getEffectiveStorageName());
-
-                recordVector = Stream.iterate(0, i -> i + 1)
-                    .limit(arrayNode.size())
-                    .map(i -> arrayNode.get(i).floatValue())
-                    .collect(Collectors.toList());
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-
-            double score;
-            switch (distanceFunction) {
-                case COSINE_SIMILARITY:
-                    score = VectorOperations.cosineSimilarity(vector, recordVector);
-                    break;
-                case COSINE_DISTANCE:
-                    score = VectorOperations.cosineDistance(vector, recordVector);
-                    break;
-                case EUCLIDEAN_DISTANCE:
-                    score = VectorOperations
-                        .euclideanDistance(vector, recordVector);
-                    break;
-                case DOT_PRODUCT:
-                    score = VectorOperations.dot(vector, recordVector);
-                    break;
-                default:
-                    throw new SKException("Unsupported distance function");
-            }
-
-            results.add(new VectorSearchResult<>(record, score));
-        }
-
-        Comparator<VectorSearchResult<Record>> comparator = Comparator
-            .comparingDouble(VectorSearchResult::getScore);
-        // Higher scores are better
-        if (distanceFunction == DistanceFunction.COSINE_SIMILARITY
-            || distanceFunction == DistanceFunction.DOT_PRODUCT) {
-            comparator = comparator.reversed();
-        }
-        return results.stream()
-            .sorted(comparator)
-            .skip(options.getOffset())
-            .limit(options.getLimit())
-            .collect(Collectors.toList());
+        return VectorOperations.exactSimilaritySearch(records, vector, vectorField,
+            distanceFunction, options);
     }
 
     /**
