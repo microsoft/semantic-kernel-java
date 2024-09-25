@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCo
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.filter.SQLEqualToFilterClause;
+import com.microsoft.semantickernel.connectors.data.sqlite.SQLiteVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
@@ -17,6 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.postgresql.ds.PGSimpleDataSource;
+import org.sqlite.SQLiteDataSource;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -47,7 +49,8 @@ public class JDBCVectorStoreRecordCollectionTest {
 
     public enum QueryProvider {
         MySQL,
-        PostgreSQL
+        PostgreSQL,
+        SQLite
     }
 
     private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(QueryProvider provider, @Nonnull String collectionName) {
@@ -73,6 +76,14 @@ public class JDBCVectorStoreRecordCollectionTest {
                 dataSource = pgSimpleDataSource;
                 queryProvider = PostgreSQLVectorStoreQueryProvider.builder()
                         .withDataSource(dataSource)
+                        .build();
+                break;
+            case SQLite:
+                SQLiteDataSource sqliteDataSource = new SQLiteDataSource();
+                sqliteDataSource.setUrl("jdbc:sqlite:file:testdb");
+                dataSource = sqliteDataSource;
+                queryProvider = SQLiteVectorStoreQueryProvider.builder()
+                        .withDataSource(sqliteDataSource)
                         .build();
                 break;
             default:
@@ -131,7 +142,7 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         // Upsert the first time
         for (Hotel hotel : hotels) {
-            Hotel retrievedHotel =  recordCollection.getAsync(hotel.getId(), null).block();
+            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), null).block();
             assertNotNull(retrievedHotel);
             assertEquals(hotel.getId(), retrievedHotel.getId());
             assertEquals(hotel.getRating(), retrievedHotel.getRating());
@@ -146,7 +157,7 @@ public class JDBCVectorStoreRecordCollectionTest {
         }
 
         for (Hotel hotel : hotels) {
-            Hotel retrievedHotel =  recordCollection.getAsync(hotel.getId(), null).block();
+            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), null).block();
             assertNotNull(retrievedHotel);
             assertEquals(hotel.getId(), retrievedHotel.getId());
             assertEquals(1.0, retrievedHotel.getRating());
@@ -157,7 +168,7 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void getBatchAsync(QueryProvider provider) {
         String collectionName = "getBatchAsync";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider, collectionName);
 
         List<Hotel> hotels = getHotels();
         for (Hotel hotel : hotels) {
@@ -169,7 +180,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             keys.add(hotel.getId());
         }
 
-        List<Hotel> retrievedHotels =  recordCollection.getBatchAsync(keys, null).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(keys, null).block();
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
     }
@@ -178,7 +189,7 @@ public class JDBCVectorStoreRecordCollectionTest {
     @EnumSource(QueryProvider.class)
     public void upsertBatchAndGetBatchAsync(QueryProvider provider) {
         String collectionName = "upsertBatchAndGetBatchAsync";
-        JDBCVectorStoreRecordCollection<Hotel>  recordCollection = buildRecordCollection(provider, collectionName);
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider, collectionName);
 
         List<Hotel> hotels = getHotels();
          recordCollection.upsertBatchAsync(hotels, null).block();
@@ -188,7 +199,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             keys.add(hotel.getId());
         }
 
-        List<Hotel> retrievedHotels =  recordCollection.getBatchAsync(keys, null).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(keys, null).block();
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
     }
@@ -209,7 +220,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             keys.add(hotel.getId());
         }
 
-        List<Hotel> retrievedHotels =  recordCollection.getBatchAsync(keys, null).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(keys, null).block();
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
     }
@@ -225,7 +236,7 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         for (Hotel hotel : hotels) {
              recordCollection.deleteAsync(hotel.getId(), null).block();
-            Hotel retrievedHotel =  recordCollection.getAsync(hotel.getId(), null).block();
+            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), null).block();
             assertNull(retrievedHotel);
         }
     }
@@ -247,7 +258,7 @@ public class JDBCVectorStoreRecordCollectionTest {
          recordCollection.deleteBatchAsync(keys, null).block();
 
         for (String key : keys) {
-            Hotel retrievedHotel =  recordCollection.getAsync(key, null).block();
+            Hotel retrievedHotel = recordCollection.getAsync(key, null).block();
             assertNull(retrievedHotel);
         }
     }
@@ -266,7 +277,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             .build();
 
         for (Hotel hotel : hotels) {
-            Hotel retrievedHotel =  recordCollection.getAsync(hotel.getId(), options).block();
+            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), options).block();
             assertNotNull(retrievedHotel);
             assertEquals(hotel.getId(), retrievedHotel.getId());
             assertNull(retrievedHotel.getEuclidean());
@@ -277,7 +288,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             .build();
 
         for (Hotel hotel : hotels) {
-            Hotel retrievedHotel =  recordCollection.getAsync(hotel.getId(), options).block();
+            Hotel retrievedHotel = recordCollection.getAsync(hotel.getId(), options).block();
             assertNotNull(retrievedHotel);
             assertEquals(hotel.getId(), retrievedHotel.getId());
             assertNotNull(retrievedHotel.getEuclidean());
@@ -302,7 +313,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             keys.add(hotel.getId());
         }
 
-        List<Hotel> retrievedHotels =  recordCollection.getBatchAsync(keys, options).block();
+        List<Hotel> retrievedHotels = recordCollection.getBatchAsync(keys, options).block();
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
 
@@ -314,7 +325,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             .includeVectors(true)
             .build();
 
-        retrievedHotels =  recordCollection.getBatchAsync(keys, options).block();
+        retrievedHotels = recordCollection.getBatchAsync(keys, options).block();
         assertNotNull(retrievedHotels);
         assertEquals(hotels.size(), retrievedHotels.size());
 
