@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.contextvariables.converters.ContextVariableJacksonConverter;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
@@ -102,6 +103,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 function.getName());
         }
 
+        InvocationContext contextClone = new InvocationContext(context);
+
         function
             .invokeAsync(
                 kernel,
@@ -110,8 +113,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                     .withVariables(arguments)
                     .build(),
                 null,
-                new InvocationContext(context))
-            .handle(convertToType(variableType))
+                contextClone)
+            .handle(convertToType(variableType, contextClone.getContextVariableTypes()))
             .onErrorResume(e -> {
                 if (e instanceof NoSuchElementException) {
                     return Mono.empty();
@@ -123,13 +126,17 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     }
 
     private static <T> BiConsumer<FunctionResult<?>, SynchronousSink<FunctionResult<T>>> convertToType(
-        @Nullable ContextVariableType<T> variableType) {
+        @Nullable ContextVariableType<T> variableType,
+        @Nullable ContextVariableTypes contextVariableTypes) {
         return (result, sink) -> {
             // If a specific result type was requested, convert the result to that type.
             if (variableType != null) {
                 try {
+                    ContextVariableTypes types = new ContextVariableTypes(contextVariableTypes);
+                    types.putConverter(variableType.getConverter());
+
                     sink.next(new FunctionResult<>(
-                        ContextVariable.convert(result.getResult(), variableType),
+                        ContextVariable.convert(result.getResult(), variableType.getClazz(), types),
                         result.getMetadata(),
                         result.getUnconvertedResult()));
                 } catch (Exception e) {
@@ -188,6 +195,23 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             .withPromptExecutionSettings(promptExecutionSettings)
             .withToolCallBehavior(toolCallBehavior)
             .withTypes(contextVariableTypes);
+    }
+
+    /**
+     * Supply the result type of function invocation. Also registers a type converter for the given
+     * type using {@code} ContextVariableJacksonConverter.create}.
+     *
+     * @param resultType The arguments to supply to the function invocation.
+     * @param <U>        The type of the result of the function invocation.
+     * @return A new {@code FunctionInvocation} for fluent chaining.
+     */
+    public <U> FunctionInvocation<U> withResultTypeAutoConversion(Class<U> resultType) {
+        try {
+            return withTypeConverter(ContextVariableJacksonConverter.create(resultType))
+                .withResultType(contextVariableTypes.getVariableTypeForSuperClass(resultType));
+        } catch (SKException e) {
+            return withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(resultType));
+        }
     }
 
     /**

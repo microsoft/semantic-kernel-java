@@ -3,11 +3,15 @@ package com.microsoft.semantickernel.orchestration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.responseformat.JsonObjectResponseFormat;
+import com.microsoft.semantickernel.orchestration.responseformat.JsonSchemaResponseFormat;
+import com.microsoft.semantickernel.orchestration.responseformat.ResponseFormat;
+import com.microsoft.semantickernel.orchestration.responseformat.TextResponseFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -97,7 +101,6 @@ public class PromptExecutionSettings {
     private final String user;
     private final List<String> stopSequences;
     private final Map<Integer, Integer> tokenSelectionBiases;
-    @Nullable
     private final ResponseFormat responseFormat;
 
     /**
@@ -115,7 +118,8 @@ public class PromptExecutionSettings {
      * @param user                 The user to associate with the prompt execution.
      * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
-     * @param responseFormat       The response format to use for prompt execution {@link ResponseFormat}.
+     * @param responseFormat       The response format to use for prompt execution
+     *                             {@link ResponseFormat}, Defaults to TextResponseFormat.
      */
     @JsonCreator
     public PromptExecutionSettings(
@@ -131,7 +135,7 @@ public class PromptExecutionSettings {
         @JsonProperty(USER) String user,
         @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
         @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases,
-        @Nullable @JsonProperty(RESPONSE_FORMAT) String responseFormat) {
+        @Nullable @JsonProperty(RESPONSE_FORMAT) ResponseFormat responseFormat) {
         this.serviceId = serviceId != null ? serviceId : DEFAULT_SERVICE_ID;
         this.modelId = modelId != null ? modelId : "";
         this.temperature = clamp(temperature, 0d, 2d, DEFAULT_TEMPERATURE);
@@ -150,10 +154,10 @@ public class PromptExecutionSettings {
             : Collections.emptyMap();
         this.tokenSelectionBiases.replaceAll((k, v) -> clamp(v, -100, 100, 0));
 
-        if (responseFormat != null && !responseFormat.isEmpty()) {
-            this.responseFormat = ResponseFormat.valueOf(responseFormat.toUpperCase(Locale.ROOT));
+        if (responseFormat == null) {
+            this.responseFormat = new TextResponseFormat();
         } else {
-            this.responseFormat = null;
+            this.responseFormat = responseFormat;
         }
     }
 
@@ -374,7 +378,7 @@ public class PromptExecutionSettings {
      *
      * @return The response format to use for prompt execution.
      */
-    @Nullable
+    @JsonProperty(RESPONSE_FORMAT)
     public ResponseFormat getResponseFormat() {
         return responseFormat;
     }
@@ -550,7 +554,47 @@ public class PromptExecutionSettings {
          */
         public Builder withResponseFormat(ResponseFormat responseFormat) {
             if (responseFormat != null) {
-                settings.put(RESPONSE_FORMAT, responseFormat.toString());
+                settings.put(RESPONSE_FORMAT, responseFormat);
+            }
+            return this;
+        }
+
+        /**
+         * Set the response format to use for prompt execution.
+         *
+         * @param responseFormat The response format to use for prompt execution.
+         * @return This builder.
+         */
+        public Builder withResponseFormat(ResponseFormat.Type responseFormat) {
+            switch (responseFormat) {
+                case JSON_OBJECT:
+                    settings.put(RESPONSE_FORMAT, new JsonObjectResponseFormat());
+                    break;
+                case TEXT:
+                    settings.put(RESPONSE_FORMAT, new TextResponseFormat());
+                    break;
+                case JSON_SCHEMA:
+                    throw new SKException(
+                        "Cannot set JSON_SCHEMA response format without a schema, use withResponseFormat(ResponseFormat responseFormat)");
+            }
+
+            return this;
+        }
+
+        /**
+         * Set the response format to use a json schema generated for the given class. The name of
+         * the response format will be the name of the class.
+         *
+         * @param responseFormat The response format type.
+         * @return This builder.
+         */
+        public Builder withJsonSchemaResponseFormat(Class<?> responseFormat) {
+            if (responseFormat != null) {
+                settings.put(RESPONSE_FORMAT,
+                    JsonSchemaResponseFormat.builder()
+                        .setResponseFormat(responseFormat)
+                        .setName(responseFormat.getSimpleName())
+                        .build());
             }
             return this;
         }
@@ -576,7 +620,7 @@ public class PromptExecutionSettings {
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
                     Collections.emptyMap()),
-                (String) settings.getOrDefault(RESPONSE_FORMAT, null));
+                (ResponseFormat) settings.getOrDefault(RESPONSE_FORMAT, new TextResponseFormat()));
         }
     }
 }

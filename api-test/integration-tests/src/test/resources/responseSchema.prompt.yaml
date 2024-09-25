@@ -1,0 +1,27 @@
+name: testResponseSchema
+description: Test Response Schema
+template: |
+  <message role="user">Do something</message>
+template_format: handlebars
+execution_settings:
+  default:
+    max_tokens: 10
+    temperature: 0.2
+    response_format:
+      type: json_schema
+      json_schema:
+        name: Test
+        strict: true
+        schema: |
+          {
+            "type" : "object",
+            "properties" : {
+               "name" : {
+                  "type" : "string"
+               }
+            },
+            "required" : [
+               "name"
+            ],
+            "additionalProperties" : false
+          }

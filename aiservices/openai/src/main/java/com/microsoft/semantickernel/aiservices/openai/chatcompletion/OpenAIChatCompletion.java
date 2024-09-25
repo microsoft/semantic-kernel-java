@@ -7,10 +7,13 @@ import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolCall;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
 import com.azure.ai.openai.models.ChatCompletionsJsonResponseFormat;
+import com.azure.ai.openai.models.ChatCompletionsNamedToolSelection;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
 import com.azure.ai.openai.models.ChatCompletionsTextResponseFormat;
 import com.azure.ai.openai.models.ChatCompletionsToolCall;
 import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
+import com.azure.ai.openai.models.ChatCompletionsToolSelection;
+import com.azure.ai.openai.models.ChatCompletionsToolSelectionPreset;
 import com.azure.ai.openai.models.ChatMessageImageContentItem;
 import com.azure.ai.openai.models.ChatMessageImageDetailLevel;
 import com.azure.ai.openai.models.ChatMessageImageUrl;
@@ -23,13 +26,15 @@ import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
 import com.azure.ai.openai.models.CompletionsUsage;
 import com.azure.ai.openai.models.FunctionCall;
-import com.azure.core.util.BinaryData;
+import com.azure.json.JsonOptions;
+import com.azure.json.implementation.DefaultJsonReader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
+import com.microsoft.semantickernel.aiservices.openai.chatcompletion.responseformat.ChatCompletionsJsonSchemaResponseFormat;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
@@ -50,6 +55,8 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
+import com.microsoft.semantickernel.orchestration.responseformat.JsonResponseSchema;
+import com.microsoft.semantickernel.orchestration.responseformat.JsonSchemaResponseFormat;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
@@ -61,6 +68,7 @@ import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageC
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageImageContent;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
 import io.opentelemetry.api.trace.Span;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -618,6 +626,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             return function
                 .invokeAsync(kernel)
                 .withArguments(arguments)
+                .withTypes(invocationContext.getContextVariableTypes())
+                .withTypes(contextVariableTypes)
                 .withResultType(contextVariableTypes.getVariableTypeForClass(String.class));
         } catch (JsonProcessingException e) {
             return Mono.error(new SKException("Failed to parse tool arguments", e));
@@ -900,13 +910,21 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             .setLogitBias(logit);
 
         if (promptExecutionSettings.getResponseFormat() != null) {
-            switch (promptExecutionSettings.getResponseFormat()) {
+            switch (promptExecutionSettings.getResponseFormat().getType()) {
+                case JSON_SCHEMA:
+                    JsonResponseSchema schema = ((JsonSchemaResponseFormat) promptExecutionSettings
+                        .getResponseFormat())
+                        .getJsonSchema();
+
+                    options.setResponseFormat(new ChatCompletionsJsonSchemaResponseFormat(schema));
+                    break;
                 case JSON_OBJECT:
                     options.setResponseFormat(new ChatCompletionsJsonResponseFormat());
                     break;
                 case TEXT:
                     options.setResponseFormat(new ChatCompletionsTextResponseFormat());
                     break;
+
                 default:
                     throw new SKException(
                         "Unknown response format: " + promptExecutionSettings.getResponseFormat());
@@ -957,9 +975,17 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             try {
                 String json = String.format(
                     "{\"type\":\"function\",\"function\":{\"name\":\"%s\"}}", toolChoiceName);
-                options.setToolChoice(BinaryData.fromObject(new ObjectMapper().readTree(json)));
+
+                options.setToolChoice(
+                    new ChatCompletionsToolSelection(
+                        ChatCompletionsNamedToolSelection.fromJson(
+                            DefaultJsonReader.fromString(
+                                json,
+                                new JsonOptions()))));
             } catch (JsonProcessingException e) {
                 throw SKException.build("Failed to parse tool choice", e);
+            } catch (IOException e) {
+                throw new SKException(e);
             }
             return;
         }
@@ -985,7 +1011,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         }
 
         options.setTools(toolDefinitions);
-        options.setToolChoice(BinaryData.fromString("auto"));
+        options.setToolChoice(
+            new ChatCompletionsToolSelection(ChatCompletionsToolSelectionPreset.AUTO));
     }
 
     private static boolean hasToolCallBeenExecuted(List<ChatRequestMessage> chatRequestMessages,
