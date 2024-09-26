@@ -5,6 +5,9 @@
 - Added convenience method `FunctionInvocation.withResultTypeAutoConversion` which sets the return type and registers a
   type converter based on Jackson for the return type.
 - Added localization support for error/debug messages
+- Add vector search to experimental vector stores.
+    - Approximate vector search for Azure AI Search, Redis and JDBC with Postgres.
+    - Exhaustive vector search for VolatileVectorStore and default JDBC query provider, MySQL and SQLite.
 
 ### Bug Fixes
 
