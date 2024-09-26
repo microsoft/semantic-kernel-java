@@ -4,6 +4,7 @@
 - Upgraded to openai sdk 1.0.0-beta.11
 - Added convenience method `FunctionInvocation.withResultTypeAutoConversion` which sets the return type and registers a
   type converter based on Jackson for the return type.
+- Added localization support for error/debug messages
 
 ### Bug Fixes
 

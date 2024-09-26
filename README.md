@@ -50,7 +50,7 @@ in a different direction, but also to consider the impact on the larger ecosyste
 To learn more and get started:
 
 - Read the [documentation](https://learn.microsoft.com/en-us/semantic-kernel/overview/?tabs=Java&pivots=programming-language-java)
-- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/get-started/contributing?tabs=Java&pivots=programming-language-java) to the project
+- Learn how to [contribute](https://learn.microsoft.com/en-us/semantic-kernel/support/contributing?tabs=Java&pivots=programming-language-java) to the project
 - Join the [Discord community](https://aka.ms/SKDiscord)
 - Attend [regular office hours and SK community events](COMMUNITY.md)
 - Follow the team on our [blog](https://aka.ms/sk/blog)
