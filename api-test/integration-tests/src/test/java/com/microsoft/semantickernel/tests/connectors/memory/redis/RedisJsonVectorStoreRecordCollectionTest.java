@@ -369,6 +369,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         );
     }
 
+    private final String indexingFailureMessage = "If you are running in a slow machine, data might not be indexed yet. Adjust setup delay if needed";
+
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
     public void search(RecordCollectionOptions options, String embeddingName) {
@@ -385,9 +387,9 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         // Embeddings similar to the third hotel
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
         assertNotNull(results);
-        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size());
+        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size(), indexingFailureMessage);
         // The third hotel should be the most similar
-        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId(), indexingFailureMessage);
         // Score should be different than zero
         assertNotEquals(0.0, results.get(0).getScore());
         assertNull(results.get(0).getRecord().getEuclidean());
@@ -410,9 +412,9 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         // Embeddings similar to the third hotel
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
         assertNotNull(results);
-        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size());
+        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size(), indexingFailureMessage);
         // The third hotel should be the most similar
-        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId(), indexingFailureMessage);
         assertNotNull(results.get(0).getRecord().getEuclidean());
     }
 
@@ -434,8 +436,8 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         // Embeddings similar to the third hotel
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
         assertNotNull(results);
-        assertEquals(4, results.size());
+        assertEquals(4, results.size(), indexingFailureMessage);
         // The first hotel should be the most similar
-        assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
+        assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId(), indexingFailureMessage);
     }
 }
