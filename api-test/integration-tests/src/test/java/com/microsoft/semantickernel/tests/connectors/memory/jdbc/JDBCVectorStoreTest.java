@@ -1,5 +1,6 @@
 package com.microsoft.semantickernel.tests.connectors.memory.jdbc;
 
+import com.microsoft.semantickernel.connectors.data.hsqldb.HSQLDBVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
@@ -8,6 +9,7 @@ import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryP
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.sqlite.SQLiteVectorStoreQueryProvider;
 import com.mysql.cj.jdbc.MysqlDataSource;
+import org.hsqldb.jdbc.JDBCDataSourceFactory;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -19,22 +21,30 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import com.microsoft.semantickernel.tests.connectors.memory.jdbc.JDBCVectorStoreRecordCollectionTest.QueryProvider;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 public class JDBCVectorStoreTest {
+
     @Container
     private static final MySQLContainer<?> MYSQL_CONTAINER = new MySQLContainer<>("mysql:5.7.34");
 
-    private static final DockerImageName PGVECTOR = DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres");
+    private static final DockerImageName PGVECTOR = DockerImageName.parse("pgvector/pgvector:pg16")
+        .asCompatibleSubstituteFor("postgres");
     @Container
-    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(PGVECTOR);
+    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(
+        PGVECTOR);
 
     private JDBCVectorStore buildVectorStore(QueryProvider provider) {
         SQLVectorStoreQueryProvider queryProvider;
@@ -48,8 +58,8 @@ public class JDBCVectorStoreTest {
                 mysqlDataSource.setPassword(MYSQL_CONTAINER.getPassword());
                 dataSource = mysqlDataSource;
                 queryProvider = MySQLVectorStoreQueryProvider.builder()
-                        .withDataSource(dataSource)
-                        .build();
+                    .withDataSource(dataSource)
+                    .build();
                 break;
             case PostgreSQL:
                 PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
@@ -58,30 +68,53 @@ public class JDBCVectorStoreTest {
                 pgSimpleDataSource.setPassword(POSTGRESQL_CONTAINER.getPassword());
                 dataSource = pgSimpleDataSource;
                 queryProvider = PostgreSQLVectorStoreQueryProvider.builder()
-                        .withDataSource(dataSource)
-                        .build();
+                    .withDataSource(dataSource)
+                    .build();
                 break;
             case SQLite:
                 SQLiteDataSource sqliteDataSource = new SQLiteDataSource();
                 sqliteDataSource.setUrl("jdbc:sqlite:file:test");
                 dataSource = sqliteDataSource;
                 queryProvider = SQLiteVectorStoreQueryProvider.builder()
-                        .withDataSource(sqliteDataSource)
-                        .build();
+                    .withDataSource(sqliteDataSource)
+                    .build();
+                break;
+            case HSQLDB:
+                try {
+                    Path file = Files.createTempFile("testdb", ".db");
+                    file.toFile().deleteOnExit();
+
+                    Properties properties = new Properties();
+                    properties.putAll(
+                        Map.of(
+                            "url", "jdbc:hsqldb:file:" + file.toFile().getAbsolutePath()
+                                + ";sql.syntax_mys=true",
+                            "user", "SA",
+                            "password", ""
+                        )
+                    );
+
+                    dataSource = JDBCDataSourceFactory.createDataSource(properties);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+
+                queryProvider = HSQLDBVectorStoreQueryProvider.builder()
+                    .withDataSource(dataSource)
+                    .build();
                 break;
             default:
                 throw new IllegalArgumentException("Unknown query provider: " + provider);
         }
 
-
         JDBCVectorStore vectorStore = JDBCVectorStore.builder()
-                .withDataSource(dataSource)
-                .withOptions(
-                        JDBCVectorStoreOptions.builder()
-                                .withQueryProvider(queryProvider)
-                                .build()
-                )
-                .build();
+            .withDataSource(dataSource)
+            .withOptions(
+                JDBCVectorStoreOptions.builder()
+                    .withQueryProvider(queryProvider)
+                    .build()
+            )
+            .build();
 
         vectorStore.prepareAsync().block();
         return vectorStore;
@@ -99,7 +132,7 @@ public class JDBCVectorStoreTest {
 
         for (String collectionName : collectionNames) {
             vectorStore.getCollection(collectionName,
-                    JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
+                JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
                     .withRecordClass(Hotel.class)
                     .build()).createCollectionAsync().block();
         }

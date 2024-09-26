@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 import com.microsoft.semantickernel.exceptions.SKException;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +20,7 @@ import java.util.stream.Stream;
  * Represents a definition of a vector store record.
  */
 public class VectorStoreRecordDefinition {
+
     private final VectorStoreRecordKeyField keyField;
     private final List<VectorStoreRecordDataField> dataFields;
     private final List<VectorStoreRecordVectorField> vectorFields;
@@ -40,6 +40,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Gets the vector fields in the record definition.
+     *
      * @return List of VectorStoreRecordVectorField
      */
     public List<VectorStoreRecordVectorField> getVectorFields() {
@@ -48,6 +49,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Gets all fields in the record definition.
+     *
      * @return List of VectorStoreRecordField
      */
     public List<VectorStoreRecordField> getAllFields() {
@@ -56,6 +58,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Gets the non-vector fields in the record definition.
+     *
      * @return List of VectorStoreRecordField
      */
     public List<VectorStoreRecordField> getNonVectorFields() {
@@ -64,6 +67,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Checks if the record definition contains a field with the specified name.
+     *
      * @param fieldName The name of the field to check.
      * @return boolean
      */
@@ -73,6 +77,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Gets the field with the specified name.
+     *
      * @param fieldName The name of the field to get.
      * @return VectorStoreRecordField
      */
@@ -114,6 +119,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Create a VectorStoreRecordDefinition from a collection of fields.
+     *
      * @param fields The fields to create the definition from.
      * @return VectorStoreRecordDefinition
      */
@@ -138,6 +144,7 @@ public class VectorStoreRecordDefinition {
 
     /**
      * Create a VectorStoreRecordDefinition from a model.
+     *
      * @param recordClass The model class to create the definition from.
      * @return VectorStoreRecordDefinition
      */
@@ -197,8 +204,7 @@ public class VectorStoreRecordDefinition {
                     .withFieldType(field.getType())
                     .withDimensions(vectorAttribute.dimensions())
                     .withIndexKind(IndexKind.fromString(vectorAttribute.indexKind()))
-                    .withDistanceFunction(
-                        DistanceFunction.fromString(vectorAttribute.distanceFunction()))
+                    .withDistanceFunction(vectorAttribute.distanceFunction())
                     .build());
             }
         }

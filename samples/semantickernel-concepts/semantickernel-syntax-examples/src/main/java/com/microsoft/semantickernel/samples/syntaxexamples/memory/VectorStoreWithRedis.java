@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
@@ -43,7 +44,6 @@ public class VectorStoreWithRedis {
         .getOrDefault("EMBEDDING_MODEL_ID", "text-embedding-3-large");
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
-
     public static class GitHubFile {
         @JsonProperty("fileId") // Set a different name for the storage field if needed
         @VectorStoreRecordKeyAttribute()
@@ -52,7 +52,7 @@ public class VectorStoreWithRedis {
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = "cosineDistance")
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {
@@ -73,11 +73,18 @@ public class VectorStoreWithRedis {
         public String getId() {
             return id;
         }
+
         public String getDescription() {
             return description;
         }
-        public String getLink() { return link; }
-        public List<Float> getEmbedding() { return embedding; }
+
+        public String getLink() {
+            return link;
+        }
+
+        public List<Float> getEmbedding() {
+            return embedding;
+        }
 
         static String encodeId(String realId) {
             return VectorStoreWithAzureAISearch.GitHubFile.encodeId(realId);
@@ -125,7 +132,8 @@ public class VectorStoreWithRedis {
         // Available storage types are JSON and HASHSET. Default is JSON.
         var vectorStore = RedisVectorStore.builder()
             .withClient(jedis)
-            .withOptions(RedisVectorStoreOptions.builder().withStorageType(RedisStorageType.JSON).build())
+            .withOptions(
+                RedisVectorStoreOptions.builder().withStorageType(RedisStorageType.JSON).build())
             .build();
 
         // Set up the record collection to use
@@ -151,17 +159,17 @@ public class VectorStoreWithRedis {
         }
         var searchResult = results.get(0);
         System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
-                searchResult.getScore(), searchResult.getRecord().link,
-                searchResult.getRecord().description);
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
     }
 
     private static Mono<List<VectorSearchResult<GitHubFile>>> search(
-            String searchText,
-            VectorStoreRecordCollection<String, GitHubFile> recordCollection,
-            OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        String searchText,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
         // Generate embeddings for the search text and search for the closest records
         return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-                .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
+            .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
     }
 
     private static Mono<List<String>> storeData(

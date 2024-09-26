@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.vectorstorage.attributes;
 
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,5 +33,7 @@ public @interface VectorStoreRecordVectorAttribute {
     /**
      * Distance function to be used for to compute the distance between vectors.
      */
-    String distanceFunction() default "";
+    @Nullable
+    DistanceFunction distanceFunction();
+
 }

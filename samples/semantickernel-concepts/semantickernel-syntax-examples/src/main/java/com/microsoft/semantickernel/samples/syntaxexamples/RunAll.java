@@ -6,6 +6,8 @@ import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Exampl
 import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Example33_Chat;
 import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Example44_MultiChatCompletion;
 import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Example63_ChatCompletionPrompts;
+import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.responseschema.Example_ChatWithResponseFormat;
+import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.responseschema.Example_ChatWithResponseFormatToolCall;
 import com.microsoft.semantickernel.samples.syntaxexamples.configuration.Example08_RetryHandler;
 import com.microsoft.semantickernel.samples.syntaxexamples.configuration.Example41_HttpClientUsage;
 import com.microsoft.semantickernel.samples.syntaxexamples.configuration.Example58_ConfigureExecutionSettings;
@@ -66,7 +68,9 @@ public class RunAll {
             Example63_ChatCompletionPrompts::main,
             Example64_MultiplePromptTemplates::main,
             Example69_MutableKernelPlugin::main,
-            KernelFunctionYaml_Example::main);
+            KernelFunctionYaml_Example::main,
+            Example_ChatWithResponseFormat::main,
+            Example_ChatWithResponseFormatToolCall::main);
 
         Scanner scanner = new Scanner(System.in);
         mains.forEach(mainMethod -> {

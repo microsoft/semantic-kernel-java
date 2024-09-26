@@ -5,10 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
-
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import java.util.List;
 
 public class Hotel {
+
     @VectorStoreRecordKeyAttribute
     private final String id;
 
@@ -23,15 +24,15 @@ public class Hotel {
     private final String description;
 
     @JsonProperty("summaryEmbedding1")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "euclidean")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> euclidean;
 
     @JsonProperty("summaryEmbedding2")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "cosineDistance")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE)
     private final List<Float> cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = "dotProduct")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT)
     private final List<Float> dotProduct;
     @VectorStoreRecordDataAttribute
     private double rating;
@@ -42,14 +43,14 @@ public class Hotel {
 
     @JsonCreator
     public Hotel(
-            @JsonProperty("id") String id,
-            @JsonProperty("name") String name,
-            @JsonProperty("code") int code,
-            @JsonProperty("summary") String description,
-            @JsonProperty("summaryEmbedding1") List<Float> euclidean,
-            @JsonProperty("summaryEmbedding2") List<Float> cosineDistance,
-            @JsonProperty("summaryEmbedding3") List<Float> dotProduct,
-            @JsonProperty("rating") double rating) {
+        @JsonProperty("id") String id,
+        @JsonProperty("name") String name,
+        @JsonProperty("code") int code,
+        @JsonProperty("summary") String description,
+        @JsonProperty("summaryEmbedding1") List<Float> euclidean,
+        @JsonProperty("summaryEmbedding2") List<Float> cosineDistance,
+        @JsonProperty("summaryEmbedding3") List<Float> dotProduct,
+        @JsonProperty("rating") double rating) {
         this.id = id;
         this.name = name;
         this.code = code;

@@ -3,27 +3,28 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
-import java.util.List;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * A JDBC vector store.
  */
 public class JDBCVectorStore implements SQLVectorStore {
+
     private final DataSource dataSource;
     private final JDBCVectorStoreOptions options;
     private final SQLVectorStoreQueryProvider queryProvider;
 
     /**
-     * Creates a new instance of the {@link JDBCVectorStore}.
-     * If using this constructor, call {@link #prepareAsync()} before using the vector store.
+     * Creates a new instance of the {@link JDBCVectorStore}. If using this constructor, call
+     * {@link #prepareAsync()} before using the vector store.
      *
      * @param dataSource the connection
      * @param options    the options
@@ -55,8 +56,8 @@ public class JDBCVectorStore implements SQLVectorStore {
     /**
      * Gets a collection from the vector store.
      *
-     * @param collectionName   The name of the collection.
-     * @param options          The options for the collection.
+     * @param collectionName The name of the collection.
+     * @param options        The options for the collection.
      * @return The collection.
      */
     @Override
@@ -96,6 +97,27 @@ public class JDBCVectorStore implements SQLVectorStore {
     }
 
     /**
+     * Gets a collection from the vector store.
+     *
+     * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the record.
+     * @param recordDefinition The record definition.
+     * @return The collection.
+     */
+    public <Record> VectorStoreRecordCollection<String, Record> getCollection(
+        @Nonnull String collectionName,
+        @Nonnull Class<Record> recordClass,
+        @Nullable VectorStoreRecordDefinition recordDefinition) {
+        return getCollection(
+            collectionName,
+            JDBCVectorStoreRecordCollectionOptions.<Record>builder()
+                .withRecordClass(recordClass)
+                .withRecordDefinition(recordDefinition)
+                .withQueryProvider(this.queryProvider)
+                .build());
+    }
+
+    /**
      * Gets the names of all collections in the vector store.
      *
      * @return A list of collection names.
@@ -119,6 +141,7 @@ public class JDBCVectorStore implements SQLVectorStore {
      * Builder for creating a {@link JDBCVectorStore}.
      */
     public static class Builder {
+
         private DataSource dataSource;
         private JDBCVectorStoreOptions options;
 
