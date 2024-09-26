@@ -7,7 +7,7 @@
 - Added localization support for error/debug messages
 - Add vector search to experimental vector stores.
     - Approximate vector search for Azure AI Search, Redis and JDBC with Postgres.
-    - Exhaustive vector search for VolatileVectorStore and default JDBC query provider, MySQL and SQLite.
+    - Exhaustive vector search for VolatileVectorStore and default JDBC query provider, MySQL, SQLite and HSQLDB.
 
 ### Bug Fixes
 
