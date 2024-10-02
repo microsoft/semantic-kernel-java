@@ -17,6 +17,8 @@ import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.mysql.cj.jdbc.MysqlDataSource;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -61,6 +63,16 @@ public class JDBCVectorStoreRecordCollectionTest {
         HSQLDB
     }
 
+    static Path createTempDbFile(String prefix) {
+        try {
+            Path file = Files.createTempFile(prefix, ".db");
+            file.toFile().deleteOnExit();
+            return file;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private JDBCVectorStoreRecordCollection<Hotel> buildRecordCollection(QueryProvider provider,
         @Nonnull String collectionName) {
         SQLVectorStoreQueryProvider queryProvider;
@@ -88,17 +100,18 @@ public class JDBCVectorStoreRecordCollectionTest {
                     .build();
                 break;
             case SQLite:
+                Path sqliteDb = createTempDbFile("sqliteDb");
                 SQLiteDataSource sqliteDataSource = new SQLiteDataSource();
-                sqliteDataSource.setUrl("jdbc:sqlite:file:testdb");
+                sqliteDataSource.setUrl("jdbc:sqlite:file:" + sqliteDb.toFile().getAbsolutePath());
                 dataSource = sqliteDataSource;
+
                 queryProvider = SQLiteVectorStoreQueryProvider.builder()
-                    .withDataSource(sqliteDataSource)
+                    .withDataSource(dataSource)
                     .build();
                 break;
             case HSQLDB:
                 try {
-                    Path file = Files.createTempFile("testdb", ".db");
-                    file.toFile().deleteOnExit();
+                    Path file = createTempDbFile("testHSQLDB");
 
                     Properties properties = new Properties();
                     properties.putAll(

@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -30,6 +31,7 @@ import java.util.Properties;
 
 import com.microsoft.semantickernel.tests.connectors.memory.jdbc.JDBCVectorStoreRecordCollectionTest.QueryProvider;
 
+import static com.microsoft.semantickernel.tests.connectors.memory.jdbc.JDBCVectorStoreRecordCollectionTest.createTempDbFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,17 +74,18 @@ public class JDBCVectorStoreTest {
                     .build();
                 break;
             case SQLite:
+                Path sqliteDb = createTempDbFile("testSQLite");
                 SQLiteDataSource sqliteDataSource = new SQLiteDataSource();
-                sqliteDataSource.setUrl("jdbc:sqlite:file:test");
+                sqliteDataSource.setUrl("jdbc:sqlite:file:" + sqliteDb.toFile().getAbsolutePath());
                 dataSource = sqliteDataSource;
+
                 queryProvider = SQLiteVectorStoreQueryProvider.builder()
-                    .withDataSource(sqliteDataSource)
+                    .withDataSource(dataSource)
                     .build();
                 break;
             case HSQLDB:
                 try {
-                    Path file = Files.createTempFile("testdb", ".db");
-                    file.toFile().deleteOnExit();
+                    Path file = createTempDbFile("testHSQLDB");
 
                     Properties properties = new Properties();
                     properties.putAll(
