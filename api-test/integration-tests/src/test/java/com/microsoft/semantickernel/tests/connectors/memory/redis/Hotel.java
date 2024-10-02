@@ -30,7 +30,7 @@ public class Hotel {
     private final List<Float> euclidean;
 
     @JsonProperty("summaryEmbedding2")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+    @VectorStoreRecordVectorAttribute(dimensions = 8)
     private final List<Float> cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
