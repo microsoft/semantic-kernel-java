@@ -203,7 +203,7 @@ public class VectorStoreRecordDefinition {
                     .withStorageName(storageName)
                     .withFieldType(field.getType())
                     .withDimensions(vectorAttribute.dimensions())
-                    .withIndexKind(IndexKind.fromString(vectorAttribute.indexKind()))
+                    .withIndexKind(vectorAttribute.indexKind())
                     .withDistanceFunction(vectorAttribute.distanceFunction())
                     .build());
             }

@@ -18,7 +18,7 @@ public class JsonSchemaTest {
         Assertions.assertEquals("foo", format.getJsonSchema().getName());
 
         Assertions.assertTrue(format.getJsonSchema().getSchema()
-            .replaceAll("\n", "")
+            .replaceAll("\\r\\n|\\r|\\n", "")
             .replaceAll(" +", "")
             .contains(
                 "\"type\":\"object\",\"properties\":{\"bar\":{}}"));

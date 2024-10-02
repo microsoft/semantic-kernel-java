@@ -6,6 +6,8 @@ import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
+
 import java.util.List;
 
 public class Hotel {
@@ -24,15 +26,15 @@ public class Hotel {
     private final String description;
 
     @JsonProperty("summaryEmbedding1")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
+    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> euclidean;
 
     @JsonProperty("summaryEmbedding2")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
     private final List<Float> cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT)
+    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.DOT_PRODUCT)
     private final List<Float> dotProduct;
     @VectorStoreRecordDataAttribute
     private double rating;

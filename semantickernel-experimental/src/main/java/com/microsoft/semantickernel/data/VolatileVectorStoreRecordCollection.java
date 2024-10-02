@@ -276,9 +276,10 @@ public class VolatileVectorStoreRecordCollection<Record> implements
                 : (VectorStoreRecordVectorField) recordDefinition
                     .getField(effectiveOptions.getVectorFieldName());
 
-            DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
-                ? DistanceFunction.EUCLIDEAN_DISTANCE
-                : vectorField.getDistanceFunction();
+            DistanceFunction distanceFunction = vectorField
+                .getDistanceFunction() == DistanceFunction.UNDEFINED
+                    ? DistanceFunction.EUCLIDEAN_DISTANCE
+                    : vectorField.getDistanceFunction();
 
             List<Record> records = VolatileVectorStoreCollectionSearchMapping.filterRecords(
                 new ArrayList<>(getCollection().values()), effectiveOptions.getVectorSearchFilter(),

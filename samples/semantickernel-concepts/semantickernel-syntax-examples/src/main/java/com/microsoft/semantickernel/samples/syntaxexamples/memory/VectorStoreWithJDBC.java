@@ -49,7 +49,7 @@ public class VectorStoreWithJDBC {
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = DistanceFunction.COSINE_DISTANCE)
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {

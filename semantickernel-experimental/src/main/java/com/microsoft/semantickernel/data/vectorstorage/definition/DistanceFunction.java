@@ -17,7 +17,11 @@ public enum DistanceFunction {
     /**
      * Euclidean distance function. Also known as L2 distance.
      */
-    EUCLIDEAN_DISTANCE("euclidean");
+    EUCLIDEAN_DISTANCE("euclidean"),
+    /**
+     * No distance function specified. It will default to the database's default distance function.
+     */
+    UNDEFINED(null);
 
     private final String value;
 
@@ -27,25 +31,5 @@ public enum DistanceFunction {
 
     public String getValue() {
         return value;
-    }
-
-    /**
-     * Converts a string to a DistanceFunction.
-     * If the string is null or empty, the method returns DistanceFunction.COSINE_SIMILARITY.
-     *
-     * @param text the string to convert
-     * @return the DistanceFunction
-     */
-    public static DistanceFunction fromString(String text) {
-        if (text == null || text.isEmpty()) {
-            return null;
-        }
-
-        for (DistanceFunction b : DistanceFunction.values()) {
-            if (b.value.equalsIgnoreCase(text)) {
-                return b;
-            }
-        }
-        throw new IllegalArgumentException("No distance function with value " + text + " found");
     }
 }

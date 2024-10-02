@@ -156,7 +156,7 @@ public class HandlebarsPromptTemplateTest {
 
         String result = instance.renderAsync(Kernel.builder().build(), arguments, null)
             .block();
-        Assertions.assertEquals(expResult, result.replaceAll("\\n", ""));
+        Assertions.assertEquals(expResult, result.replaceAll("\\r\\n|\\r|\\n", ""));
     }
 
     @Test

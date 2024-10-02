@@ -9,9 +9,7 @@ import javax.annotation.Nullable;
  */
 public class VectorStoreRecordVectorField extends VectorStoreRecordField {
     private final int dimensions;
-    @Nullable
     private final IndexKind indexKind;
-    @Nullable
     private final DistanceFunction distanceFunction;
 
     public static Builder builder() {
@@ -37,8 +35,9 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
         @Nullable DistanceFunction distanceFunction) {
         super(name, storageName, fieldType);
         this.dimensions = dimensions;
-        this.indexKind = indexKind;
-        this.distanceFunction = distanceFunction;
+        this.indexKind = indexKind == null ? IndexKind.UNDEFINED : indexKind;
+        this.distanceFunction = distanceFunction == null ? DistanceFunction.UNDEFINED
+            : distanceFunction;
     }
 
     /**
@@ -55,7 +54,6 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
      *
      * @return the index kind
      */
-    @Nullable
     public IndexKind getIndexKind() {
         return indexKind;
     }
@@ -65,7 +63,6 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
      *
      * @return the distance function
      */
-    @Nullable
     public DistanceFunction getDistanceFunction() {
         return distanceFunction;
     }
@@ -73,10 +70,8 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordVectorField, Builder> {
         private int dimensions;
-        @Nullable
-        private IndexKind indexKind;
-        @Nullable
-        private DistanceFunction distanceFunction;
+        private IndexKind indexKind = IndexKind.UNDEFINED;
+        private DistanceFunction distanceFunction = DistanceFunction.UNDEFINED;
 
         /**
          * Sets the number of dimensions in the vector.
