@@ -10,6 +10,8 @@ import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmMetric;
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -31,7 +33,7 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static VectorSearchAlgorithmMetric getAlgorithmMetric(
         @Nonnull VectorStoreRecordVectorField vectorField) {
-        if (vectorField.getDistanceFunction() == null) {
+        if (vectorField.getDistanceFunction() == DistanceFunction.UNDEFINED) {
             return VectorSearchAlgorithmMetric.COSINE;
         }
 
@@ -50,7 +52,7 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static VectorSearchAlgorithmConfiguration getAlgorithmConfig(
         @Nonnull VectorStoreRecordVectorField vectorField) {
-        if (vectorField.getIndexKind() == null) {
+        if (vectorField.getIndexKind() == IndexKind.UNDEFINED) {
             return new HnswAlgorithmConfiguration(getAlgorithmConfigName(vectorField))
                 .setParameters(new HnswParameters().setMetric(getAlgorithmMetric(vectorField)));
         }

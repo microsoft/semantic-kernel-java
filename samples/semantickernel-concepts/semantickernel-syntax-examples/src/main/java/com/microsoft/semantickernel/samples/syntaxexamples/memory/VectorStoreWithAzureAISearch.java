@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -58,7 +60,7 @@ public class VectorStoreWithAzureAISearch {
         private final String description;
         @VectorStoreRecordDataAttribute
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = "Hnsw", distanceFunction = DistanceFunction.COSINE_DISTANCE)
+        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {

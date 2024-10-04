@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
@@ -32,8 +34,8 @@ public class RedisVectorStoreCollectionCreateMapping {
 
     private static String getAlgorithmMetric(
         VectorStoreRecordVectorField vectorField) {
-        if (vectorField.getDistanceFunction() == null) {
-            return RedisVectorDistanceMetric.EUCLIDEAN;
+        if (vectorField.getDistanceFunction() == DistanceFunction.UNDEFINED) {
+            return RedisVectorDistanceMetric.COSINE;
         }
 
         switch (vectorField.getDistanceFunction()) {
@@ -51,7 +53,7 @@ public class RedisVectorStoreCollectionCreateMapping {
 
     private static Schema.VectorField.VectorAlgo getAlgorithmConfig(
         VectorStoreRecordVectorField vectorField) {
-        if (vectorField.getIndexKind() == null) {
+        if (vectorField.getIndexKind() == IndexKind.UNDEFINED) {
             return Schema.VectorField.VectorAlgo.HNSW;
         }
 

@@ -164,12 +164,12 @@ public class PostgreSQLVectorStoreQueryProvider extends
         PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
             .fromDistanceFunction(vectorField.getDistanceFunction());
 
-        // If indexKind is not specified, no index is created
-        // and pgvector performs exact nearest neighbor search.
-        if (indexKind == null) {
+        // If there is no approximate search index associated to the vector field,
+        // there is no need to create an index and pgvector performs exact nearest neighbor search.
+        if (indexKind == PostgreSQLVectorIndexKind.UNDEFINED) {
             return null;
         }
-        if (distanceFunction == null) {
+        if (distanceFunction == PostgreSQLVectorDistanceFunction.UNDEFINED) {
             throw new SKException(
                 "Distance function is required for vector field: " + vectorField.getName());
         }
@@ -358,10 +358,11 @@ public class PostgreSQLVectorStoreQueryProvider extends
         PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
             .fromDistanceFunction(vectorField.getDistanceFunction());
 
-        // If indexKind is not specified, there is no index associated to the vector field
-        // and pgvector performs exact nearest neighbor search.
-        // If indexKind is specified, a distance function is required.
-        if (indexKind != null && distanceFunction == null) {
+        // If there is no approximate search index associated to the vector field,
+        // there is no index defined in the database and pgvector performs exact nearest neighbor search.
+        // If indexKind is defined, distance function is required.
+        if (indexKind != PostgreSQLVectorIndexKind.UNDEFINED
+            && distanceFunction == PostgreSQLVectorDistanceFunction.UNDEFINED) {
             throw new SKException(
                 "Distance function is required for vector field: " + vectorField.getName());
         }

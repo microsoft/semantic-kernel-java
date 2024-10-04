@@ -2,6 +2,8 @@
 package com.microsoft.semantickernel.data.vectorstorage.attributes;
 
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
+
 import javax.annotation.Nullable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,12 +30,13 @@ public @interface VectorStoreRecordVectorAttribute {
     /**
      * Type of index to be used for the vector.
      */
-    String indexKind() default "";
+    @Nullable
+    IndexKind indexKind() default IndexKind.UNDEFINED;
 
     /**
      * Distance function to be used for to compute the distance between vectors.
      */
     @Nullable
-    DistanceFunction distanceFunction();
+    DistanceFunction distanceFunction() default DistanceFunction.UNDEFINED;
 
 }

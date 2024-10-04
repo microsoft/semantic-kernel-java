@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -263,7 +264,9 @@ public class JDBCVectorStoreQueryProvider
 
         // No approximate search is supported in JDBCVectorStoreQueryProvider
         if (recordDefinition.getVectorFields().stream()
-            .anyMatch(field -> field.getIndexKind() != null)) {
+            .anyMatch(
+                field -> field.getIndexKind() != null && field.getIndexKind() != IndexKind.FLAT
+                    && field.getIndexKind() != IndexKind.UNDEFINED)) {
             LOGGER
                 .warn(String.format("Indexes are not supported in %s. Ignoring indexKind property.",
                     this.getClass().getName()));
@@ -532,9 +535,10 @@ public class JDBCVectorStoreQueryProvider
         List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
             new GetRecordOptions(true), filter, parameters);
 
-        DistanceFunction distanceFunction = vectorField.getDistanceFunction() == null
-            ? DistanceFunction.EUCLIDEAN_DISTANCE
-            : vectorField.getDistanceFunction();
+        DistanceFunction distanceFunction = vectorField
+            .getDistanceFunction() == DistanceFunction.UNDEFINED
+                ? DistanceFunction.EUCLIDEAN_DISTANCE
+                : vectorField.getDistanceFunction();
 
         return VectorOperations.exactSimilaritySearch(records, vector, vectorField,
             distanceFunction, options);

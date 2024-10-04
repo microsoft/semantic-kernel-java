@@ -2,7 +2,28 @@
 package com.microsoft.semantickernel.data.vectorstorage.definition;
 
 public enum IndexKind {
-    HNSW("Hnsw"), FLAT("Flat");
+    /**
+     * Hierarchical Navigable Small World, which performs an approximate nearest neighbour (ANN) search.
+     */
+    HNSW("Hnsw"),
+
+    /**
+     * Flat index, which performs an exact nearest neighbour search.
+     * Also referred to as exhaustive k nearest neighbor in some databases.
+     * High recall accuracy, but slower and more expensive than HNSW.
+     * Better with smaller datasets.
+     */
+    FLAT("Flat"),
+
+    /**
+     * Inverted file index, which performs an approximate nearest neighbour (ANN) search.
+     */
+    IVFFLAT("IVFFlat"),
+
+    /**
+     * No index specified. It will default to the database's default index.
+     */
+    UNDEFINED(null);
 
     private final String value;
 
@@ -12,25 +33,5 @@ public enum IndexKind {
 
     public String getValue() {
         return value;
-    }
-
-    /**
-     * Converts a string to an IndexKind.
-     * If the string is null or empty, the method returns IndexKind.FLAT.
-     *
-     * @param text the string to convert
-     * @return the IndexKind
-     */
-    public static IndexKind fromString(String text) {
-        if (text == null || text.isEmpty()) {
-            return null;
-        }
-
-        for (IndexKind b : IndexKind.values()) {
-            if (b.value.equalsIgnoreCase(text)) {
-                return b;
-            }
-        }
-        throw new IllegalArgumentException("No index kind with value " + text + " found");
     }
 }

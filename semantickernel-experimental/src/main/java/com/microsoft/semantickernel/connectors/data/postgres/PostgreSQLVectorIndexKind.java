@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.connectors.data.postgres;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 
 public enum PostgreSQLVectorIndexKind {
-    HNSW("hnsw"), IVFFLAT("ivfflat");
+    HNSW("hnsw"), IVFFLAT("ivfflat"), UNDEFINED(null);
 
     private final String value;
 
@@ -17,15 +17,14 @@ public enum PostgreSQLVectorIndexKind {
     }
 
     public static PostgreSQLVectorIndexKind fromIndexKind(IndexKind indexKind) {
-        if (indexKind == null) {
-            return null;
-        }
-
         switch (indexKind) {
             case HNSW:
                 return HNSW;
-            case FLAT:
+            case IVFFLAT:
                 return IVFFLAT;
+            case FLAT:
+            case UNDEFINED:
+                return UNDEFINED;
             default:
                 throw new IllegalArgumentException("Unsupported index kind: " + indexKind);
         }
