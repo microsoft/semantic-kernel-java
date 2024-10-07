@@ -118,15 +118,16 @@ public class Splitter {
                         "This entier chunk consists of overlapped data, this will result in infinite loop. Skipping this chunk.");
 
                     // previous chunk should already contain this text..skip it
-                    doc = doc.substring(previousChunkEndIndex, doc.length());
+                    doc = doc.substring(Math.min(previousChunkEndIndex, doc.length()),
+                        doc.length());
 
-                    previousChunkEndIndex = 0;
+                    previousChunkEndIndex = -1;
                     continue;
                 }
 
                 int overlapIndex = overlapCondition.getOverlapIndex(chunkText);
                 previousChunkEndIndex = chunkText.length() - overlapIndex;
-                doc = doc.substring(overlapIndex, doc.length());
+                doc = doc.substring(Math.min(overlapIndex, doc.length()), doc.length());
 
                 chunks.add(new Chunk(chunkText));
             } else {

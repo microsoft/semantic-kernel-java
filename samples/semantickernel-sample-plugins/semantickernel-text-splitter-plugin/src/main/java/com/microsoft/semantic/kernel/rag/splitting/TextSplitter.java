@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantic.kernel.rag.splitting;
 
-import com.microsoft.semantic.kernel.rag.splitting.splitconditions.SplitPoints;
-
+import com.microsoft.semantic.kernel.rag.splitting.splitconditions.SplitPoint;
 import java.util.List;
 
 /**
@@ -16,7 +15,9 @@ public interface TextSplitter {
      * @param doc the document to split
      * @return the split points
      */
-    List<SplitPoints> getSplitPoints(String doc);
+    default List<SplitPoint> getSplitPoints(String doc) {
+        return getNSplitPoints(doc, Integer.MAX_VALUE);
+    }
 
     /**
      * Get the first n split points for the given document.
@@ -25,5 +26,5 @@ public interface TextSplitter {
      * @param n   the number of split points to get
      * @return the split points
      */
-    List<SplitPoints> getNSplitPoints(String doc, int n);
+    List<SplitPoint> getNSplitPoints(String doc, int n);
 }

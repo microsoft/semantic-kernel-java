@@ -44,18 +44,13 @@ public abstract class RegexSplitter implements TextSplitter {
     }
 
     @Override
-    public List<SplitPoints> getSplitPoints(String doc) {
-        return getNSplitPoints(doc, Integer.MAX_VALUE);
-    }
-
-    @Override
-    public List<SplitPoints> getNSplitPoints(String doc, int n) {
+    public List<SplitPoint> getNSplitPoints(String doc, int n) {
         Matcher matcher = pattern.matcher(doc);
 
         List<MatchResult> points = matcher.results()
             .collect(Collectors.toList());
 
-        List<SplitPoints> result = new ArrayList<>();
+        List<SplitPoint> result = new ArrayList<>();
 
         int previousEnd = 0;
         for (MatchResult point : points) {
@@ -66,7 +61,7 @@ public abstract class RegexSplitter implements TextSplitter {
                 trivialSplitLength)) {
                 continue;
             }
-            result.add(new SplitPoints(previousEnd, point.end()));
+            result.add(new SplitPoint(previousEnd, point.end()));
             previousEnd = point.end();
             if (result.size() >= n) {
                 break;
@@ -74,11 +69,11 @@ public abstract class RegexSplitter implements TextSplitter {
         }
 
         if (result.size() < n && !isTrivialSplit(previousEnd, doc.length(), doc, 1)) {
-            result.add(new SplitPoints(previousEnd, doc.length()));
+            result.add(new SplitPoint(previousEnd, doc.length()));
         }
 
         if (result.isEmpty()) {
-            return List.of(new SplitPoints(0, doc.length()));
+            return List.of(new SplitPoint(0, doc.length()));
         }
 
         return result;

@@ -21,7 +21,13 @@ public class CountSplitCondition implements ChunkEndCondition {
 
     @Override
     public int getEndOfNextChunk(String doc) {
-        List<SplitPoints> splitPoints = splitter.getNSplitPoints(doc, count);
+        List<SplitPoint> splitPoints = splitter.getNSplitPoints(doc, count)
+            .stream()
+            .filter(it -> it != null)
+            .filter(it -> it.getEnd() != 0)
+            .filter(it -> it.getEnd() != it.getStart())
+            .filter(it -> it.getStart() != doc.length())
+            .toList();
 
         if (splitPoints.size() < count) {
             return splitPoints.get(splitPoints.size() - 1).getEnd();

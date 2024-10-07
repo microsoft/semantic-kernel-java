@@ -11,6 +11,10 @@ public class NoOverlapCondition implements OverlapCondition {
     public NoOverlapCondition() {
     }
 
+    public static OverlapCondition build() {
+        return new NoOverlapCondition();
+    }
+
     @Override
     public int getOverlapIndex(String chunk) {
         return chunk.length();

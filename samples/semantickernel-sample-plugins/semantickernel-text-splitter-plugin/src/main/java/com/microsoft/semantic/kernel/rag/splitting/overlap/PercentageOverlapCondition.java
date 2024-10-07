@@ -3,7 +3,7 @@ package com.microsoft.semantic.kernel.rag.splitting.overlap;
 
 import com.microsoft.semantic.kernel.rag.splitting.OverlapCondition;
 import com.microsoft.semantic.kernel.rag.splitting.TextSplitter;
-import com.microsoft.semantic.kernel.rag.splitting.splitconditions.SplitPoints;
+import com.microsoft.semantic.kernel.rag.splitting.splitconditions.SplitPoint;
 import java.util.List;
 import org.slf4j.Logger;
 
@@ -31,11 +31,11 @@ public class PercentageOverlapCondition implements OverlapCondition {
 
     @Override
     public int getOverlapIndex(String chunk) {
-        List<SplitPoints> splitPoints = splitter.getSplitPoints(chunk);
+        List<SplitPoint> splitPoints = splitter.getSplitPoints(chunk);
 
         float index = chunk.length() * (100.0f - percentage) / 100.0f;
 
-        for (SplitPoints splitPoint : splitPoints) {
+        for (SplitPoint splitPoint : splitPoints) {
             if (splitPoint.getEnd() > index) {
                 return splitPoint.getStart();
             }
