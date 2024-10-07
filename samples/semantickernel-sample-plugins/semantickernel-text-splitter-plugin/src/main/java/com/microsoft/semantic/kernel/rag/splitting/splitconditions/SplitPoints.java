@@ -3,7 +3,7 @@ package com.microsoft.semantic.kernel.rag.splitting.splitconditions;
 
 /**
  * A class that represents the start and end points of a split. I.e if splitting by word, these
- * would be the indeces of the first and last char in the word within the chunk.
+ * would be the indices of the first and last char in the word within the chunk.
  */
 public class SplitPoints {
 
