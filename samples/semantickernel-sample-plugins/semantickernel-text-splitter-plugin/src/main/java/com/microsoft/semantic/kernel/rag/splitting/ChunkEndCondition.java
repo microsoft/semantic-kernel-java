@@ -8,7 +8,7 @@ public interface ChunkEndCondition {
 
     /**
      * Accepts a string and returns the number of character that should be considered as the end of
-     * the FIRST chunk within the string. This method will be subsiquently called until all pages
+     * the FIRST chunk within the string. This method will be subsequently called until all pages
      * are found.
      * <p>
      * Return -1 if the value does not contain enough characters to be considered as a full chunk.
