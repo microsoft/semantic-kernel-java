@@ -11,9 +11,9 @@ import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStore;
 import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVector;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -39,13 +39,13 @@ public class InMemoryVolatileVectorStore {
 
     static class GitHubFile {
         @JsonProperty("fileId") // Set a different name for the storage field if needed
-        @VectorStoreRecordKeyAttribute()
+        @VectorStoreRecordKey()
         private final String id;
-        @VectorStoreRecordDataAttribute()
+        @VectorStoreRecordData()
         private final String description;
-        @VectorStoreRecordDataAttribute
+        @VectorStoreRecordData
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+        @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile(

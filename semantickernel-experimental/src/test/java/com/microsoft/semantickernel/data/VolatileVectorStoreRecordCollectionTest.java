@@ -6,13 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollection;
-import com.microsoft.semantickernel.connectors.data.jdbc.filter.SQLEqualToFilterClause;
 import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
@@ -23,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class VolatileVectorStoreRecordCollectionTest {
 
@@ -198,7 +194,7 @@ public class VolatileVectorStoreRecordCollectionTest {
             .withLimit(3)
             .withVectorSearchFilter(
                 VectorSearchFilter.builder()
-                    .withEqualToFilterClause(new EqualToFilterClause("rating", 4.0)).build())
+                    .equalTo("rating", 4.0).build())
             .build();
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -113,15 +114,20 @@ public class PostgreSQLVectorStoreRecordMapper<Record>
 
                         for (VectorStoreRecordField field : fields) {
                             Object value = resultSet.getObject(field.getEffectiveStorageName());
+                            Class<?> fieldType = field.getFieldType();
 
                             if (field instanceof VectorStoreRecordVectorField) {
-                                Class<?> vectorType = field.getFieldType();
-
                                 // If the vector field is other than String, deserialize it from the JSON string
-                                if (!vectorType.equals(String.class)) {
+                                if (!fieldType.equals(String.class)) {
                                     // Deserialize the pgvector string to the vector type
                                     value = objectMapper.readValue(((PGobject) value).getValue(),
-                                        vectorType);
+                                        fieldType);
+                                }
+                            } else if (field instanceof VectorStoreRecordDataField) {
+                                // If the field is List, deserialize it from the JSON string
+                                if (fieldType.equals(List.class)) {
+                                    value = objectMapper.readValue(((PGobject) value).getValue(),
+                                        fieldType);
                                 }
                             }
 

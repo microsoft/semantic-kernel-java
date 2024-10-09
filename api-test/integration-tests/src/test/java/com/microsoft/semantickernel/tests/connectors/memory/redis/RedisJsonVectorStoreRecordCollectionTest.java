@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -94,6 +95,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         fields.add(VectorStoreRecordDataField.builder()
                 .withName("rating")
                 .withFieldType(Double.class)
+                .isFilterable(true)
                 .build());
         VectorStoreRecordDefinition recordDefinition = VectorStoreRecordDefinition.fromFields(fields);
 
@@ -439,5 +441,31 @@ public class RedisJsonVectorStoreRecordCollectionTest {
         assertEquals(4, results.size(), indexingFailureMessage);
         // The first hotel should be the most similar
         assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId(), indexingFailureMessage);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSearchParameters")
+    public void searchWithFilterEqualToFilter(RecordCollectionOptions recordCollectionOptions, String embeddingName) {
+        String collectionName = getCollectionName("search", recordCollectionOptions);
+        RedisJsonVectorStoreRecordCollection<Hotel>  recordCollection = createCollection(optionsMap.get(recordCollectionOptions), collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions options = VectorSearchOptions.builder()
+            .withVectorFieldName(embeddingName)
+            .withLimit(3)
+            .withVectorSearchFilter(
+                VectorSearchFilter.builder()
+                    .equalTo("rating", 4.0).build())
+            .build();
+
+        // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
+            options).block();
+        assertNotNull(results);
+        assertEquals(3, results.size());
+        // The first hotel should be the most similar
+        assertEquals("id_1", results.get(0).getRecord().getId());
     }
 }
