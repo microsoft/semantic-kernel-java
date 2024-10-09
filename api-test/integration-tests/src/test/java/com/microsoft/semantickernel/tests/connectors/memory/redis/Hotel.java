@@ -2,9 +2,9 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 
@@ -12,31 +12,32 @@ import java.util.List;
 
 public class Hotel {
 
-    @VectorStoreRecordKeyAttribute
+    @VectorStoreRecordKey
     private final String id;
 
-    @VectorStoreRecordDataAttribute(isFilterable = true)
+    @VectorStoreRecordData(isFilterable = true)
     private final String name;
 
-    @VectorStoreRecordDataAttribute
+    @VectorStoreRecordData
     private final int code;
 
     @JsonProperty("summary")
-    @VectorStoreRecordDataAttribute()
+    @VectorStoreRecordData()
     private final String description;
 
     @JsonProperty("summaryEmbedding1")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
+    @VectorStoreRecordVector(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> euclidean;
 
     @JsonProperty("summaryEmbedding2")
-    @VectorStoreRecordVectorAttribute(dimensions = 8)
+    @VectorStoreRecordVector(dimensions = 8)
     private final List<Float> cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.DOT_PRODUCT)
+    @VectorStoreRecordVector(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.DOT_PRODUCT)
     private final List<Float> dotProduct;
-    @VectorStoreRecordDataAttribute
+
+    @VectorStoreRecordData(isFilterable = true)
     private double rating;
 
     public Hotel() {

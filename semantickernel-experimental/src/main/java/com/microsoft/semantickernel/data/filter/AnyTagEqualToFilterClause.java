@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.filter;
 
-public abstract class AnyTagEqualToFilterClause implements FilterClause {
+public class AnyTagEqualToFilterClause implements FilterClause {
 
     private final String fieldName;
     private final Object value;

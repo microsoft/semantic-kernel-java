@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
+import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
+import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
@@ -34,14 +37,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JDBCVectorStoreQueryProvider
-    implements SQLVectorStoreQueryProvider {
+    implements SQLVectorStoreQueryProvider,
+    SQLVectorStoreFilterQueryProvider {
 
     private static final Logger LOGGER = LoggerFactory
         .getLogger(JDBCVectorStoreQueryProvider.class);
 
-    private final Map<Class<?>, String> supportedKeyTypes;
-    private final Map<Class<?>, String> supportedDataTypes;
-    private final Map<Class<?>, String> supportedVectorTypes;
+    protected final Map<Class<?>, String> supportedKeyTypes;
+    protected final Map<Class<?>, String> supportedDataTypes;
+    protected final Map<Class<?>, String> supportedVectorTypes;
+
     protected final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
@@ -71,6 +76,7 @@ public class JDBCVectorStoreQueryProvider
         supportedDataTypes.put(Boolean.class, "BOOLEAN");
         supportedDataTypes.put(boolean.class, "BOOLEAN");
         supportedDataTypes.put(OffsetDateTime.class, "TIMESTAMPTZ");
+        supportedDataTypes.put(List.class, "TEXT");
 
         supportedVectorTypes = new HashMap<>();
         supportedVectorTypes.put(String.class, "TEXT");
@@ -527,10 +533,8 @@ public class JDBCVectorStoreQueryProvider
             : (VectorStoreRecordVectorField) recordDefinition
                 .getField(options.getVectorFieldName());
 
-        String filter = SQLVectorStoreRecordCollectionSearchMapping
-            .buildFilter(options.getVectorSearchFilter(), recordDefinition);
-        List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
-            .getFilterParameters(options.getVectorSearchFilter());
+        String filter = getFilter(options.getVectorSearchFilter(), recordDefinition);
+        List<Object> parameters = getFilterParameters(options.getVectorSearchFilter());
 
         List<Record> records = getRecordsWithFilter(collectionName, recordDefinition, mapper,
             new GetRecordOptions(true), filter, parameters);
@@ -567,6 +571,89 @@ public class JDBCVectorStoreQueryProvider
      */
     public String formatQuery(String query, String... args) {
         return String.format(query, (Object[]) args);
+    }
+
+    @Override
+    public String getFilter(VectorSearchFilter filter,
+        VectorStoreRecordDefinition recordDefinition) {
+        if (filter == null
+            || filter.getFilterClauses().isEmpty()) {
+            return "";
+        }
+
+        return filter.getFilterClauses().stream().map(filterClause -> {
+            if (filterClause instanceof EqualToFilterClause) {
+                EqualToFilterClause equalToFilterClause = (EqualToFilterClause) filterClause;
+                return getEqualToFilter(new EqualToFilterClause(
+                    recordDefinition.getField(equalToFilterClause.getFieldName())
+                        .getEffectiveStorageName(),
+                    equalToFilterClause.getValue()));
+            } else if (filterClause instanceof AnyTagEqualToFilterClause) {
+                AnyTagEqualToFilterClause anyTagEqualToFilterClause = (AnyTagEqualToFilterClause) filterClause;
+                return getAnyTagEqualToFilter(new AnyTagEqualToFilterClause(
+                    recordDefinition.getField(anyTagEqualToFilterClause.getFieldName())
+                        .getEffectiveStorageName(),
+                    anyTagEqualToFilterClause.getValue()));
+            } else {
+                throw new SKException("Unsupported filter clause type '"
+                    + filterClause.getClass().getSimpleName() + "'.");
+            }
+        }).collect(Collectors.joining(" AND "));
+    }
+
+    @Override
+    public List<Object> getFilterParameters(VectorSearchFilter vectorSearchFilter) {
+        if (vectorSearchFilter == null
+            || vectorSearchFilter.getFilterClauses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return vectorSearchFilter.getFilterClauses().stream().map(filterClause -> {
+            if (filterClause instanceof EqualToFilterClause) {
+                EqualToFilterClause equalToFilterClause = (EqualToFilterClause) filterClause;
+                return equalToFilterClause.getValue();
+            } else if (filterClause instanceof AnyTagEqualToFilterClause) {
+                AnyTagEqualToFilterClause anyTagEqualToFilterClause = (AnyTagEqualToFilterClause) filterClause;
+                return String.format("%%\"%s\"%%", anyTagEqualToFilterClause.getValue());
+            } else {
+                throw new SKException("Unsupported filter clause type '"
+                    + filterClause.getClass().getSimpleName() + "'.");
+            }
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getEqualToFilter(EqualToFilterClause filterClause) {
+        String fieldName = JDBCVectorStoreQueryProvider
+            .validateSQLidentifier(filterClause.getFieldName());
+        Object value = filterClause.getValue();
+
+        if (value instanceof String) {
+            return String.format("%s = ?", fieldName);
+        } else if (value instanceof Boolean) {
+            return String.format("%s = ?", fieldName);
+        } else if (value instanceof Integer) {
+            return String.format("%s = ?", fieldName);
+        } else if (value instanceof Long) {
+            return String.format("%s = ?", fieldName);
+        } else if (value instanceof Float) {
+            return String.format("%s = ?", fieldName);
+        } else if (value instanceof Double) {
+            return String.format("%s = ?", fieldName);
+        } else if (value instanceof OffsetDateTime) {
+            return String.format("%s = ?", fieldName);
+        } else {
+            throw new SKException("Unsupported filter value type '"
+                + value.getClass().getSimpleName() + "'.");
+        }
+    }
+
+    @Override
+    public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
+        String fieldName = JDBCVectorStoreQueryProvider
+            .validateSQLidentifier(filterClause.getFieldName());
+
+        return String.format("%s LIKE ?", fieldName);
     }
 
     /**

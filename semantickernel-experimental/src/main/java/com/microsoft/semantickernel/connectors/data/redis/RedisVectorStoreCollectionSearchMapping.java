@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.microsoft.semantickernel.connectors.data.redis.filter.RedisEqualToFilterClause;
+import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
+import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
+import com.microsoft.semantickernel.data.filter.FilterMapping;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -16,11 +18,22 @@ import org.apache.commons.lang3.tuple.Pair;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.search.FTSearchParams;
 
-public class RedisVectorStoreCollectionSearchMapping {
+public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
 
     static final String VECTOR_SCORE_FIELD = "vector_score";
 
-    public static Pair<String, FTSearchParams> buildQuery(List<Float> vector,
+    private RedisVectorStoreCollectionSearchMapping() {
+    }
+
+    static class RedisVectorStoreCollectionSearchMappingHolder {
+        static final RedisVectorStoreCollectionSearchMapping INSTANCE = new RedisVectorStoreCollectionSearchMapping();
+    }
+
+    static RedisVectorStoreCollectionSearchMapping getInstance() {
+        return RedisVectorStoreCollectionSearchMappingHolder.INSTANCE;
+    }
+
+    public Pair<String, FTSearchParams> buildQuery(List<Float> vector,
         VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,
         RedisStorageType storageType) {
@@ -34,7 +47,7 @@ public class RedisVectorStoreCollectionSearchMapping {
             : (VectorStoreRecordVectorField) recordDefinition
                 .getField(options.getVectorFieldName());
 
-        String filter = buildFilter(options.getVectorSearchFilter(), recordDefinition);
+        String filter = getFilter(options.getVectorSearchFilter(), recordDefinition);
 
         String knn = String.format("%s=>[KNN $K @%s $BLOB AS %s]", filter,
             vectorField.getEffectiveStorageName(), VECTOR_SCORE_FIELD);
@@ -82,25 +95,68 @@ public class RedisVectorStoreCollectionSearchMapping {
         return embeddings;
     }
 
-    public static String buildFilter(VectorSearchFilter vectorSearchFilter,
+    /**
+     * Gets the filter string for the given vector search filter and record definition.
+     *
+     * @param filter           The filter to get the filter string for.
+     * @param recordDefinition The record definition to get the filter string for.
+     * @return The filter string.
+     */
+    @Override
+    public String getFilter(VectorSearchFilter filter,
         VectorStoreRecordDefinition recordDefinition) {
-        if (vectorSearchFilter == null
-            || vectorSearchFilter.getFilterClauses().isEmpty()) {
+        if (filter == null
+            || filter.getFilterClauses().isEmpty()) {
             return "*";
         }
 
         return String.format("(%s)",
-            vectorSearchFilter.getFilterClauses().stream().map(filterClause -> {
-                if (filterClause instanceof RedisEqualToFilterClause) {
-                    RedisEqualToFilterClause equalToFilterClause = (RedisEqualToFilterClause) filterClause;
-                    return new RedisEqualToFilterClause(
+            filter.getFilterClauses().stream().map(filterClause -> {
+                if (filterClause instanceof EqualToFilterClause) {
+                    EqualToFilterClause equalToFilterClause = (EqualToFilterClause) filterClause;
+                    return getEqualToFilter(new EqualToFilterClause(
                         recordDefinition.getField(equalToFilterClause.getFieldName())
                             .getEffectiveStorageName(),
-                        equalToFilterClause.getValue()).getFilter();
+                        equalToFilterClause.getValue()));
                 } else {
                     throw new SKException("Unsupported filter clause type '"
                         + filterClause.getClass().getSimpleName() + "'.");
                 }
             }).collect(Collectors.joining(" ")));
+    }
+
+    /**
+     * Gets the filter string for the given equal to filter clause.
+     *
+     * @param filterClause The equal to filter clause to get the filter string for.
+     * @return The filter string.
+     */
+    @Override
+    public String getEqualToFilter(EqualToFilterClause filterClause) {
+        String fieldName = filterClause.getFieldName();
+        Object value = filterClause.getValue();
+        String formattedValue;
+
+        if (value instanceof String) {
+            formattedValue = String.format("\"%s\"", value);
+        } else if (value instanceof Number) {
+            formattedValue = String.format("[%s %s]", value, value);
+        } else {
+            throw new SKException("Unsupported filter value type '"
+                + value.getClass().getSimpleName() + "'.");
+        }
+
+        return String.format("@%s:%s", fieldName, formattedValue);
+    }
+
+    /**
+     * Gets the filter string for the given any tag equal to filter clause.
+     *
+     * @param filterClause The any tag equal to filter clause to get the filter string for.
+     * @return The filter string.
+     */
+    @Override
+    public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
+        return String.format("@%s:\"%s\"", filterClause.getFieldName(), filterClause.getValue());
     }
 }

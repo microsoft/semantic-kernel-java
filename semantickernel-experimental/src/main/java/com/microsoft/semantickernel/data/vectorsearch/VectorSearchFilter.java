@@ -54,23 +54,24 @@ public class VectorSearchFilter {
         /**
          * Adds an EqualToFilterClause to the filter.
          *
-         * @param equalToFilterClause The EqualToFilterClause to add.
+         * @param fieldName The field name to filter on.
+         * @param value The value.
          * @return The builder.
          */
-        public Builder withEqualToFilterClause(EqualToFilterClause equalToFilterClause) {
-            filterClauses.add(equalToFilterClause);
+        public Builder equalTo(String fieldName, Object value) {
+            filterClauses.add(new EqualToFilterClause(fieldName, value));
             return this;
         }
 
         /**
          * Adds an AnyTagEqualToFilterClause to the filter.
          *
-         * @param anyTagEqualToFilterClause The AnyTagEqualToFilterClause clause to add.
+         * @param fieldName The field name to filter on.
+         * @param value The value.
          * @return The builder.
          */
-        public Builder withAnyTagEqualToFilterClause(
-            AnyTagEqualToFilterClause anyTagEqualToFilterClause) {
-            filterClauses.add(anyTagEqualToFilterClause);
+        public Builder anyTagEqualTo(String fieldName, Object value) {
+            filterClauses.add(new AnyTagEqualToFilterClause(fieldName, value));
             return this;
         }
 

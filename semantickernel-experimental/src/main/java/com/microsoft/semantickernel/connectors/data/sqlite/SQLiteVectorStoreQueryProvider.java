@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -58,6 +59,12 @@ public class SQLiteVectorStoreQueryProvider extends
                 if (field instanceof VectorStoreRecordVectorField) {
                     // Convert the vector field to a string
                     if (!field.getFieldType().equals(String.class)) {
+                        statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
+                        continue;
+                    }
+                } else if (field instanceof VectorStoreRecordDataField) {
+                    // Convert List field to a string
+                    if (field.getFieldType().equals(List.class)) {
                         statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
                         continue;
                     }

@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface VectorStoreRecordKeyAttribute {
+public @interface VectorStoreRecordKey {
     /**
      * Storage name of the field.
      */
