@@ -8,6 +8,7 @@ import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 
+import java.util.Collections;
 import java.util.List;
 
 public class Hotel {
@@ -72,7 +73,7 @@ public class Hotel {
         this.dotProduct = euclidean;
         this.indexedEuclidean = euclidean;
         this.rating = rating;
-        this.tags = tags;
+        this.tags = Collections.unmodifiableList(tags);
     }
 
     public String getId() {
