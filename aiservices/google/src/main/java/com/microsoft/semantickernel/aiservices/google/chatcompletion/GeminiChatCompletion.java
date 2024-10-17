@@ -48,14 +48,23 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+
+/**
+ * A chat completion service that uses the Gemini model to generate chat completions.
+ */
 public class GeminiChatCompletion extends GeminiService implements ChatCompletionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiChatCompletion.class);
 
+    /**
+     * Constructor for {@link GeminiChatCompletion}.
+     * @param client The VertexAI client
+     * @param modelId The model ID
+     */
     public GeminiChatCompletion(VertexAI client, String modelId) {
         super(client, modelId);
     }
-
+    
     /**
      * Create a new instance of {@link GeminiChatCompletion.Builder}.
      *
@@ -340,6 +349,13 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         return toolBuilder.build();
     }
 
+    /**
+     * Invoke the Gemini function call.
+     * @param kernel The semantic kernel
+     * @param invocationContext Additional context for the invocation
+     * @param geminiFunction The Gemini function call
+     * @return The result of the function call
+     */
     public Mono<GeminiFunctionCall> performFunctionCall(@Nullable Kernel kernel,
         @Nullable InvocationContext invocationContext, GeminiFunctionCall geminiFunction) {
         if (kernel == null) {
@@ -382,6 +398,9 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             .map(result -> new GeminiFunctionCall(geminiFunction.getFunctionCall(), result));
     }
 
+    /**
+     * Builder for {@link GeminiChatCompletion}.
+     */
     public static class Builder extends GeminiServiceBuilder<GeminiChatCompletion, Builder> {
 
         @Override

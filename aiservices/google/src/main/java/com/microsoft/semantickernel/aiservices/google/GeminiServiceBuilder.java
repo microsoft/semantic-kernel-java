@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 
 /**
  * Builder for a Gemini service.
+ * @param <T> The type of the service
+ * @param <U> The type of the builder
  */
 public abstract class GeminiServiceBuilder<T, U extends GeminiServiceBuilder<T, U>> implements
     SemanticKernelBuilder<T> {

@@ -30,13 +30,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * A Gemini service for text generation.
+ * @see TextGenerationService
+ */
 public class GeminiTextGenerationService extends GeminiService implements TextGenerationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiTextGenerationService.class);
 
+    /**
+     * Creates a new Gemini text generation service.
+     * @param client The VertexAI client
+     * @param modelId The Gemini model ID
+     */
     public GeminiTextGenerationService(VertexAI client, String modelId) {
         super(client, modelId);
     }
 
+    /**
+     * Creates a new builder for a Gemini text generation service.
+     * @return The builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -122,6 +135,9 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
         return modelBuilder.build();
     }
 
+    /**
+     * Builder for a Gemini text generation service.
+     */
     public static class Builder extends
         GeminiServiceBuilder<GeminiTextGenerationService, GeminiTextGenerationService.Builder> {
         @Override
