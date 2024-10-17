@@ -24,8 +24,19 @@ public class ContextVariableTypeConverter<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(
         ContextVariableTypeConverter.class);
 
+    /** 
+     * A function to convert ContextVariable to a prompt string.
+     * @param <T> the type of ContextVariable to convert
+     */
     public interface ToPromptStringFunction<T> {
 
+        /**
+         * Convert the type to a prompt string.
+         *
+         * @param types the context variable types
+         * @param t     the type to convert
+         * @return the prompt string
+         */
         String toPromptString(ContextVariableTypes types, T t);
     }
 
@@ -115,6 +126,7 @@ public class ContextVariableTypeConverter<T> {
      * Use this converter to convert the object to the type of the context variable.
      *
      * @param <U>   the type to convert to
+     * @param types the context variable types
      * @param t     the object to convert
      * @param clazz the class of the type to convert to
      * @return the converted object
@@ -293,6 +305,7 @@ public class ContextVariableTypeConverter<T> {
 
     /**
      * A builder for a context variable type converter.
+     * @param <T> the type of the context variable
      */
     public static class Builder<T> {
 

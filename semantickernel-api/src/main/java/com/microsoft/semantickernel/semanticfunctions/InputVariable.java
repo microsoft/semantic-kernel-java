@@ -79,6 +79,7 @@ public class InputVariable {
      * @param type         the type of the input variable
      * @param description  the description of the input variable
      * @param defaultValue the default value of the input variable
+     * @param enumValues the enum values of the input variable
      * @param required     whether the input variable is required
      * @return a new instance of {@link InputVariable}
      */

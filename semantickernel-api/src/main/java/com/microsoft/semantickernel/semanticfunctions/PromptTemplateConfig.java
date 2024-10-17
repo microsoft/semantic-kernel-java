@@ -405,7 +405,7 @@ public class PromptTemplateConfig {
          * Set the name of the prompt template config.
          *
          * @param name The name of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withName(String name) {
             this.name = name;
@@ -416,7 +416,7 @@ public class PromptTemplateConfig {
          * Add an input variable to the prompt template config.
          *
          * @param inputVariable The input variable to add.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder addInputVariable(InputVariable inputVariable) {
             inputVariables.add(inputVariable);
@@ -427,7 +427,7 @@ public class PromptTemplateConfig {
          * Set the template of the prompt template config.
          *
          * @param template The template of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withTemplate(String template) {
             this.template = template;
@@ -438,7 +438,7 @@ public class PromptTemplateConfig {
          * Set the description of the prompt template config.
          *
          * @param description The description of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withDescription(String description) {
             this.description = description;
@@ -449,13 +449,18 @@ public class PromptTemplateConfig {
          * Set the template format of the prompt template config.
          *
          * @param templateFormat The template format of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withTemplateFormat(String templateFormat) {
             this.templateFormat = templateFormat;
             return this;
         }
 
+        /**
+         * Set the prompt template options.
+         * @param option The prompt template option to add.
+         * @return {@code this} builder.
+         */
         public Builder addPromptTemplateOption(PromptTemplateOption option) {
             promptTemplateOptions.add(option);
             return this;
@@ -465,7 +470,7 @@ public class PromptTemplateConfig {
          * Set the inputVariables of the prompt template config.
          *
          * @param inputVariables The input variables of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withInputVariables(List<InputVariable> inputVariables) {
             this.inputVariables = new ArrayList<>(inputVariables);
@@ -476,7 +481,7 @@ public class PromptTemplateConfig {
          * Set the output variable of the prompt template config.
          *
          * @param outputVariable The output variable of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withOutputVariable(OutputVariable<?> outputVariable) {
             this.outputVariable = outputVariable;
@@ -487,7 +492,7 @@ public class PromptTemplateConfig {
          * Set the prompt execution settings of the prompt template config.
          *
          * @param executionSettings The prompt execution settings of the prompt template config.
-         * @return {@code this} prompt template config.
+         * @return {@code this} builder
          */
         public Builder withExecutionSettings(
             Map<String, PromptExecutionSettings> executionSettings) {

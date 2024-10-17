@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
  * Metadata about the result of a function invocation.
  * <p>
  * This class is used to return metadata about the result of a function invocation.
+ * @param <UsageType> The result type of the function invocation.
  */
 public class FunctionResultMetadata<UsageType> {
 
@@ -50,6 +51,8 @@ public class FunctionResultMetadata<UsageType> {
 
     /**
      * Create a new instance of FunctionResultMetadata.
+     * @param id The id of the result of the function invocation.
+     * @return A new instance of FunctionResultMetadata.
      */
     public static FunctionResultMetadata<?> build(String id) {
         return build(id, null, null);
@@ -61,6 +64,7 @@ public class FunctionResultMetadata<UsageType> {
      * @param id        The id of the result of the function invocation.
      * @param usage     The usage of the result of the function invocation.
      * @param createdAt The time the result was created.
+     * @param <UsageType> The result type of the function invocation.
      * @return A new instance of FunctionResultMetadata.
      */
     public static <UsageType> FunctionResultMetadata<UsageType> build(

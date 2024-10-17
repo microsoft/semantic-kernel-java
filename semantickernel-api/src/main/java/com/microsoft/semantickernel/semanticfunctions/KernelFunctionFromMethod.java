@@ -146,8 +146,15 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
                 method.getReturnType()));
     }
 
+    /**
+     * Gets the function from the method.
+     * @param method the method to invoke
+     * @param instance the instance to invoke the method on
+     * @param <T> the return type of the function
+     * @return the function representing the method
+     */
     @SuppressWarnings("unchecked")
-    public static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
+     public static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
         return (kernel, function, arguments, variableType, invocationContext) -> {
             InvocationContext context;
             if (invocationContext == null) {
@@ -691,6 +698,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             isRequired);
     }
 
+    /**
+     * Gets the constants from an enum type.
+     * @param type the type to get the enum constants from
+     * @return a list of the enum constants or {@code null} if the type is not an enum
+     */
     public static @Nullable List<String> getEnumOptions(Class<?> type) {
         List<String> enumValues = null;
         if (type.isEnum()) {
@@ -727,6 +739,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     /**
      * Concrete implementation of the abstract method in KernelFunction.
+     * @param <T> the return type of the function
      */
     public interface ImplementationFunc<T> {
 
@@ -770,6 +783,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     /**
      * A builder for {@link KernelFunction}.
+     * @param <T> the return type of the function
      */
     public static class Builder<T> {
 

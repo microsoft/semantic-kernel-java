@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.orchestration;
 
+/**
+ * Represents the mode in which a function invocation should return its results.
+ */
 public enum InvocationReturnMode {
     /**
      * Function invocations that build upon a history of previous invocations, such as Chat

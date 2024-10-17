@@ -18,6 +18,12 @@ public class HandlebarsPromptTemplateFactory implements PromptTemplateFactory {
      */
     public static final String HANDLEBARS_TEMPLATE_FORMAT = "handlebars";
 
+    /**
+     * Initializes a new instance of the {@link HandlebarsPromptTemplateFactory} class.
+     */
+    public HandlebarsPromptTemplateFactory() {
+    }
+
     @Override
     public PromptTemplate tryCreate(@NonNull PromptTemplateConfig templateConfig) {
         if (templateConfig.getTemplateFormat() != null &&

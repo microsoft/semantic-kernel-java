@@ -99,6 +99,7 @@ public abstract class KernelFunction<T> {
     }
 
     /**
+     * Get the plugin name of the function.
      * @return The name of the plugin that this function is within
      */
     @Nullable
@@ -107,6 +108,7 @@ public abstract class KernelFunction<T> {
     }
 
     /**
+     * Get the name of the function.
      * @return The name of this function
      */
     public String getName() {
@@ -114,6 +116,7 @@ public abstract class KernelFunction<T> {
     }
 
     /**
+     * Get the description of the function.
      * @return A description of the function
      */
     @Nullable

@@ -456,6 +456,5 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
             return new KernelFunctionFromPrompt<>(temp, config, executionSettings);
 
         }
-
     }
 }

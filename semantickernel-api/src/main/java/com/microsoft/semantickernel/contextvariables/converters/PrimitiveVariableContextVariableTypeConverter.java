@@ -25,6 +25,7 @@ public class PrimitiveVariableContextVariableTypeConverter<T> extends
      * @param clazz            the class
      * @param fromPromptString the function to convert from a prompt string
      * @param fromObject       the function to convert from an object to primitive
+     * @param toPromptString   the function to convert to a prompt string
      */
     public PrimitiveVariableContextVariableTypeConverter(
         Class<T> clazz,

@@ -7,7 +7,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-/** Interface for text embedding generation services */
+/**
+ *  Interface for text embedding generation services 
+ * @param <TValue> The type of the data to generate embeddings for
+ */
 public interface EmbeddingGenerationService<TValue> extends AIService {
     /**
      * Generates a list of embeddings associated to the data

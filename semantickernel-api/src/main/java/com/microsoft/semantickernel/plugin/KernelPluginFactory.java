@@ -426,6 +426,7 @@ public class KernelPluginFactory {
     }
 
     /**
+     * Imports a plugin from a resource directory on the filesystem.
      * @param parentDirectory       The parent directory containing the plugin directories.
      * @param pluginDirectoryName   The name of the plugin directory.
      * @param functionName          The name of the function to import.
