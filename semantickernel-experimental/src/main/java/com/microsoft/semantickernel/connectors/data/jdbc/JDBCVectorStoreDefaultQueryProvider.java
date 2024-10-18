@@ -27,6 +27,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * This class provides the default implementation of the
+ * JDBCVectorStoreQueryProvider interface. It handles the
+ * creation and management of tables in the vector store
+ * database, as well as the validation of supported types
+ * for record classes.
+ */
 public class JDBCVectorStoreDefaultQueryProvider
     implements JDBCVectorStoreQueryProvider {
 

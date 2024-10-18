@@ -27,6 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The MySQL vector store query provider.
+ * Provides the necessary methods to interact with a MySQL
+ * vector store and vector store collections.
+ */
 public class PostgreSQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
 
@@ -292,6 +297,9 @@ public class PostgreSQLVectorStoreQueryProvider extends
         }
     }
 
+    /**
+     * The builder for {@code PostgreSQLVectorStoreQueryProvider}.
+     */
     public static class Builder
         extends JDBCVectorStoreDefaultQueryProvider.Builder {
         private DataSource dataSource;

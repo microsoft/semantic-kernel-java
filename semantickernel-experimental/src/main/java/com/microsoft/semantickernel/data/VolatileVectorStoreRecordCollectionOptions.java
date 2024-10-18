@@ -6,6 +6,11 @@ import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefin
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Represents the options for a volatile vector store record collection.
+ *
+ * @param <Record> the record type
+ */
 public class VolatileVectorStoreRecordCollectionOptions<Record> {
     private final Class<Record> recordClass;
     @Nullable

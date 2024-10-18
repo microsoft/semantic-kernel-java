@@ -10,10 +10,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a volatile vector store.
+ * A volatile vector store is an in-memory vector store
+ * that does not persist data.
+ */
 public class VolatileVectorStore implements VectorStore {
 
     private final Map<String, Map<String, ?>> collections;
 
+    /**
+     * Creates a new instance of the volatile vector store.
+     */
     public VolatileVectorStore() {
         this.collections = new ConcurrentHashMap<>();
     }
@@ -23,6 +31,8 @@ public class VolatileVectorStore implements VectorStore {
      *
      * @param collectionName   The name of the collection.
      * @param recordDefinition The record definition.
+     * @param <Record>         The type of record in the collection.
+     * @param <Key>            The type of key in the collection.
      * @return The collection.
      */
     @Override
@@ -41,6 +51,15 @@ public class VolatileVectorStore implements VectorStore {
             recordDefinition);
     }
 
+    /**
+     * Gets a collection from the vector store.
+     *
+     * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the
+     * @param recordDefinition The record definition.
+     * @param <Record>         The type of record in the collection.
+     * @return The collection.
+     */
     public <Record> VectorStoreRecordCollection<String, Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,
@@ -53,7 +72,7 @@ public class VolatileVectorStore implements VectorStore {
                 .withRecordDefinition(recordDefinition)
                 .build());
     }
-
+    
     /**
      * Gets the names of all collections in the vector store.
      *

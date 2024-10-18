@@ -4,6 +4,9 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 import com.microsoft.semantickernel.data.VectorStore;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a SQL vector store.
+ */
 public interface SQLVectorStore
     extends VectorStore {
 

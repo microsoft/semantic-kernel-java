@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import redis.clients.jedis.search.Schema;
 
+/**
+ * Maps a vector store record collection to a Redis schema.
+ */
 public class RedisVectorStoreCollectionCreateMapping {
     private static final HashSet<Class<?>> supportedFilterableNumericTypes = new HashSet<>(
         Arrays.asList(
@@ -68,6 +71,12 @@ public class RedisVectorStoreCollectionCreateMapping {
         return "$." + name;
     }
 
+    /**
+     * Maps a vector store record collection to a Redis schema.
+     *
+     * @param fields the fields
+     * @return the schema
+     */
     public static Schema mapToSchema(List<VectorStoreRecordField> fields) {
         Schema schema = new Schema();
 

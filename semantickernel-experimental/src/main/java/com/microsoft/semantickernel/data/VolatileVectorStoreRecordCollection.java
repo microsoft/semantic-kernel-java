@@ -16,6 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a volatile vector store record collection.
+ *
+ * @param <Record> The type of record in the collection.
+ */
 public class VolatileVectorStoreRecordCollection<Record> implements
     VectorStoreRecordCollection<String, Record> {
 
@@ -27,6 +32,12 @@ public class VolatileVectorStoreRecordCollection<Record> implements
     private final VectorStoreRecordDefinition recordDefinition;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Creates a new instance of the volatile vector store record collection.
+     *
+     * @param collectionName The name of the collection.
+     * @param options        The options for the collection.
+     */
     public VolatileVectorStoreRecordCollection(String collectionName,
         VolatileVectorStoreRecordCollectionOptions<Record> options) {
         this.collectionName = collectionName;

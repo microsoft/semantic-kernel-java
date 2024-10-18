@@ -81,6 +81,7 @@ public class JDBCVectorStore implements SQLVectorStore {
      * @param collectionName   The name of the collection.
      * @param recordClass      The class type of the record.
      * @param recordDefinition The record definition.
+     * @param <Record>         The record type.
      * @return The collection.
      */
     public <Record> JDBCVectorStoreRecordCollection<Record> getCollection(

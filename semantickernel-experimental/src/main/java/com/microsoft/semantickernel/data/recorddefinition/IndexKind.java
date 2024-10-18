@@ -1,8 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.recorddefinition;
 
+/**
+ * Represents the kind of index.
+ */
 public enum IndexKind {
-    HNSW("Hnsw"), FLAT("Flat");
+    /**
+     * A HNSW index.
+     */
+    HNSW("Hnsw"),
+    /**
+     * A flat index.
+     */
+    FLAT("Flat");
 
     private final String value;
 
@@ -10,6 +20,11 @@ public enum IndexKind {
         this.value = value;
     }
 
+    /**
+     * Gets the descriptive value of the IndexKind.
+     *
+     * @return the descriptive value of the IndexKind
+     */
     public String getValue() {
         return value;
     }

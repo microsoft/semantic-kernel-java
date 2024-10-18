@@ -83,6 +83,11 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
         @Nullable
         private VectorStoreRecordDefinition recordDefinition;
 
+        /**
+         * Sets the record class.
+         * @param recordClass the record Class
+         * @return the builder
+         */
         public Builder<Record> withRecordClass(Class<Record> recordClass) {
             this.recordClass = recordClass;
             return this;

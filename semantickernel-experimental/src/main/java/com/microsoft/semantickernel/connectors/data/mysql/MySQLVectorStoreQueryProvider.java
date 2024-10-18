@@ -20,6 +20,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * The MySQL vector store query provider.
+ * Provides the necessary methods to interact with a MySQL
+ * vector store and vector store collections.
+ */
 public class MySQLVectorStoreQueryProvider extends
     JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
 
@@ -118,6 +123,9 @@ public class MySQLVectorStoreQueryProvider extends
         }
     }
 
+    /**
+     * The MySQL vector store query provider builder.
+     */
     public static class Builder
         extends JDBCVectorStoreDefaultQueryProvider.Builder {
         private DataSource dataSource;

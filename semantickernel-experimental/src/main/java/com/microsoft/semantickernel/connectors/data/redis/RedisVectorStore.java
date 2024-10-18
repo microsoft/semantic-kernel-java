@@ -13,6 +13,9 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 import redis.clients.jedis.JedisPooled;
 
+/**
+ * Represents a Redis vector store.
+ */
 public class RedisVectorStore implements VectorStore {
 
     private final JedisPooled client;
@@ -53,6 +56,7 @@ public class RedisVectorStore implements VectorStore {
      * @param collectionName   The name of the collection.
      * @param recordClass      The class type of the record.
      * @param recordDefinition The record definition.
+     * @param <Record>         The type of record in the collection.
      * @return The collection.
      */
     public <Record> RedisVectorStoreRecordCollection<Record> getCollection(
@@ -89,12 +93,16 @@ public class RedisVectorStore implements VectorStore {
     }
 
     /**
-     * Builder for the Redis vector store.
+     * Create a builder for the Redis vector store.
+     * @return A new builder
      */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * Builder for the Redis vector store.
+     */
     public static class Builder implements SemanticKernelBuilder<RedisVectorStore> {
 
         @Nullable

@@ -4,6 +4,9 @@ package com.microsoft.semantickernel.data.recorddefinition;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Represents a field in a record.
+ */
 public class VectorStoreRecordDataField extends VectorStoreRecordField {
     private final boolean hasEmbedding;
     @Nullable
@@ -12,6 +15,10 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
     private final Class<?> fieldType;
     private final boolean isFilterable;
 
+    /**
+     * Create a builder for the VectorStoreRecordDataField class.
+     * @return a new instance of the builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -78,6 +85,9 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
         return isFilterable;
     }
 
+    /**
+     * Represents a builder for the VectorStoreRecordDataField class.
+     */
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordDataField, Builder> {
         private boolean hasEmbedding;

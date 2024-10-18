@@ -4,6 +4,9 @@ package com.microsoft.semantickernel.connectors.data.redis;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Options for the Redis vector store.
+ */
 public class RedisVectorStoreOptions {
     @Nullable
     private final RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;

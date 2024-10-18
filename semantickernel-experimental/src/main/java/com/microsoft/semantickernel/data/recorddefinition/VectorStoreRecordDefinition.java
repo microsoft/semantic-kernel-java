@@ -21,10 +21,18 @@ public class VectorStoreRecordDefinition {
     private final List<VectorStoreRecordDataField> dataFields;
     private final List<VectorStoreRecordVectorField> vectorFields;
 
+    /**
+     * Gets the key field in the record definition.
+     * @return VectorStoreRecordKeyField
+     */
     public VectorStoreRecordKeyField getKeyField() {
         return keyField;
     }
 
+    /**
+     * Gets the data fields in the record definition.
+     * @return List of VectorStoreRecordDataField
+     */
     public List<VectorStoreRecordDataField> getDataFields() {
         return Collections.unmodifiableList(dataFields);
     }
@@ -49,6 +57,10 @@ public class VectorStoreRecordDefinition {
         return fields;
     }
 
+    /**
+     * Gets all non-vector fields in the record definition.
+     * @return List of VectorStoreRecordField
+     */
     public List<VectorStoreRecordField> getNonVectorFields() {
         List<VectorStoreRecordField> fields = new ArrayList<>();
         fields.add(keyField);
@@ -76,6 +88,11 @@ public class VectorStoreRecordDefinition {
         return declaredFields;
     }
 
+    /**
+     * Gets the key declared field in the record class.
+     * @param recordClass The record class.
+     * @return The key declared field.
+     */
     public Field getKeyDeclaredField(Class<?> recordClass) {
         try {
             return recordClass.getDeclaredField(keyField.getName());
@@ -85,6 +102,11 @@ public class VectorStoreRecordDefinition {
         }
     }
 
+    /**
+     * Gets the data declared fields in the record class.
+     * @param recordClass The record class.
+     * @return List of data declared fields.
+     */
     public List<Field> getDataDeclaredFields(Class<?> recordClass) {
         return getDeclaredFields(
             recordClass,
@@ -92,6 +114,11 @@ public class VectorStoreRecordDefinition {
             DeclaredFieldType.DATA);
     }
 
+    /**
+     * Gets the vector declared fields in the record class.
+     * @param recordClass The record class.
+     * @return List of vector declared fields.
+     */
     public List<Field> getVectorDeclaredFields(Class<?> recordClass) {
         return getDeclaredFields(
             recordClass,
@@ -197,6 +224,12 @@ public class VectorStoreRecordDefinition {
         return checkFields(keyFields, dataFields, vectorFields);
     }
 
+    /**
+     * Validate that the record class contains only supported field types.
+     * @param declaredFields The declared fields in the record class.
+     * @param supportedTypes The supported field types.
+     * @throws IllegalArgumentException if unsupported field types are found.
+     */
     public static void validateSupportedTypes(List<Field> declaredFields,
         Set<Class<?>> supportedTypes) {
         Set<Class<?>> unsupportedTypes = new HashSet<>();

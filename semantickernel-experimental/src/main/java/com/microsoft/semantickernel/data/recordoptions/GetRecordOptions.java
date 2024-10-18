@@ -22,6 +22,9 @@ public class GetRecordOptions {
         return new Builder();
     }
 
+    /**
+     * Builder for GetRecordOptions.
+     */
     public static class Builder implements SemanticKernelBuilder<GetRecordOptions> {
         private boolean includeVectors;
 

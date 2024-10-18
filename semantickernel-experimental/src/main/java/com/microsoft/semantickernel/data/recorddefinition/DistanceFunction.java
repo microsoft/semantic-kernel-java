@@ -1,8 +1,22 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.recorddefinition;
 
+/**
+ * The distance function to use for similarity calculations.
+ */
 public enum DistanceFunction {
-    COSINE_SIMILARITY("cosineSimilarity"), DOT_PRODUCT("dotProduct"), EUCLIDEAN("euclidean");
+    /**
+     * Cosine similarity.
+     */
+    COSINE_SIMILARITY("cosineSimilarity"),
+    /**
+     * Dot product.
+     */
+    DOT_PRODUCT("dotProduct"),
+    /**
+     * Euclidean distance.
+     */
+    EUCLIDEAN("euclidean");
 
     private final String value;
 
@@ -10,6 +24,11 @@ public enum DistanceFunction {
         this.value = value;
     }
 
+    /**
+     * Gets the descriptive value of the DistanceFunction.
+     *
+     * @return the descriptive value of the DistanceFunction
+     */
     public String getValue() {
         return value;
     }

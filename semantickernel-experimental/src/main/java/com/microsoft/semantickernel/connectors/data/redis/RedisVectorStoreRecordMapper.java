@@ -11,6 +11,11 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
+/**
+ * A mapper to convert between a record and a Redis storage model.
+ *
+ * @param <Record> the record type
+ */
 public class RedisVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, Entry<String, Object>> {
 

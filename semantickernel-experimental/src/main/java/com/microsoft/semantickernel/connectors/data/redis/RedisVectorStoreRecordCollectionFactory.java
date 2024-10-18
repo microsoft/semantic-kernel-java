@@ -15,6 +15,7 @@ public interface RedisVectorStoreRecordCollectionFactory {
      * @param client         The Redis client.
      * @param collectionName The name of the collection.
      * @param options        The options for the collection.
+     * @param <Record>       The type of the records in the collection.
      * @return The collection.
      */
     <Record> RedisVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(

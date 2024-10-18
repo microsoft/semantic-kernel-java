@@ -12,6 +12,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents an Azure AI Search vector store.
+ */
 public class AzureAISearchVectorStore implements VectorStore {
 
     private final SearchIndexAsyncClient client;
@@ -52,6 +55,15 @@ public class AzureAISearchVectorStore implements VectorStore {
             collectionName, recordClass, recordDefinition);
     }
 
+    /**
+     * Gets a new instance of {@link AzureAISearchVectorStoreRecordCollection}
+     *
+     * @param collectionName   The name of the collection.
+     * @param recordClass      The class type of the record.
+     * @param recordDefinition The record definition.
+     * @param <Record>         The type of record in the collection.
+     * @return The collection.
+     */
     public <Record> AzureAISearchVectorStoreRecordCollection<Record> getCollection(
         @Nonnull String collectionName,
         @Nonnull Class<Record> recordClass,

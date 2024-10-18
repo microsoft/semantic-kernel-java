@@ -4,6 +4,12 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a SQL vector store record collection.
+ *
+ * @param <Key>    the key type
+ * @param <Record> the record type
+ */
 public interface SQLVectorStoreRecordCollection<Key, Record>
     extends VectorStoreRecordCollection<Key, Record> {
 

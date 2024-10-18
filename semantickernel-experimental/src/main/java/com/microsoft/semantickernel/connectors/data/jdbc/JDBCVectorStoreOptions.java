@@ -5,6 +5,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
 
+/**
+ * Options for the JDBC vector store.
+ */
 public class JDBCVectorStoreOptions {
     @Nullable
     private final JDBCVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
@@ -15,6 +18,8 @@ public class JDBCVectorStoreOptions {
      * Creates a new instance of the JDBC vector store options.
      *
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
+     * @param queryProvider                      The query provider.
+     * 
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource in queryProvider is not exposed
     public JDBCVectorStoreOptions(
@@ -63,7 +68,6 @@ public class JDBCVectorStoreOptions {
 
     /**
      * Builder for JDBC vector store options.
-     *
      */
     public static class Builder {
         @Nullable
