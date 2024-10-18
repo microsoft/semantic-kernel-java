@@ -28,6 +28,7 @@ public class OpenAiAudioToTextService extends OpenAiService<OpenAIAsyncClient>
      *
      * @param client  OpenAI client.
      * @param modelId The model ID.
+     * @param deploymentName The deployment name.
      */
     public OpenAiAudioToTextService(
         OpenAIAsyncClient client,

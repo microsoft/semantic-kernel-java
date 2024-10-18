@@ -37,6 +37,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
      * @param deploymentName deployment name
      * @param modelId OpenAI model id
      * @param serviceId Service id
+     * @param dimensions The dimensions for the embeddings.
      */
     public OpenAITextEmbeddingGenerationService(
         OpenAIAsyncClient client,

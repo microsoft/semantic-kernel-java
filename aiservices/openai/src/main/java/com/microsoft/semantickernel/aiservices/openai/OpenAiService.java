@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 /**
  * Provides OpenAI service.
+ * @param <Client> the client type
  */
 public abstract class OpenAiService<Client> implements AIService {
 
@@ -38,10 +39,18 @@ public abstract class OpenAiService<Client> implements AIService {
         return serviceId;
     }
 
+    /**
+     * Gets the client.
+     * @return the client
+     */
     protected Client getClient() {
         return client;
     }
 
+    /**
+     * Gets the deployment name.
+     * @return the deployment name
+     */
     public String getDeploymentName() {
         return deploymentName;
     }
