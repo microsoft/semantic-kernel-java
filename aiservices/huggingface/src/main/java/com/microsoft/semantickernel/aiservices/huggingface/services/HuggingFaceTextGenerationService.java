@@ -19,12 +19,21 @@ import javax.annotation.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * A service that generates text using the Hugging Face API.
+ */
 public class HuggingFaceTextGenerationService implements TextGenerationService {
 
     private final String modelId;
     private final String serviceId;
     private final HuggingFaceClient client;
 
+    /**
+     * Create a new instance of HuggingFaceTextGenerationService.
+     * @param modelId The model ID.
+     * @param serviceId The service ID.
+     * @param client The Hugging Face client.
+     */
     public HuggingFaceTextGenerationService(
         String modelId,
         String serviceId,
@@ -34,6 +43,13 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
         this.client = client;
     }
 
+    /**
+     * Get the response to a prompt. 
+     * @param prompt The prompt.
+     * @param huggingFacePromptExecutionSettings The settings for executing the prompt.
+     * @param kernel The semantic kernel.
+     * @return The response to the prompt.
+     */
     public Mono<List<TextContent>> getTextContentsAsync(
         String prompt,
         @Nullable HuggingFacePromptExecutionSettings huggingFacePromptExecutionSettings,
@@ -117,10 +133,17 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
         return serviceId;
     }
 
+    /**
+     * Create a new builder for HuggingFaceTextGenerationService.
+     * @return The builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * A builder for HuggingFaceTextGenerationService.
+     */
     public static class Builder {
 
         @Nullable
@@ -152,11 +175,20 @@ public class HuggingFaceTextGenerationService implements TextGenerationService {
             return this;
         }
 
+        /**
+         * Sets the HuggingFaceClient for the service
+         * @param client The HuggingFaceClient
+         * @return The builder
+         */
         public Builder withHuggingFaceClient(HuggingFaceClient client) {
             this.client = client;
             return this;
         }
 
+        /**
+         * Builds the HuggingFaceTextGenerationService
+         * @return The HuggingFaceTextGenerationService
+         */
         public HuggingFaceTextGenerationService build() {
 
             if (this.modelId == null) {

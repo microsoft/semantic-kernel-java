@@ -19,12 +19,21 @@ import java.util.List;
 import reactor.core.publisher.Mono;
 import javax.annotation.Nullable;
 
+/**
+ * A client for the Hugging Face API.
+ */
 public class HuggingFaceClient {
 
     private final KeyCredential key;
     private final String endpoint;
     private final HttpClient httpClient;
 
+    /**
+     * Creates a new Hugging Face client.
+     * @param key The key credential for endpoint authentication.
+     * @param endpoint The endpoint for the Hugging Face API.
+     * @param httpClient The HTTP client to use for requests.
+     */
     public HuggingFaceClient(
         KeyCredential key,
         String endpoint,
@@ -74,6 +83,12 @@ public class HuggingFaceClient {
 
     }
 
+    /**
+     * Gets the text contents from the Hugging Face API.
+     * @param modelId The model ID.
+     * @param textGenerationRequest The text generation request.
+     * @return The generated text items.
+     */
     public Mono<List<GeneratedTextItem>> getTextContentsAsync(
         String modelId,
         TextGenerationRequest textGenerationRequest) {
@@ -131,11 +146,18 @@ public class HuggingFaceClient {
         return responseBody;
     }
 
+    /**
+     * Creates a new builder for a Hugging Face client.
+     * @return The builder
+     */
     public static Builder builder() {
         return new Builder();
     }
 
-    public static class Builder {
+    /**
+     * Builder for a Hugging Face client.
+     */
+     static class Builder {
 
         @Nullable
         private KeyCredential key = null;
@@ -144,6 +166,10 @@ public class HuggingFaceClient {
         @Nullable
         private HttpClient httpClient = null;
 
+        /**
+         * Builds the Hugging Face client.
+         * @return The client
+         */
         public HuggingFaceClient build() {
             if (httpClient == null) {
                 httpClient = HttpClient.createDefault();
@@ -160,16 +186,31 @@ public class HuggingFaceClient {
                 httpClient);
         }
 
+        /**
+         * Sets the key credential for the client.
+         * @param key The key credential
+         * @return The builder
+         */
         public Builder credential(KeyCredential key) {
             this.key = key;
             return this;
         }
 
+        /**
+         * Sets the endpoint for the client.
+         * @param endpoint The endpoint
+         * @return The builder
+         */
         public Builder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
 
+        /**
+         * Sets the HTTP client for the client.
+         * @param httpClient The HTTP client
+         * @return The builder
+         */
         public Builder httpClient(HttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
