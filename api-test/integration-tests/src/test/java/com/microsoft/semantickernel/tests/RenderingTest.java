@@ -240,10 +240,10 @@ public class RenderingTest {
             .block();
 
         String requestBody = wm.getAllServeEvents().get(0).getRequest().getBodyAsString();
-        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[]"));
-        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[1, 2, 3]"));
-        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[4, 5, 6]"));
-        Assertions.assertTrue(requestBody.contains("{\"role\":\"user\",\"content\":\"[7, 8, 9]"));
+        Assertions.assertTrue(requestBody.contains("{\"content\":\"[]"));
+        Assertions.assertTrue(requestBody.contains("{\"content\":\"[1, 2, 3]"));
+        Assertions.assertTrue(requestBody.contains("{\"content\":\"[4, 5, 6]"));
+        Assertions.assertTrue(requestBody.contains("{\"content\":\"[7, 8, 9]"));
     }
 
     private Kernel buildTextKernel() {

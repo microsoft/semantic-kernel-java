@@ -7,34 +7,33 @@ import com.google.cloud.vertexai.api.GenerationConfig;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
+import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKCheckedException;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
-import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
+import com.microsoft.semantickernel.services.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * A Gemini service for text generation.
  * @see TextGenerationService
  */
 public class GeminiTextGenerationService extends GeminiService implements TextGenerationService {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiTextGenerationService.class);
 
     /**
@@ -70,7 +69,7 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
         return this
             .internalGetTextAsync(prompt, executionSettings)
             .flatMapMany(it -> Flux.fromStream(it.stream())
-                .map(StreamingTextContent::new));
+                .map(GeminiStreamingTextContent::new));
     }
 
     private Mono<List<TextContent>> internalGetTextAsync(String prompt,
@@ -140,6 +139,7 @@ public class GeminiTextGenerationService extends GeminiService implements TextGe
      */
     public static class Builder extends
         GeminiServiceBuilder<GeminiTextGenerationService, GeminiTextGenerationService.Builder> {
+
         @Override
         public GeminiTextGenerationService build() {
             if (this.client == null) {

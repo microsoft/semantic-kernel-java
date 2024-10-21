@@ -8,36 +8,46 @@ import com.azure.ai.openai.models.EmbeddingsOptions;
 import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
-import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import com.microsoft.semantickernel.services.textembedding.Embedding;
 import com.microsoft.semantickernel.services.textembedding.TextEmbeddingGenerationService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * An OpenAI implementation of a {@link TextEmbeddingGenerationService}.
- *
  */
 public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAsyncClient>
     implements TextEmbeddingGenerationService {
+
     private static final Logger LOGGER = LoggerFactory
         .getLogger(OpenAITextEmbeddingGenerationService.class);
     private static final int DEFAULT_DIMENSIONS = 1536;
     private final int dimensions;
 
     /**
+     * Dimension of the OpenAI
+     * {@code text-embedding-3-small} model.
+     */
+    public static final int EMBEDDING_DIMENSIONS_SMALL = 1536;
+    /**
+     * Dimension of the OpenAI
+     * {@code text-embedding-3-large} model.
+     */
+    public static final int EMBEDDING_DIMENSIONS_LARGE = 3072;
+
+    /**
      * Creates a new {@link OpenAITextEmbeddingGenerationService}.
      *
-     * @param client OpenAI client
+     * @param client         OpenAI client
      * @param deploymentName deployment name
-     * @param modelId OpenAI model id
-     * @param serviceId Service id
-     * @param dimensions The dimensions for the embeddings.
+     * @param dimensions     The dimensions for the embeddings.
+     * @param modelId        OpenAI model id
+     * @param serviceId      Service id
      */
     public OpenAITextEmbeddingGenerationService(
         OpenAIAsyncClient client,
@@ -56,6 +66,24 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Generates embeddings for the given data.
+     *
+     * @param data The data to generate embeddings for.
+     * @return A Mono that completes with the embeddings.
+     */
+    @Override
+    public Mono<Embedding> generateEmbeddingAsync(String data) {
+        return this.internalGenerateTextEmbeddingsAsync(Arrays.asList(data))
+            .flatMap(embeddings -> {
+                if (embeddings.isEmpty()) {
+                    return Mono.empty();
+                }
+
+                return Mono.just(embeddings.get(0));
+            });
     }
 
     /**
@@ -89,6 +117,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
      */
     public static class Builder extends
         OpenAiServiceBuilder<OpenAIAsyncClient, OpenAITextEmbeddingGenerationService, OpenAITextEmbeddingGenerationService.Builder> {
+
         private int dimensions = DEFAULT_DIMENSIONS;
 
         /**

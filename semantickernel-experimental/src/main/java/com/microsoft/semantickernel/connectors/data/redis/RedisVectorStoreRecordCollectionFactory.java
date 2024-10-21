@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.connectors.data.redis;
 
-import com.azure.search.documents.indexes.SearchIndexAsyncClient;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import redis.clients.jedis.JedisPooled;
 
 /**
@@ -14,12 +15,14 @@ public interface RedisVectorStoreRecordCollectionFactory {
      *
      * @param client         The Redis client.
      * @param collectionName The name of the collection.
-     * @param options        The options for the collection.
+     * @param recordClass    The class type of the record.
+     * @param recordDefinition The record definition.
      * @param <Record>       The type of the records in the collection.
      * @return The collection.
      */
-    <Record> RedisVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(
+    <Record> VectorStoreRecordCollection<String, Record> createVectorStoreRecordCollection(
         JedisPooled client,
         String collectionName,
-        RedisVectorStoreRecordCollectionOptions<Record> options);
+        Class<Record> recordClass,
+        VectorStoreRecordDefinition recordDefinition);
 }

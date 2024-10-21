@@ -2,13 +2,13 @@
 package com.microsoft.semantickernel.services.textcompletion;
 
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-import com.microsoft.semantickernel.services.KernelContent;
+import com.microsoft.semantickernel.services.KernelContentImpl;
 import javax.annotation.Nullable;
 
 /**
  * Content from a text completion service.
  */
-public class TextContent extends KernelContent<String> {
+public class TextContent extends KernelContentImpl<String> {
 
     private final String content;
 

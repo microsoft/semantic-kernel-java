@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.contextvariables;
 
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -134,6 +135,23 @@ public class ContextVariableTypeConverter<T> {
     @Nullable
     @SuppressWarnings("unchecked")
     public <U> U toObject(ContextVariableTypes types, @Nullable Object t, Class<U> clazz) {
+        return toObject(types, t, clazz, true);
+    }
+
+    /**
+     * Use this converter to convert the object to the type of the context variable.
+     *
+     * @param types       the context variable types
+     * @param t           the object to convert
+     * @param clazz       the class of the type to convert to
+     * @param logWarnings whether to log warnings
+     * @param <U>         the type to convert to
+     * @return the converted object
+     */
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public <U> U toObject(ContextVariableTypes types, @Nullable Object t, Class<U> clazz,
+        boolean logWarnings) {
         if (t == null) {
             return null;
         }
@@ -156,7 +174,11 @@ public class ContextVariableTypeConverter<T> {
             return (U) converter.get().toObject((T) t);
         }
 
-        LOGGER.warn("No converter found for {} to {}", t.getClass(), clazz);
+        if (logWarnings) {
+            LOGGER.warn(SemanticKernelResources.getString("no.converter.found.for.to"),
+                t.getClass(),
+                clazz);
+        }
         return null;
     }
 
@@ -183,7 +205,7 @@ public class ContextVariableTypeConverter<T> {
      * constructor.
      *
      * @param types the context variable types, if {@code null} the global types are used
-     * @param t the type to convert
+     * @param t     the type to convert
      * @return the prompt string
      */
     public String toPromptString(@Nullable ContextVariableTypes types, @Nullable T t) {

@@ -1,17 +1,16 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.services.textembedding;
 
-import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.AIService;
+import java.util.List;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 /**
- *  Interface for text embedding generation services 
+ *  Interface for text embedding generation services
  * @param <TValue> The type of the data to generate embeddings for
  */
 public interface EmbeddingGenerationService<TValue> extends AIService {
+
     /**
      * Generates a list of embeddings associated to the data
      *
@@ -19,4 +18,14 @@ public interface EmbeddingGenerationService<TValue> extends AIService {
      * @return List of embeddings of each data point
      */
     Mono<List<Embedding>> generateEmbeddingsAsync(List<TValue> data);
+
+    /**
+     * Generates an embedding associated to the data
+     *
+     * @param data Text to generate embedding for
+     * @return Embedding of the data
+     */
+
+    Mono<Embedding> generateEmbeddingAsync(TValue data);
+
 }

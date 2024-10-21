@@ -2,8 +2,11 @@
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.SearchDocument;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.exceptions.SKException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -12,12 +15,11 @@ import javax.annotation.Nullable;
  *
  * @param <Record> the record type
  */
-public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
-
+public class AzureAISearchVectorStoreRecordCollectionOptions<Record>
+    implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
     @Nullable
     private final VectorStoreRecordMapper<Record, SearchDocument> vectorStoreRecordMapper;
-
     @Nullable
     private final VectorStoreRecordDefinition recordDefinition;
 
@@ -29,6 +31,16 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
      */
     public static <Record> Builder<Record> builder() {
         return new Builder<>();
+    }
+
+    /**
+     * Gets the key class.
+     *
+     * @return the key class
+     */
+    @Override
+    public Class<String> getKeyClass() {
+        return String.class;
     }
 
     /**
@@ -123,7 +135,7 @@ public class AzureAISearchVectorStoreRecordCollectionOptions<Record> {
          */
         public AzureAISearchVectorStoreRecordCollectionOptions<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass must be provided");
+                throw new SKException("recordClass must be provided");
             }
 
             return new AzureAISearchVectorStoreRecordCollectionOptions<>(

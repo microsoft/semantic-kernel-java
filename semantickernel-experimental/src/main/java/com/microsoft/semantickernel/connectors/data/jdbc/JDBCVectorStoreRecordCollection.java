@@ -5,18 +5,22 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
@@ -38,7 +42,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     private final VectorStoreRecordDefinition recordDefinition;
     private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
     private final JDBCVectorStoreRecordCollectionOptions<Record> options;
-    private final JDBCVectorStoreQueryProvider queryProvider;
+    private final SQLVectorStoreQueryProvider queryProvider;
 
     /**
      * Creates a new instance of the {@link JDBCVectorStoreRecordCollection}.
@@ -62,7 +66,7 @@ public class JDBCVectorStoreRecordCollection<Record>
 
         // If the query provider is not provided, set a default one
         if (options.getQueryProvider() == null) {
-            this.queryProvider = JDBCVectorStoreDefaultQueryProvider.builder()
+            this.queryProvider = JDBCVectorStoreQueryProvider.builder()
                 .withDataSource(dataSource)
                 .build();
         } else {
@@ -95,7 +99,7 @@ public class JDBCVectorStoreRecordCollection<Record>
         }
 
         // Check if the types are supported
-        queryProvider.validateSupportedTypes(options.getRecordClass(), recordDefinition);
+        queryProvider.validateSupportedTypes(recordDefinition);
     }
 
     /**
@@ -130,8 +134,7 @@ public class JDBCVectorStoreRecordCollection<Record>
     @Override
     public Mono<VectorStoreRecordCollection<String, Record>> createCollectionAsync() {
         return Mono.fromRunnable(
-            () -> queryProvider.createCollection(this.collectionName, options.getRecordClass(),
-                recordDefinition))
+            () -> queryProvider.createCollection(this.collectionName, recordDefinition))
             .subscribeOn(Schedulers.boundedElastic())
             .then(Mono.just(this));
     }
@@ -179,6 +182,8 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<Record> getAsync(String key, GetRecordOptions options) {
+        Objects.requireNonNull(key, "key is required");
+
         return this.getBatchAsync(Collections.singletonList(key), options)
             .mapNotNull(records -> {
                 if (records.isEmpty()) {
@@ -197,12 +202,13 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @throws SKException if the operation fails
      */
     @Override
-    public Mono<List<Record>> getBatchAsync(List<String> keys, GetRecordOptions options) {
+    public Mono<List<Record>> getBatchAsync(@Nonnull List<String> keys, GetRecordOptions options) {
+        Objects.requireNonNull(keys, "keys is required");
+
         return Mono.fromCallable(
-            () -> {
-                return queryProvider.getRecords(this.collectionName, keys, recordDefinition,
-                    vectorStoreRecordMapper, options);
-            }).subscribeOn(Schedulers.boundedElastic());
+            () -> queryProvider.getRecords(this.collectionName, keys, recordDefinition,
+                vectorStoreRecordMapper, options))
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
     protected String getKeyFromRecord(Record data) {
@@ -226,6 +232,8 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<String> upsertAsync(Record data, UpsertRecordOptions options) {
+        Objects.requireNonNull(data, "data is required");
+
         return this.upsertBatchAsync(Collections.singletonList(data), options)
             .mapNotNull(keys -> {
                 if (keys.isEmpty()) {
@@ -245,6 +253,8 @@ public class JDBCVectorStoreRecordCollection<Record>
      */
     @Override
     public Mono<List<String>> upsertBatchAsync(List<Record> data, UpsertRecordOptions options) {
+        Objects.requireNonNull(data, "data is required");
+
         return Mono.fromCallable(
             () -> {
                 queryProvider.upsertRecords(this.collectionName, data, recordDefinition, options);
@@ -294,8 +304,25 @@ public class JDBCVectorStoreRecordCollection<Record>
             .subscribeOn(Schedulers.boundedElastic()).then();
     }
 
-    /** 
-     * Builder for {@link JDBCVectorStoreRecordCollection}.
+    /**
+     * Vectorized search. This method searches for records that are similar to the given vector.
+     *
+     * @param vector              The vector to search with.
+     * @param vectorSearchOptions The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+        VectorSearchOptions vectorSearchOptions) {
+        return Mono.fromCallable(
+            () -> queryProvider.search(this.collectionName, vector, vectorSearchOptions,
+                recordDefinition,
+                vectorStoreRecordMapper))
+            .subscribeOn(Schedulers.boundedElastic());
+    }
+    
+    /**
+     * Builder for a JDBCVectorStoreRecordCollection.
      * @param <Record> the type of the records in the collection
      */
     public static class Builder<Record>
@@ -342,13 +369,13 @@ public class JDBCVectorStoreRecordCollection<Record>
         @Override
         public JDBCVectorStoreRecordCollection<Record> build() {
             if (dataSource == null) {
-                throw new IllegalArgumentException("dataSource is required");
+                throw new SKException("dataSource is required");
             }
             if (collectionName == null) {
-                throw new IllegalArgumentException("collectionName is required");
+                throw new SKException("collectionName is required");
             }
             if (options == null) {
-                throw new IllegalArgumentException("options is required");
+                throw new SKException("options is required");
             }
 
             return new JDBCVectorStoreRecordCollection<>(dataSource, collectionName, options);

@@ -6,6 +6,8 @@ import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Exampl
 import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Example33_Chat;
 import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Example44_MultiChatCompletion;
 import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.Example63_ChatCompletionPrompts;
+import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.responseschema.Example_ChatWithResponseFormat;
+import com.microsoft.semantickernel.samples.syntaxexamples.chatcompletion.responseschema.Example_ChatWithResponseFormatToolCall;
 import com.microsoft.semantickernel.samples.syntaxexamples.configuration.Example08_RetryHandler;
 import com.microsoft.semantickernel.samples.syntaxexamples.configuration.Example41_HttpClientUsage;
 import com.microsoft.semantickernel.samples.syntaxexamples.configuration.Example58_ConfigureExecutionSettings;
@@ -17,7 +19,7 @@ import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example27_P
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example59_OpenAIFunctionCalling;
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example60_AdvancedMethodFunctions;
 import com.microsoft.semantickernel.samples.syntaxexamples.java.KernelFunctionYaml_Example;
-import com.microsoft.semantickernel.samples.syntaxexamples.memory.AzureAISearch_DataStorage;
+import com.microsoft.semantickernel.samples.syntaxexamples.memory.VectorStoreWithAzureAISearch;
 import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example10_DescribeAllPluginsAndFunctions;
 import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example13_ConversationSummaryPlugin;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example06_TemplateLanguage;
@@ -38,7 +40,7 @@ public class RunAll {
 
     public static void main(String[] args) {
         List<MainMethod> mains = Arrays.asList(
-            AzureAISearch_DataStorage::main,
+            VectorStoreWithAzureAISearch::main,
             Example01_NativeFunctions::main,
             Example03_Arguments::main,
             Example05_InlineFunctionDefinition::main,
@@ -66,7 +68,9 @@ public class RunAll {
             Example63_ChatCompletionPrompts::main,
             Example64_MultiplePromptTemplates::main,
             Example69_MutableKernelPlugin::main,
-            KernelFunctionYaml_Example::main);
+            KernelFunctionYaml_Example::main,
+            Example_ChatWithResponseFormat::main,
+            Example_ChatWithResponseFormatToolCall::main);
 
         Scanner scanner = new Scanner(System.in);
         mains.forEach(mainMethod -> {

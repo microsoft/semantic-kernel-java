@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.aiservices.huggingface.models.TextGeneration
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
+import com.microsoft.semantickernel.services.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.List;

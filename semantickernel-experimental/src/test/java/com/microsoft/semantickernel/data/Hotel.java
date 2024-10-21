@@ -1,37 +1,70 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.recordattributes.VectorStoreRecordVectorAttribute;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 
 import java.util.List;
 
 public class Hotel {
     @VectorStoreRecordKeyAttribute
     private final String id;
-    @VectorStoreRecordDataAttribute
+
+    @VectorStoreRecordDataAttribute(isFilterable = true)
     private final String name;
+
     @VectorStoreRecordDataAttribute
     private final int code;
-    @VectorStoreRecordDataAttribute(hasEmbedding = true, embeddingFieldName = "descriptionEmbedding")
+
+    @JsonProperty("summary")
+    @VectorStoreRecordDataAttribute()
     private final String description;
-    @VectorStoreRecordVectorAttribute(dimensions = 3)
-    private final List<Float> descriptionEmbedding;
+
+    @JsonProperty("summaryEmbedding1")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
+    private final List<Float> euclidean;
+
+    @JsonProperty("summaryEmbedding2")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+    private final List<Float> cosineDistance;
+
+    @JsonProperty("summaryEmbedding3")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_SIMILARITY)
+    private final List<Float> cosineSimilarity;
+
+    @JsonProperty("summaryEmbedding4")
+    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT)
+    private final List<Float> dotProduct;
     @VectorStoreRecordDataAttribute
-    private final double rating;
+    private double rating;
 
     public Hotel() {
-        this(null, null, 0, null, null, 0.0);
+        this(null, null, 0, null, null, null, null, null, 0.0);
     }
 
-    public Hotel(String id, String name, int code, String description,
-        List<Float> descriptionEmbedding, double rating) {
+    @JsonCreator
+    public Hotel(
+        @JsonProperty("id") String id,
+        @JsonProperty("name") String name,
+        @JsonProperty("code") int code,
+        @JsonProperty("summary") String description,
+        @JsonProperty("summaryEmbedding1") List<Float> euclidean,
+        @JsonProperty("summaryEmbedding2") List<Float> cosineDistance,
+        @JsonProperty("summaryEmbedding2") List<Float> cosineSimilarity,
+        @JsonProperty("summaryEmbedding3") List<Float> dotProduct,
+        @JsonProperty("rating") double rating) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.description = description;
-        this.descriptionEmbedding = descriptionEmbedding;
+        this.euclidean = euclidean;
+        this.cosineDistance = euclidean;
+        this.cosineSimilarity = euclidean;
+        this.dotProduct = euclidean;
         this.rating = rating;
     }
 
@@ -51,11 +84,23 @@ public class Hotel {
         return description;
     }
 
-    public List<Float> getDescriptionEmbedding() {
-        return descriptionEmbedding;
+    public List<Float> getEuclidean() {
+        return euclidean;
+    }
+
+    public List<Float> getCosineDistance() {
+        return cosineDistance;
+    }
+
+    public List<Float> getDotProduct() {
+        return dotProduct;
     }
 
     public double getRating() {
         return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 }

@@ -112,7 +112,11 @@ public class ContextVariableTypes {
      * @param contextVariableTypes The collection of context variable types to copy.
      */
     public ContextVariableTypes(ContextVariableTypes contextVariableTypes) {
-        this.variableTypes = new HashMap<>(contextVariableTypes.variableTypes);
+        if (contextVariableTypes != null) {
+            this.variableTypes = new HashMap<>(contextVariableTypes.variableTypes);
+        } else {
+            this.variableTypes = new HashMap<>();
+        }
     }
 
     /**

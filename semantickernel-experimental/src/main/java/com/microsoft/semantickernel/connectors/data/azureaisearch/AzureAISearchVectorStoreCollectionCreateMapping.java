@@ -10,9 +10,13 @@ import com.azure.search.documents.indexes.models.SearchFieldDataType;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmConfiguration;
 import com.azure.search.documents.indexes.models.VectorSearchAlgorithmMetric;
 import com.azure.search.documents.indexes.models.VectorSearchProfile;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.exceptions.SKException;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -20,19 +24,19 @@ import javax.annotation.Nonnull;
 /**
  * Maps vector store record fields to Azure AI Search fields.
  */
-public class AzureAISearchVectorStoreCollectionCreateMapping {
+class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static String getVectorSearchProfileName(VectorStoreRecordVectorField vectorField) {
-        return vectorField.getName() + "Profile";
+        return vectorField.getEffectiveStorageName() + "Profile";
     }
 
     private static String getAlgorithmConfigName(VectorStoreRecordVectorField vectorField) {
-        return vectorField.getName() + "AlgorithmConfig";
+        return vectorField.getEffectiveStorageName() + "AlgorithmConfig";
     }
 
     private static VectorSearchAlgorithmMetric getAlgorithmMetric(
         @Nonnull VectorStoreRecordVectorField vectorField) {
-        if (vectorField.getDistanceFunction() == null) {
+        if (vectorField.getDistanceFunction() == DistanceFunction.UNDEFINED) {
             return VectorSearchAlgorithmMetric.COSINE;
         }
 
@@ -41,17 +45,17 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
                 return VectorSearchAlgorithmMetric.COSINE;
             case DOT_PRODUCT:
                 return VectorSearchAlgorithmMetric.DOT_PRODUCT;
-            case EUCLIDEAN:
+            case EUCLIDEAN_DISTANCE:
                 return VectorSearchAlgorithmMetric.EUCLIDEAN;
             default:
-                throw new IllegalArgumentException(
+                throw new SKException(
                     "Unsupported distance function: " + vectorField.getDistanceFunction());
         }
     }
 
     private static VectorSearchAlgorithmConfiguration getAlgorithmConfig(
         @Nonnull VectorStoreRecordVectorField vectorField) {
-        if (vectorField.getIndexKind() == null) {
+        if (vectorField.getIndexKind() == IndexKind.UNDEFINED) {
             return new HnswAlgorithmConfiguration(getAlgorithmConfigName(vectorField))
                 .setParameters(new HnswParameters().setMetric(getAlgorithmMetric(vectorField)));
         }
@@ -65,7 +69,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
                     .setParameters(
                         new ExhaustiveKnnParameters().setMetric(getAlgorithmMetric(vectorField)));
             default:
-                throw new IllegalArgumentException(
+                throw new SKException(
                     "Unsupported index kind: " + vectorField.getIndexKind());
         }
     }
@@ -77,7 +81,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
      * @return The search field.
      */
     public static SearchField mapKeyField(VectorStoreRecordKeyField keyField) {
-        return new SearchField(keyField.getName(), SearchFieldDataType.STRING)
+        return new SearchField(keyField.getEffectiveStorageName(), SearchFieldDataType.STRING)
             .setKey(true)
             .setFilterable(true);
     }
@@ -90,13 +94,14 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
      */
     public static SearchField mapDataField(VectorStoreRecordDataField dataField) {
         if (dataField.getFieldType() == null) {
-            throw new IllegalArgumentException(
-                "Field type is required: " + dataField.getName());
+            throw new SKException(
+                "Field type is required: " + dataField.getEffectiveStorageName());
         }
 
-        return new SearchField(dataField.getName(),
+        return new SearchField(dataField.getEffectiveStorageName(),
             getSearchFieldDataType(dataField.getFieldType()))
-            .setFilterable(dataField.isFilterable());
+            .setFilterable(dataField.isFilterable())
+            .setSearchable(dataField.isFullTextSearchable());
     }
 
     /**
@@ -106,7 +111,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
      * @return The search field.
      */
     public static SearchField mapVectorField(VectorStoreRecordVectorField vectorField) {
-        return new SearchField(vectorField.getName(),
+        return new SearchField(vectorField.getEffectiveStorageName(),
             SearchFieldDataType.collection(SearchFieldDataType.SINGLE))
             .setSearchable(true)
             .setVectorSearchDimensions(vectorField.getDimensions())
@@ -125,12 +130,12 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
         List<VectorSearchProfile> profiles,
         VectorStoreRecordVectorField vectorField) {
         if (vectorField.getDimensions() <= 0) {
-            throw new IllegalArgumentException("Vector field dimensions must be greater than 0");
+            throw new SKException("Vector field dimensions must be greater than 0");
         }
 
         algorithms.add(getAlgorithmConfig(vectorField));
-        profiles.add(new VectorSearchProfile(getVectorSearchProfileName(vectorField),
-            getAlgorithmConfigName(vectorField)));
+        profiles.add(new VectorSearchProfile(
+            getVectorSearchProfileName(vectorField), getAlgorithmConfigName(vectorField)));
     }
 
     /**
@@ -155,7 +160,7 @@ public class AzureAISearchVectorStoreCollectionCreateMapping {
         } else if (fieldType == OffsetDateTime.class) {
             return SearchFieldDataType.DATE_TIME_OFFSET;
         } else {
-            throw new IllegalArgumentException("Unsupported field type: " + fieldType.getName());
+            throw new SKException("Unsupported field type: " + fieldType.getName());
         }
     }
 }

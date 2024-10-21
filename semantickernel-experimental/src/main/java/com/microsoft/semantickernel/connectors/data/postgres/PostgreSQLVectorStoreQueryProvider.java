@@ -2,30 +2,37 @@
 package com.microsoft.semantickernel.connectors.data.postgres;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreDefaultQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordKeyField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreRecordCollectionSearchMapping;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The MySQL vector store query provider.
@@ -33,23 +40,28 @@ import java.util.Map;
  * vector store and vector store collections.
  */
 public class PostgreSQLVectorStoreQueryProvider extends
-    JDBCVectorStoreDefaultQueryProvider implements JDBCVectorStoreQueryProvider {
+    JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
 
-    private Map<Class<?>, String> supportedKeyTypes;
-    private Map<Class<?>, String> supportedDataTypes;
-    private Map<Class<?>, String> supportedVectorTypes;
+    private final Map<Class<?>, String> supportedKeyTypes;
+    private final Map<Class<?>, String> supportedDataTypes;
+    private final Map<Class<?>, String> supportedVectorTypes;
 
     private final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
+    private final ObjectMapper objectMapper;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    private PostgreSQLVectorStoreQueryProvider(DataSource dataSource, String collectionsTable,
-        String prefixForCollectionTables) {
+    private PostgreSQLVectorStoreQueryProvider(
+        @Nonnull DataSource dataSource,
+        @Nonnull String collectionsTable,
+        @Nonnull String prefixForCollectionTables,
+        @Nonnull ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
         this.dataSource = dataSource;
         this.collectionsTable = collectionsTable;
         this.prefixForCollectionTables = prefixForCollectionTables;
+        this.objectMapper = objectMapper;
 
         supportedKeyTypes = new HashMap<>();
         supportedKeyTypes.put(String.class, "VARCHAR(255)");
@@ -133,64 +145,94 @@ public class PostgreSQLVectorStoreQueryProvider extends
         }
     }
 
-    private String getColumnNamesAndTypesForVectorFields(List<VectorStoreRecordVectorField> fields,
-        Class<?> recordClass) {
-        StringBuilder columnNames = new StringBuilder();
-        for (VectorStoreRecordVectorField field : fields) {
-            try {
-                Field declaredField = recordClass.getDeclaredField(field.getName());
-                if (columnNames.length() > 0) {
-                    columnNames.append(", ");
-                }
-
-                if (declaredField.getType().equals(String.class)) {
-                    columnNames.append(field.getName()).append(" ")
-                        .append(supportedVectorTypes.get(String.class));
+    private String getColumnNamesAndTypesForVectorFields(
+        List<VectorStoreRecordVectorField> fields) {
+        return fields.stream()
+            .map(field -> {
+                String columnType;
+                if (field.getFieldType().equals(String.class)) {
+                    columnType = supportedVectorTypes.get(String.class);
                 } else {
                     // Get the vector type and dimensions
-                    String type = String.format(supportedVectorTypes.get(declaredField.getType()),
+                    columnType = String.format(supportedVectorTypes.get(field.getFieldType()),
                         field.getDimensions());
-                    columnNames.append(field.getName()).append(" ").append(type);
                 }
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
+                return validateSQLidentifier(field.getEffectiveStorageName()) + " " + columnType;
+            })
+            .collect(Collectors.joining(", "));
+    }
+
+    private String createIndexForVectorField(String collectionName,
+        VectorStoreRecordVectorField vectorField) {
+        PostgreSQLVectorIndexKind indexKind = PostgreSQLVectorIndexKind
+            .fromIndexKind(vectorField.getIndexKind());
+        PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
+            .fromDistanceFunction(vectorField.getDistanceFunction());
+
+        // If there is no approximate search index associated to the vector field,
+        // there is no need to create an index and pgvector performs exact nearest neighbor search.
+        if (indexKind == PostgreSQLVectorIndexKind.UNDEFINED) {
+            return null;
+        }
+        if (distanceFunction == PostgreSQLVectorDistanceFunction.UNDEFINED) {
+            throw new SKException(
+                "Distance function is required for vector field: " + vectorField.getName());
         }
 
-        return columnNames.toString();
+        return formatQuery("CREATE INDEX IF NOT EXISTS %s ON %s USING %s (%s %s);",
+            getCollectionTableName(collectionName) + "_index",
+            getCollectionTableName(collectionName),
+            indexKind.getValue(),
+            vectorField.getEffectiveStorageName(),
+            distanceFunction.getValue());
     }
 
     /**
      * Creates a collection.
      *
      * @param collectionName the collection name
-     * @param recordClass the record class
      * @param recordDefinition the record definition
      * @throws SKException if an error occurs while creating the collection
      */
     @Override
-    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") // SQL query is generated dynamically with valid identifiers
-    public void createCollection(String collectionName, Class<?> recordClass,
+    @SuppressFBWarnings(value = {
+            "SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE",
+            "SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"
+    }) // SQL query is generated dynamically with valid identifiers
+    public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
-        Field keyDeclaredField = recordDefinition.getKeyDeclaredField(recordClass);
-        List<Field> dataDeclaredFields = recordDefinition.getDataDeclaredFields(recordClass);
 
-        String createStorageTable = "CREATE TABLE IF NOT EXISTS "
-            + getCollectionTableName(collectionName)
-            + " (" + keyDeclaredField.getName() + " VARCHAR(255) PRIMARY KEY, "
-            + getColumnNamesAndTypes(dataDeclaredFields, supportedDataTypes) + ", "
-            + getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields(), recordClass)
-            + ");";
-
-        String insertCollectionQuery = "INSERT INTO " + validateSQLidentifier(collectionsTable)
-            + " (collectionId) VALUES (?)";
+        List<VectorStoreRecordVectorField> vectorFields = recordDefinition.getVectorFields();
 
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
-            createTable.execute();
+            Statement createTableAndIndexes = connection.createStatement()) {
+
+            String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
+                + "%s VARCHAR(255) PRIMARY KEY, "
+                + "%s, "
+                + "%s);",
+                getCollectionTableName(collectionName),
+                getKeyColumnName(recordDefinition.getKeyField()),
+                getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                    supportedDataTypes),
+                getColumnNamesAndTypesForVectorFields(recordDefinition.getVectorFields()));
+
+            createTableAndIndexes.addBatch(createStorageTable);
+            for (VectorStoreRecordVectorField vectorField : vectorFields) {
+                String createVectorIndex = createIndexForVectorField(collectionName, vectorField);
+
+                if (createVectorIndex != null) {
+                    createTableAndIndexes.addBatch(createVectorIndex);
+                }
+            }
+
+            createTableAndIndexes.executeBatch();
         } catch (SQLException e) {
             throw new SKException("Failed to create collection", e);
         }
+
+        String insertCollectionQuery = formatQuery("INSERT INTO %s (collectionId) VALUES (?)",
+            validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
@@ -201,53 +243,42 @@ public class PostgreSQLVectorStoreQueryProvider extends
         }
     }
 
-    private void setStatementValues(PreparedStatement statement, Object record,
+    private void setUpsertStatementValues(PreparedStatement statement, Object record,
         List<VectorStoreRecordField> fields) {
+        JsonNode jsonNode = objectMapper.valueToTree(record);
+
         for (int i = 0; i < fields.size(); ++i) {
             VectorStoreRecordField field = fields.get(i);
             try {
-                Field recordField = record.getClass().getDeclaredField(field.getName());
-                recordField.setAccessible(true);
-                Object value = recordField.get(record);
+                JsonNode valueNode = jsonNode.get(field.getEffectiveStorageName());
 
-                if (field instanceof VectorStoreRecordKeyField) {
-                    statement.setObject(i + 1, (String) value);
-                } else if (field instanceof VectorStoreRecordVectorField) {
-                    Class<?> vectorType = record.getClass().getDeclaredField(field.getName())
-                        .getType();
-
-                    // If the vector field is other than String, serialize it to JSON
-                    if (vectorType.equals(String.class)) {
-                        statement.setObject(i + 1, value);
-                    } else {
-                        // Serialize the vector to JSON
-                        statement.setString(i + 1, new ObjectMapper().writeValueAsString(value));
+                if (field instanceof VectorStoreRecordVectorField) {
+                    // Convert the vector field to a string
+                    if (!field.getFieldType().equals(String.class)) {
+                        statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
+                        continue;
                     }
-                } else {
-                    statement.setObject(i + 1, value);
                 }
-            } catch (NoSuchFieldException | IllegalAccessException | SQLException e) {
-                throw new SKException("Failed to set statement values", e);
-            } catch (JsonProcessingException e) {
+
+                statement.setObject(i + 1,
+                    objectMapper.convertValue(valueNode, field.getFieldType()));
+            } catch (SQLException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
     private String getWildcardStringWithCast(List<VectorStoreRecordField> fields) {
-        StringBuilder wildcardString = new StringBuilder();
-        int wildcards = fields.size();
-        for (int i = 0; i < wildcards; ++i) {
-            if (i > 0) {
-                wildcardString.append(", ");
-            }
-            wildcardString.append("?");
-            // Add casting for vector fields
-            if (fields.get(i) instanceof VectorStoreRecordVectorField) {
-                wildcardString.append("::vector");
-            }
-        }
-        return wildcardString.toString();
+        return fields.stream()
+            .map(field -> {
+                String wildcard = "?";
+                // Add casting for vector fields
+                if (field instanceof VectorStoreRecordVectorField) {
+                    wildcard += "::vector";
+                }
+                return wildcard;
+            })
+            .collect(Collectors.joining(", "));
     }
 
     /**
@@ -265,29 +296,25 @@ public class PostgreSQLVectorStoreQueryProvider extends
         validateSQLidentifier(getCollectionTableName(collectionName));
         List<VectorStoreRecordField> fields = recordDefinition.getAllFields();
 
-        StringBuilder onDuplicateKeyUpdate = new StringBuilder();
-        for (VectorStoreRecordField field : fields) {
-            if (field instanceof VectorStoreRecordKeyField) {
-                continue;
-            }
-            if (onDuplicateKeyUpdate.length() > 0) {
-                onDuplicateKeyUpdate.append(", ");
-            }
-            onDuplicateKeyUpdate.append(field.getName())
-                .append(" = EXCLUDED.")
-                .append(field.getName());
-        }
+        String onDuplicateKeyUpdate = fields.stream()
+            .filter(field -> !(field instanceof VectorStoreRecordKeyField)) // Exclude key fields
+            .map(field -> formatQuery("%s = EXCLUDED.%s",
+                validateSQLidentifier(field.getEffectiveStorageName()),
+                field.getEffectiveStorageName()))
+            .collect(Collectors.joining(", "));
 
-        String query = "INSERT INTO " + getCollectionTableName(collectionName)
-            + " (" + getQueryColumnsFromFields(fields) + ")"
-            + " VALUES (" + getWildcardStringWithCast(fields) + ")"
-            + " ON CONFLICT (" + recordDefinition.getKeyField().getName() + ") DO UPDATE SET "
-            + onDuplicateKeyUpdate;
+        String query = formatQuery(
+            "INSERT INTO %s (%s) VALUES (%s) ON CONFLICT (%s) DO UPDATE SET %s",
+            getCollectionTableName(collectionName),
+            getQueryColumnsFromFields(fields),
+            getWildcardStringWithCast(fields),
+            getKeyColumnName(recordDefinition.getKeyField()),
+            onDuplicateKeyUpdate);
 
         try (Connection connection = dataSource.getConnection();
             PreparedStatement statement = connection.prepareStatement(query)) {
             for (Object record : records) {
-                setStatementValues(statement, record, recordDefinition.getAllFields());
+                setUpsertStatementValues(statement, record, recordDefinition.getAllFields());
                 statement.addBatch();
             }
 
@@ -298,13 +325,108 @@ public class PostgreSQLVectorStoreQueryProvider extends
     }
 
     /**
-     * The builder for {@code PostgreSQLVectorStoreQueryProvider}.
+     * Vector search.
+     * Executes a vector search query and returns the results.
+     * The results are mapped to the specified record type using the provided mapper.
+     * The query is executed against the specified collection.
+     *
+     * @param <Record> the record type
+     * @param collectionName the collection name
+     * @param vector the vector to search with
+     * @param options the search options
+     * @param recordDefinition the record definition
+     * @param mapper the mapper, responsible for mapping the result set to the record type.
+     * @return the search results
+     */
+    @Override
+    public <Record> List<VectorSearchResult<Record>> search(String collectionName,
+        List<Float> vector, VectorSearchOptions options,
+        VectorStoreRecordDefinition recordDefinition,
+        VectorStoreRecordMapper<Record, ResultSet> mapper) {
+        if (recordDefinition.getVectorFields().isEmpty()) {
+            throw new SKException("No vector fields defined. Cannot perform vector search");
+        }
+
+        VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
+            .get(0);
+        if (options == null) {
+            options = VectorSearchOptions.createDefault(firstVectorField.getName());
+        }
+
+        VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
+            ? firstVectorField
+            : (VectorStoreRecordVectorField) recordDefinition
+                .getField(options.getVectorFieldName());
+
+        PostgreSQLVectorIndexKind indexKind = PostgreSQLVectorIndexKind
+            .fromIndexKind(vectorField.getIndexKind());
+        PostgreSQLVectorDistanceFunction distanceFunction = PostgreSQLVectorDistanceFunction
+            .fromDistanceFunction(vectorField.getDistanceFunction());
+
+        // If there is no approximate search index associated to the vector field,
+        // there is no index defined in the database and pgvector performs exact nearest neighbor search.
+        // If indexKind is defined, distance function is required.
+        if (indexKind != PostgreSQLVectorIndexKind.UNDEFINED
+            && distanceFunction == PostgreSQLVectorDistanceFunction.UNDEFINED) {
+            throw new SKException(
+                "Distance function is required for vector field: " + vectorField.getName());
+        }
+
+        String filter = SQLVectorStoreRecordCollectionSearchMapping.buildFilter(
+            options.getVectorSearchFilter(),
+            recordDefinition);
+        List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
+            .getFilterParameters(options.getVectorSearchFilter());
+
+        String filterClause = filter.isEmpty() ? "" : "WHERE " + filter;
+        String searchQuery = formatQuery(
+            "SELECT %s, %s %s ?::vector AS score FROM %s %s ORDER BY score LIMIT ? OFFSET ?",
+            getQueryColumnsFromFields(
+                options.isIncludeVectors() ? recordDefinition.getAllFields()
+                    : recordDefinition.getNonVectorFields()),
+            validateSQLidentifier(vectorField.getEffectiveStorageName()),
+            distanceFunction == null ? PostgreSQLVectorDistanceFunction.L2.getOperator()
+                : distanceFunction.getOperator(),
+            getCollectionTableName(collectionName),
+            filterClause);
+
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(searchQuery)) {
+            int parameterIndex = 1;
+
+            statement.setString(parameterIndex++,
+                objectMapper.writeValueAsString(vector));
+            for (Object parameter : parameters) {
+                statement.setObject(parameterIndex++, parameter);
+            }
+            statement.setInt(parameterIndex++, options.getLimit());
+            statement.setInt(parameterIndex, options.getOffset());
+
+            List<VectorSearchResult<Record>> records = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                records.add(new VectorSearchResult<>(
+                    mapper.mapStorageModelToRecord(resultSet,
+                        new GetRecordOptions(options.isIncludeVectors())),
+                    resultSet.getDouble("score")));
+            }
+
+            return records;
+        } catch (SQLException | JsonProcessingException e) {
+            throw new SKException("Failed to search records", e);
+        }
+    }
+
+    /**
+     * A builder for the PostgreSQLVectorStoreQueryProvider class.
      */
     public static class Builder
-        extends JDBCVectorStoreDefaultQueryProvider.Builder {
+        extends JDBCVectorStoreQueryProvider.Builder {
         private DataSource dataSource;
         private String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         @SuppressFBWarnings("EI_EXPOSE_REP2")
         public PostgreSQLVectorStoreQueryProvider.Builder withDataSource(DataSource dataSource) {
@@ -334,13 +456,26 @@ public class PostgreSQLVectorStoreQueryProvider extends
             return this;
         }
 
+        /**
+         * Sets the object mapper.
+         *
+         * @param objectMapper the object mapper
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public PostgreSQLVectorStoreQueryProvider.Builder withObjectMapper(
+            ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
         public PostgreSQLVectorStoreQueryProvider build() {
             if (dataSource == null) {
                 throw new SKException("DataSource is required");
             }
 
             return new PostgreSQLVectorStoreQueryProvider(dataSource, collectionsTable,
-                prefixForCollectionTables);
+                prefixForCollectionTables, objectMapper);
         }
     }
 }

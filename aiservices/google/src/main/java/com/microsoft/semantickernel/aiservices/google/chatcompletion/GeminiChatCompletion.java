@@ -16,11 +16,13 @@ import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.google.GeminiService;
+import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
 import com.microsoft.semantickernel.aiservices.google.implementation.MonoConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.SKCheckedException;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -35,7 +37,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-import com.microsoft.semantickernel.aiservices.google.GeminiServiceBuilder;
+import com.microsoft.semantickernel.services.chatcompletion.StreamingChatContent;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -84,6 +86,53 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     }
 
     @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(
+        ChatHistory chatHistory,
+        @Nullable Kernel kernel,
+        @Nullable InvocationContext invocationContext) {
+
+        LOGGER.warn("Streaming has been called on GeminiChatCompletion service. "
+            + "This is currently not supported in Gemini. "
+            + "The results will be returned in a non streaming fashion.");
+
+        return getChatMessageContentsAsync(chatHistory, kernel, invocationContext)
+            .flatMapIterable(chatMessageContents -> chatMessageContents)
+            .map(content -> {
+                return new GeminiStreamingChatMessageContent(
+                    content.getAuthorRole(),
+                    content.getContent(),
+                    getModelId(),
+                    content.getInnerContent(),
+                    content.getEncoding(),
+                    content.getMetadata(),
+                    null,
+                    UUID.randomUUID().toString());
+            });
+    }
+
+    @Override
+    public Flux<StreamingChatContent<?>> getStreamingChatMessageContentsAsync(String prompt,
+        @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
+        LOGGER.warn("Streaming has been called on GeminiChatCompletion service. "
+            + "This is currently not supported in Gemini. "
+            + "The results will be returned in a non streaming fashion.");
+
+        return getChatMessageContentsAsync(prompt, kernel, invocationContext)
+            .flatMapIterable(chatMessageContents -> chatMessageContents)
+            .map(content -> {
+                return new GeminiStreamingChatMessageContent(
+                    content.getAuthorRole(),
+                    content.getContent(),
+                    getModelId(),
+                    content.getInnerContent(),
+                    content.getEncoding(),
+                    content.getMetadata(),
+                    null,
+                    UUID.randomUUID().toString());
+            });
+    }
+
+    @Override
     public Mono<List<ChatMessageContent<?>>> getChatMessageContentsAsync(ChatHistory chatHistory,
         @Nullable Kernel kernel, @Nullable InvocationContext invocationContext) {
         return internalChatMessageContentsAsync(
@@ -106,7 +155,8 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
         try {
             GenerativeModel model = getGenerativeModel(kernel, invocationContext);
             return MonoConverter.fromApiFuture(model.generateContentAsync(contents))
-                .doOnError(e -> LOGGER.error("Error generating chat completion", e))
+                .doOnError(e -> LOGGER.error(
+                    SemanticKernelResources.getString("error.generating.chat.completion"), e))
                 .flatMap(result -> {
                     // Get ChatMessageContent from the response
                     GeminiChatMessageContent<?> response = getGeminiChatMessageContentFromResponse(
@@ -262,7 +312,8 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
 
                 if (settings.getResultsPerPrompt() < 1
                     || settings.getResultsPerPrompt() > MAX_RESULTS_PER_PROMPT) {
-                    throw SKCheckedException.build("Error building generative model.",
+                    throw SKCheckedException.build(
+                        SemanticKernelResources.getString("error.building.generative.model"),
                         new AIException(AIException.ErrorCodes.INVALID_REQUEST,
                             String.format(
                                 "Results per prompt must be in range between 1 and %d, inclusive.",

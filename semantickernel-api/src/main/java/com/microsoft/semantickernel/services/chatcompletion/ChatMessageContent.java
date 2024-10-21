@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.services.chatcompletion;
 
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.services.KernelContent;
+import com.microsoft.semantickernel.services.KernelContentImpl;
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageContentType;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +22,7 @@ import javax.annotation.Nullable;
  *
  * @param <T> the type of the inner content within the messages
  */
-public class ChatMessageContent<T> extends KernelContent<T> {
+public class ChatMessageContent<T> extends KernelContentImpl<T> {
 
     private final AuthorRole authorRole;
     @Nullable

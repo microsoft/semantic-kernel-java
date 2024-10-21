@@ -3,9 +3,10 @@ package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.models.SearchIndex;
-import com.microsoft.semantickernel.data.VectorStore;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStore;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -17,19 +18,19 @@ import reactor.core.publisher.Mono;
  */
 public class AzureAISearchVectorStore implements VectorStore {
 
-    private final SearchIndexAsyncClient client;
+    private final SearchIndexAsyncClient searchIndexAsyncClient;
     private final AzureAISearchVectorStoreOptions options;
 
     /**
      * Creates a new instance of {@link AzureAISearchVectorStore}.
      *
-     * @param client  The Azure AI Search client.
+     * @param searchIndexAsyncClient  The Azure AI Search client.
      * @param options The options for the vector store.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public AzureAISearchVectorStore(@Nonnull SearchIndexAsyncClient client,
+    public AzureAISearchVectorStore(@Nonnull SearchIndexAsyncClient searchIndexAsyncClient,
         @Nonnull AzureAISearchVectorStoreOptions options) {
-        this.client = client;
+        this.searchIndexAsyncClient = searchIndexAsyncClient;
         this.options = options;
     }
 
@@ -37,55 +38,34 @@ public class AzureAISearchVectorStore implements VectorStore {
      * Gets a new instance of {@link AzureAISearchVectorStoreRecordCollection}
      *
      * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
+     * @param options          The options for the collection.
      * @return The collection.
      */
     @Override
     public final <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
         @Nonnull String collectionName,
-        @Nonnull Class<Key> keyClass,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (!keyClass.equals(String.class)) {
-            throw new IllegalArgumentException("Azure AI Search only supports string keys");
+        @Nonnull VectorStoreRecordCollectionOptions<Key, Record> options) {
+        if (!options.getKeyClass().equals(String.class)) {
+            throw new SKException("Azure AI Search only supports string keys");
+        }
+        if (options.getRecordClass() == null) {
+            throw new SKException("Record class is required");
         }
 
-        return (VectorStoreRecordCollection<Key, Record>) getCollection(
-            collectionName, recordClass, recordDefinition);
-    }
-
-    /**
-     * Gets a new instance of {@link AzureAISearchVectorStoreRecordCollection}
-     *
-     * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
-     * @param <Record>         The type of record in the collection.
-     * @return The collection.
-     */
-    public <Record> AzureAISearchVectorStoreRecordCollection<Record> getCollection(
-        @Nonnull String collectionName,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (options.getVectorStoreRecordCollectionFactory() != null) {
-            return options.getVectorStoreRecordCollectionFactory()
+        if (this.options.getVectorStoreRecordCollectionFactory() != null) {
+            return (VectorStoreRecordCollection<Key, Record>) this.options
+                .getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
-                    client,
+                    searchIndexAsyncClient,
                     collectionName,
-                    AzureAISearchVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(recordClass)
-                        .withRecordDefinition(recordDefinition)
-                        .build());
+                    options.getRecordClass(),
+                    options.getRecordDefinition());
         }
 
-        return new AzureAISearchVectorStoreRecordCollection<>(
-            client,
+        return (VectorStoreRecordCollection<Key, Record>) new AzureAISearchVectorStoreRecordCollection<>(
+            searchIndexAsyncClient,
             collectionName,
-            AzureAISearchVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(recordClass)
-                .withRecordDefinition(recordDefinition)
-                .build());
+            (AzureAISearchVectorStoreRecordCollectionOptions<Record>) options);
     }
 
     /**
@@ -95,7 +75,7 @@ public class AzureAISearchVectorStore implements VectorStore {
      */
     @Override
     public Mono<List<String>> getCollectionNamesAsync() {
-        return client.listIndexes().map(SearchIndex::getName).collectList();
+        return searchIndexAsyncClient.listIndexes().map(SearchIndex::getName).collectList();
     }
 
     /**
@@ -113,19 +93,20 @@ public class AzureAISearchVectorStore implements VectorStore {
     public static class Builder {
 
         @Nullable
-        private SearchIndexAsyncClient client;
+        private SearchIndexAsyncClient searchIndexAsyncClient;
         @Nullable
         private AzureAISearchVectorStoreOptions options;
 
         /**
-         * Sets the Azure AI Search client.
+         * Sets the Azure AI Search searchIndexClient.
          *
-         * @param client The Azure AI Search client.
+         * @param searchIndexAsyncClient The Azure AI Search searchIndexClient.
          * @return The updated builder instance.
          */
         @SuppressFBWarnings("EI_EXPOSE_REP2")
-        public Builder withClient(@Nonnull SearchIndexAsyncClient client) {
-            this.client = client;
+        public Builder withSearchIndexAsyncClient(
+            @Nonnull SearchIndexAsyncClient searchIndexAsyncClient) {
+            this.searchIndexAsyncClient = searchIndexAsyncClient;
             return this;
         }
 
@@ -147,14 +128,14 @@ public class AzureAISearchVectorStore implements VectorStore {
          * @return The Azure AI Search vector store.
          */
         public AzureAISearchVectorStore build() {
-            if (client == null) {
-                throw new IllegalStateException("client is required");
+            if (searchIndexAsyncClient == null) {
+                throw new SKException("searchIndexAsyncClient is required");
             }
             if (options == null) {
-                throw new IllegalStateException("options is required");
+                throw new SKException("options is required");
             }
 
-            return new AzureAISearchVectorStore(client, options);
+            return new AzureAISearchVectorStore(searchIndexAsyncClient, options);
         }
     }
 }

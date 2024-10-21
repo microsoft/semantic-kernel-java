@@ -86,7 +86,7 @@ public class PromptTemplateConfig {
      */
     @JsonCreator
     public PromptTemplateConfig(
-        @JsonProperty("schema") int schema,
+        @Nullable @JsonProperty("schema") Integer schema,
         @Nullable @JsonProperty("name") String name,
         @Nullable @JsonProperty("template") String template,
         @Nullable @JsonProperty(value = "template_format", defaultValue = SEMANTIC_KERNEL_TEMPLATE_FORMAT) String templateFormat,
@@ -95,6 +95,9 @@ public class PromptTemplateConfig {
         @Nullable @JsonProperty("input_variables") List<InputVariable> inputVariables,
         @Nullable @JsonProperty("output_variable") OutputVariable outputVariable,
         @Nullable @JsonProperty("execution_settings") Map<String, PromptExecutionSettings> executionSettings) {
+        if (schema == null) {
+            schema = CURRENT_SCHEMA;
+        }
         this.schema = schema;
         this.name = name;
         this.template = template;

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+import static com.microsoft.semantickernel.semanticfunctions.KernelFunctionYamlTest.assertEqualsJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -52,7 +53,7 @@ public class PromptTemplateConfigTest {
             })
             .build();
 
-        assertEquals(expected, result);
+        assertEqualsJson(expected, result);
     }
 
     @Test
@@ -145,6 +146,6 @@ public class PromptTemplateConfigTest {
             + "}";
 
         PromptTemplateConfig result = PromptTemplateConfig.parseFromJson(jsonString);
-        assertEquals(expected, result);
+        assertEqualsJson(expected, result);
     }
 }

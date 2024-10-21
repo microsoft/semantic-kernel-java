@@ -3,6 +3,7 @@ package com.microsoft.semantickernel;
 
 import com.microsoft.semantickernel.contextvariables.CaseInsensitiveMap;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
@@ -122,7 +123,8 @@ class KernelPluginCollection {
      */
     void add(KernelPlugin plugin) {
         if (plugins.containsKey(plugin.getName())) {
-            LOGGER.warn("Plugin {} already exists, overwriting existing plugin", plugin.getName());
+            LOGGER.warn(SemanticKernelResources.getString(
+                "plugin.already.exists.overwriting.existing.plugin"), plugin.getName());
         }
 
         plugins.put(plugin.getName(), plugin);

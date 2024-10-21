@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.exceptions.AIException;
 import com.microsoft.semantickernel.exceptions.AIException.ErrorCodes;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.services.textcompletion.StreamingTextContent;
+import com.microsoft.semantickernel.services.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
@@ -75,7 +75,7 @@ public class OpenAITextGenerationService extends OpenAiService<OpenAIAsyncClient
         return this
             .internalCompleteTextAsync(prompt, executionSettings)
             .flatMapMany(it -> Flux.fromStream(it.stream())
-                .map(StreamingTextContent::new));
+                .map(OpenAIStreamingTextContent::new));
     }
 
     protected Mono<List<TextContent>> internalCompleteTextAsync(

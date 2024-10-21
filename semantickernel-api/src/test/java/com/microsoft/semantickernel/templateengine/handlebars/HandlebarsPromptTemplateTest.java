@@ -5,7 +5,12 @@ import static java.util.stream.Collectors.joining;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.Kernel;
+import com.microsoft.semantickernel.contextvariables.ContextVariable;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.converters.ContextVariableJacksonConverter;
+import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -17,6 +22,8 @@ import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageT
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import org.apache.commons.text.StringEscapeUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -114,5 +121,142 @@ public class HandlebarsPromptTemplateTest {
                 // put it back together
                 .collect(joining(" "));
         assertEquals(expResult, normalizedResult);
+    }
+
+    public static class Foo {
+
+        @JsonProperty("val")
+        private final String val;
+
+        public Foo(String val) {
+            this.val = val;
+        }
+
+        public String getVal() {
+            return val;
+        }
+    }
+
+    @Test
+    public void testSerializesObject() {
+        PromptTemplateConfig promptTemplate = PromptTemplateConfig.builder()
+            .withTemplate("{{input}}")
+            .withTemplateFormat("handlebars")
+            .build();
+
+        HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
+
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            .withVariable("input", new Foo("bar"),
+                ContextVariableJacksonConverter.create(Foo.class))
+            .build();
+
+        // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
+        String expResult = StringEscapeUtils.escapeXml11("{  \"val\" : \"bar\"}");
+
+        String result = instance.renderAsync(Kernel.builder().build(), arguments, null)
+            .block();
+        Assertions.assertEquals(expResult, result.replaceAll("\\r\\n|\\r|\\n", ""));
+    }
+
+    @Test
+    public void testMessageContent() {
+        PromptTemplateConfig promptTemplate = PromptTemplateConfig.builder()
+            .withTemplate(
+                "{{#each input}}\n" +
+                    "<message role=\"{{role}}\">{{content}}</message>\n" +
+                    "{{/each}}")
+            .withTemplateFormat("handlebars")
+            .build();
+
+        HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
+
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            .withVariable("input", new ChatHistory()
+                .addAssistantMessage("foo")
+                .addUserMessage("bar\"<>&"))
+            .build();
+
+        // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
+        String expResult = "<message role=\"ASSISTANT\">foo</message><message role=\"USER\">bar&quot;&lt;&gt;&amp;</message>";
+
+        String result = instance.renderAsync(Kernel.builder().build(), arguments, null)
+            .block();
+        Assertions.assertEquals(expResult, result.replaceAll("\\n", ""));
+    }
+
+    @Test
+    public void testMessageHandler() {
+        PromptTemplateConfig promptTemplate = PromptTemplateConfig.builder()
+            .withTemplate("{{#message role=\"user\"}}\n" +
+                "{{input}}\n" +
+                "{{/message}}")
+            .withTemplateFormat("handlebars")
+            .build();
+
+        HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
+
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            .withVariable("input", "bar\"<>&")
+            .build();
+
+        // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
+        String expResult = "<message role=\"user\">bar&quot;&lt;&gt;&amp;</message>";
+
+        String result = instance.renderAsync(Kernel.builder().build(), arguments, null)
+            .block();
+        Assertions.assertEquals(expResult, result.replaceAll("\\n", ""));
+    }
+
+    @Test
+    public void iterableWithContextVariable() {
+        PromptTemplateConfig promptTemplate = PromptTemplateConfig.builder()
+            .withTemplate(
+                "{{#each input}}" +
+                    "{{this}}" +
+                    "{{/each}}")
+            .withTemplateFormat("handlebars")
+            .build();
+
+        HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
+
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            .withVariable("input", Arrays.asList(ContextVariable.of("foo\"<>&")))
+            .build();
+
+        // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
+        String expResult = "foo&quot;&lt;&gt;&amp;";
+
+        String result = instance.renderAsync(Kernel.builder().build(), arguments, null)
+            .block();
+        Assertions.assertEquals(expResult, result.replaceAll("\\n", ""));
+    }
+
+    @Test
+    public void withCustomConverter() {
+        PromptTemplateConfig promptTemplate = PromptTemplateConfig.builder()
+            .withTemplate("{{#each input}}{{this}}{{/each}}")
+            .withTemplateFormat("handlebars")
+            .build();
+
+        HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
+
+        ContextVariableTypeConverter<Foo> converter = ContextVariableTypeConverter.builder(
+            Foo.class)
+            .toPromptString(Foo::getVal)
+            .build();
+        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            .withVariable("input", ContextVariable.of(new Foo("bar\"<>&"), converter))
+            .build();
+
+        // Return from renderAsync is normalized to remove empty lines and leading/trailing whitespace
+        String expResult = "bar&quot;&lt;&gt;&amp;";
+
+        String result = instance.renderAsync(Kernel.builder().build(), arguments,
+            InvocationContext.builder()
+                .withContextVariableConverter(converter)
+                .build())
+            .block();
+        Assertions.assertEquals(expResult, result.replaceAll("\\n", ""));
     }
 }

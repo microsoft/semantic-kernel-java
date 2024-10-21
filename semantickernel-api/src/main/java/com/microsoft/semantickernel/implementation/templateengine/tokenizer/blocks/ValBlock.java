@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,8 @@ public final class ValBlock extends Block implements TextRendering {
         super(quotedValue.trim(), BlockTypes.VALUE);
 
         if (this.getContent().length() < 2) {
-            LOGGER.error("A value must have single quotes or double quotes on both sides");
+            LOGGER.error(SemanticKernelResources.getString(
+                "a.value.must.have.single.quotes.or.double.quotes.on.both.sides"));
             return;
         }
 
@@ -47,15 +49,16 @@ public final class ValBlock extends Block implements TextRendering {
     public boolean isValid() {
         // Content includes the quotes, so it must be at least 2 chars long
         if (this.getContent().length() < 2) {
-            LOGGER.error("A value must have single quotes or double quotes on both sides");
+            LOGGER.error(SemanticKernelResources.getString(
+                "a.value.must.have.single.quotes.or.double.quotes.on.both.sides"));
             return false;
         }
 
         // Check if delimiting chars are consistent
         if (first != last) {
             LOGGER.error(
-                "A value must be defined using either single quotes or double quotes, not"
-                    + " both");
+                SemanticKernelResources.getString(
+                    "a.value.must.be.defined.using.either.single.quotes.or.double.quotes.not.both"));
             return false;
         }
 

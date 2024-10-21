@@ -2,9 +2,10 @@
 package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.VectorStore;
-import com.microsoft.semantickernel.data.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStore;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,52 +35,46 @@ public class RedisVectorStore implements VectorStore {
         this.options = options;
     }
 
-    @Override
-    public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
-        @Nonnull String collectionName,
-        @Nonnull Class<Key> keyClass,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
-        if (keyClass != String.class) {
-            throw new IllegalArgumentException("Redis only supports string keys");
-        }
-
-        return (VectorStoreRecordCollection<Key, Record>) getCollection(
-            collectionName,
-            recordClass,
-            recordDefinition);
-    }
-
     /**
      * Gets a collection from the vector store.
      *
      * @param collectionName   The name of the collection.
-     * @param recordClass      The class type of the record.
-     * @param recordDefinition The record definition.
+     * @param options          The options for the collection.
+     * @param <Key>            The type of key in the collection.
      * @param <Record>         The type of record in the collection.
      * @return The collection.
      */
-    public <Record> RedisVectorStoreRecordCollection<Record> getCollection(
+    public <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(
         @Nonnull String collectionName,
-        @Nonnull Class<Record> recordClass,
-        @Nullable VectorStoreRecordDefinition recordDefinition) {
+        @Nonnull VectorStoreRecordCollectionOptions<Key, Record> options) {
+        if (!options.getKeyClass().equals(String.class)) {
+            throw new SKException("Redis only supports string keys");
+        }
+        if (options.getRecordClass() == null) {
+            throw new SKException("Record class is required");
+        }
 
-        if (options.getVectorStoreRecordCollectionFactory() != null) {
-            return options.getVectorStoreRecordCollectionFactory()
+        if (this.options.getVectorStoreRecordCollectionFactory() != null) {
+            return (VectorStoreRecordCollection<Key, Record>) this.options
+                .getVectorStoreRecordCollectionFactory()
                 .createVectorStoreRecordCollection(
                     client,
                     collectionName,
-                    RedisVectorStoreRecordCollectionOptions.<Record>builder()
-                        .withRecordClass(recordClass)
-                        .withRecordDefinition(recordDefinition)
-                        .build());
+                    options.getRecordClass(),
+                    options.getRecordDefinition());
         }
 
-        return new RedisVectorStoreRecordCollection<>(client, collectionName,
-            RedisVectorStoreRecordCollectionOptions.<Record>builder()
-                .withRecordClass(recordClass)
-                .withRecordDefinition(recordDefinition)
-                .build());
+        if (this.options.getStorageType() == RedisStorageType.JSON) {
+            return (VectorStoreRecordCollection<Key, Record>) new RedisJsonVectorStoreRecordCollection<>(
+                client,
+                collectionName,
+                (RedisJsonVectorStoreRecordCollectionOptions<Record>) options);
+        } else {
+            return (VectorStoreRecordCollection<Key, Record>) new RedisHashSetVectorStoreRecordCollection<>(
+                client,
+                collectionName,
+                (RedisHashSetVectorStoreRecordCollectionOptions<Record>) options);
+        }
     }
 
     /**
@@ -136,11 +131,11 @@ public class RedisVectorStore implements VectorStore {
         @Override
         public RedisVectorStore build() {
             if (client == null) {
-                throw new IllegalArgumentException("client is required");
+                throw new SKException("client is required");
             }
 
             if (options == null) {
-                throw new IllegalArgumentException("options is required");
+                throw new SKException("options is required");
             }
 
             return new RedisVectorStore(client, options);

@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 
 /**
  * Factory for creating Azure AI Search vector store record collections.
@@ -13,12 +14,14 @@ public interface AzureAISearchVectorStoreRecordCollectionFactory {
      *
      * @param client         The Azure AI Search client.
      * @param collectionName The name of the collection.
-     * @param options        The options for the collection.
+     * @param recordClass    The class type of the record.
+     * @param recordDefinition The record definition.
      * @param <Record>       The record type.
      * @return The new Azure AI Search vector store record collection.
      */
     <Record> AzureAISearchVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(
         SearchIndexAsyncClient client,
         String collectionName,
-        AzureAISearchVectorStoreRecordCollectionOptions<Record> options);
+        Class<Record> recordClass,
+        VectorStoreRecordDefinition recordDefinition);
 }

@@ -2,6 +2,7 @@
 package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.implementation.Verify;
+import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -155,7 +156,7 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             return castServiceSelection(new AIServiceSelection<>(service, settings));
         }
 
-        LOGGER.warn("No service found meeting requirements");
+        LOGGER.warn(SemanticKernelResources.getString("no.service.found.meeting.requirements"));
         return null;
     }
 
@@ -211,7 +212,8 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             (clazz.equals(TextGenerationService.class) ||
                 clazz.equals(ChatCompletionService.class))) {
             LOGGER.warn(
-                "Requested a non-existent service type of {}. Consider requesting a TextAIService instead.",
+                SemanticKernelResources.getString(
+                    "requested.a.non.existent.service.type.of.consider.requesting.a.textaiservice.instead"),
                 clazz.getName());
         }
 

@@ -1,20 +1,36 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recordoptions.DeleteRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.GetRecordOptions;
-import com.microsoft.semantickernel.data.recordoptions.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.filter.FilterClause;
+import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * Represents a volatile vector store record collection.
@@ -43,7 +59,6 @@ public class VolatileVectorStoreRecordCollection<Record> implements
         this.collectionName = collectionName;
         this.options = options;
         this.collections = new ConcurrentHashMap<>();
-        this.objectMapper = new ObjectMapper();
 
         if (options.getRecordDefinition() != null) {
             this.recordDefinition = options.getRecordDefinition();
@@ -52,10 +67,15 @@ public class VolatileVectorStoreRecordCollection<Record> implements
                 .fromRecordClass(this.options.getRecordClass());
         }
 
+        if (options.getObjectMapper() == null) {
+            this.objectMapper = new ObjectMapper();
+        } else {
+            this.objectMapper = options.getObjectMapper();
+        }
+
         // Validate the key type
         VectorStoreRecordDefinition.validateSupportedTypes(
-            Collections
-                .singletonList(recordDefinition.getKeyDeclaredField(options.getRecordClass())),
+            Collections.singletonList(recordDefinition.getKeyField()),
             supportedKeyTypes);
     }
 
@@ -158,7 +178,8 @@ public class VolatileVectorStoreRecordCollection<Record> implements
         return Mono.fromCallable(() -> {
             try {
                 ObjectNode objectNode = objectMapper.valueToTree(data);
-                String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
+                String key = objectNode
+                    .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
 
                 getCollection().put(key, data);
                 return key;
@@ -184,7 +205,8 @@ public class VolatileVectorStoreRecordCollection<Record> implements
             return data.stream().map(record -> {
                 try {
                     ObjectNode objectNode = objectMapper.valueToTree(record);
-                    String key = objectNode.get(recordDefinition.getKeyField().getName()).asText();
+                    String key = objectNode
+                        .get(recordDefinition.getKeyField().getEffectiveStorageName()).asText();
 
                     collection.put(key, record);
                     return key;
@@ -230,5 +252,51 @@ public class VolatileVectorStoreRecordCollection<Record> implements
                 String.format("Collection %s does not exist.", collectionName));
         }
         return (Map<String, Record>) collections.get(collectionName);
+    }
+
+    private List<Float> arrayNodeToFloatList(ArrayNode arrayNode) {
+        return Stream.iterate(0, i -> i + 1)
+            .limit(arrayNode.size())
+            .map(i -> arrayNode.get(i).floatValue())
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Vectorized search. This method searches for records that are similar to the given vector.
+     *
+     * @param vector  The vector to search with.
+     * @param options The options to use for the search.
+     * @return A list of search results.
+     */
+    @Override
+    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+        final VectorSearchOptions options) {
+        if (recordDefinition.getVectorFields().isEmpty()) {
+            throw new SKException("No vector fields defined. Cannot perform vector search");
+        }
+
+        return Mono.fromCallable(() -> {
+            VectorStoreRecordVectorField firstVectorField = recordDefinition.getVectorFields()
+                .get(0);
+            VectorSearchOptions effectiveOptions = options == null
+                ? VectorSearchOptions.createDefault(firstVectorField.getName())
+                : options;
+
+            VectorStoreRecordVectorField vectorField = effectiveOptions.getVectorFieldName() == null
+                ? firstVectorField
+                : (VectorStoreRecordVectorField) recordDefinition
+                    .getField(effectiveOptions.getVectorFieldName());
+
+            DistanceFunction distanceFunction = vectorField
+                .getDistanceFunction() == DistanceFunction.UNDEFINED
+                    ? DistanceFunction.EUCLIDEAN_DISTANCE
+                    : vectorField.getDistanceFunction();
+
+            List<Record> records = VolatileVectorStoreCollectionSearchMapping.filterRecords(
+                new ArrayList<>(getCollection().values()), effectiveOptions.getVectorSearchFilter(),
+                recordDefinition, objectMapper);
+            return VectorOperations.exactSimilaritySearch(records, vector, vectorField,
+                distanceFunction, effectiveOptions);
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 }

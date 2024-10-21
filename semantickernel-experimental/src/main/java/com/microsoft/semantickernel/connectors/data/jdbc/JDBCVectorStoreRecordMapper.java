@@ -2,22 +2,23 @@
 package com.microsoft.semantickernel.connectors.data.jdbc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
-import com.microsoft.semantickernel.data.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.recorddefinition.VectorStoreRecordVectorField;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.sql.ResultSetMetaData;
 import java.util.List;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * Maps a JDBC result set to a record.
@@ -32,7 +33,8 @@ public class JDBCVectorStoreRecordMapper<Record>
      *
      * @param storageModelToRecordMapper the function to convert a storage model to a record
      */
-    protected JDBCVectorStoreRecordMapper(Function<ResultSet, Record> storageModelToRecordMapper) {
+    protected JDBCVectorStoreRecordMapper(
+        BiFunction<ResultSet, GetRecordOptions, Record> storageModelToRecordMapper) {
         super(null, storageModelToRecordMapper);
     }
 
@@ -63,6 +65,7 @@ public class JDBCVectorStoreRecordMapper<Record>
         implements SemanticKernelBuilder<JDBCVectorStoreRecordMapper<Record>> {
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition vectorStoreRecordDefinition;
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         /**
          * Sets the record class.
@@ -88,71 +91,67 @@ public class JDBCVectorStoreRecordMapper<Record>
         }
 
         /**
+         * Sets the object mapper.
+         *
+         * @param objectMapper the object mapper
+         * @return the builder
+         */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public Builder<Record> withObjectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        /**
          * Builds the {@link JDBCVectorStoreRecordMapper}.
          *
          * @return the {@link JDBCVectorStoreRecordMapper}
          */
         public JDBCVectorStoreRecordMapper<Record> build() {
             if (recordClass == null) {
-                throw new IllegalArgumentException("recordClass is required");
+                throw new SKException("recordClass is required");
             }
             if (vectorStoreRecordDefinition == null) {
-                throw new IllegalArgumentException("vectorStoreRecordDefinition is required");
+                throw new SKException("vectorStoreRecordDefinition is required");
             }
 
             return new JDBCVectorStoreRecordMapper<>(
-                resultSet -> {
+                (resultSet, options) -> {
                     try {
-                        Constructor<?> constructor = recordClass.getDeclaredConstructor();
-                        constructor.setAccessible(true);
-                        Record record = (Record) constructor.newInstance();
+                        // Create an ObjectNode to hold the values
+                        ObjectNode objectNode = objectMapper.createObjectNode();
 
                         // Select fields from the record definition.
-                        // Check if vector fields are present in the result set.
                         List<VectorStoreRecordField> fields;
                         ResultSetMetaData metaData = resultSet.getMetaData();
-                        if (metaData.getColumnCount() == vectorStoreRecordDefinition.getAllFields()
-                            .size()) {
+                        if (options != null && options.isIncludeVectors()) {
                             fields = vectorStoreRecordDefinition.getAllFields();
                         } else {
                             fields = vectorStoreRecordDefinition.getNonVectorFields();
                         }
 
                         for (VectorStoreRecordField field : fields) {
-                            Object value = resultSet.getObject(field.getName());
-                            Field recordField = recordClass.getDeclaredField(field.getName());
-                            recordField.setAccessible(true);
+                            Object value = resultSet.getObject(field.getEffectiveStorageName());
 
-                            // If the field is a vector field, deserialize the JSON string
                             if (field instanceof VectorStoreRecordVectorField) {
-                                Class<?> vectorType = recordField.getType();
+                                Class<?> vectorType = field.getFieldType();
 
-                                // If the vector type is a string, set the value directly
-                                if (vectorType.equals(String.class)) {
-                                    recordField.set(record, value);
-                                } else {
-                                    // Deserialize the JSON string to the vector type
-                                    recordField.set(record,
-                                        new ObjectMapper().readValue((String) value, vectorType));
+                                // If the vector field is other than String, deserialize it from the JSON string
+                                if (!vectorType.equals(String.class)) {
+                                    value = objectMapper.readValue((String) value, vectorType);
                                 }
-                            } else {
-                                recordField.set(record, value);
                             }
+
+                            JsonNode genericNode = objectMapper.valueToTree(value);
+                            objectNode.set(field.getEffectiveStorageName(), genericNode);
                         }
 
-                        return record;
-                    } catch (NoSuchMethodException e) {
-                        throw new SKException("Default constructor not found.", e);
-                    } catch (InstantiationException | InvocationTargetException e) {
-                        throw new SKException(String.format(
-                            "SK cannot instantiate %s. A custom mapper is required.",
-                            recordClass.getName()), e);
-                    } catch (JsonProcessingException e) {
-                        throw new SKException(String.format(
-                            "SK cannot deserialize %s. A custom mapper is required.",
-                            recordClass.getName()), e);
-                    } catch (SQLException | NoSuchFieldException | IllegalAccessException e) {
-                        throw new RuntimeException(e);
+                        // Deserialize the object node to the record class
+                        return objectMapper.convertValue(objectNode, recordClass);
+                    } catch (SQLException | JsonProcessingException e) {
+                        throw new SKException(
+                            "Failure to serialize object, by default the JDBC connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
+                            e);
                     }
                 });
         }
