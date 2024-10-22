@@ -73,7 +73,7 @@ public class Hotel {
         this.dotProduct = euclidean;
         this.indexedEuclidean = euclidean;
         this.rating = rating;
-        this.tags = Collections.unmodifiableList(tags);
+        this.tags = tags;
     }
 
     public String getId() {
