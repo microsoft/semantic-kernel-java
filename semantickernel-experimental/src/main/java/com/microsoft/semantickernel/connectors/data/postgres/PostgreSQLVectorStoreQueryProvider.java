@@ -34,6 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * The MySQL vector store query provider.
+ * Provides the necessary methods to interact with a MySQL
+ * vector store and vector store collections.
+ */
 public class PostgreSQLVectorStoreQueryProvider extends
     JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
 
@@ -413,6 +418,9 @@ public class PostgreSQLVectorStoreQueryProvider extends
         }
     }
 
+    /**
+     * A builder for the PostgreSQLVectorStoreQueryProvider class.
+     */
     public static class Builder
         extends JDBCVectorStoreQueryProvider.Builder {
         private DataSource dataSource;

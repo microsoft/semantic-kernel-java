@@ -13,10 +13,18 @@ import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollecti
 import com.microsoft.semantickernel.exceptions.SKException;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a volatile vector store.
+ * A volatile vector store is an in-memory vector store
+ * that does not persist data.
+ */
 public class VolatileVectorStore implements VectorStore {
 
     private final Map<String, Map<String, ?>> collections;
 
+    /**
+     * Creates a new instance of the volatile vector store.
+     */
     public VolatileVectorStore() {
         this.collections = new ConcurrentHashMap<>();
     }
@@ -44,7 +52,7 @@ public class VolatileVectorStore implements VectorStore {
             collections,
             (VolatileVectorStoreRecordCollectionOptions<Record>) options);
     }
-
+    
     /**
      * Gets the names of all collections in the vector store.
      *

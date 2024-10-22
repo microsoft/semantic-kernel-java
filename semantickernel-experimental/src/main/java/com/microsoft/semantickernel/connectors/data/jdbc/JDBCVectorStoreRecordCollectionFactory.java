@@ -17,6 +17,7 @@ public interface JDBCVectorStoreRecordCollectionFactory {
      * @param collectionName   The name of the collection.
      * @param recordClass      The class type of the
      * @param recordDefinition The record definition.
+     * @param <Record>         The type of record in the collection.
      * @return The new JDBC vector store record collection.
      */
     <Record> JDBCVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(

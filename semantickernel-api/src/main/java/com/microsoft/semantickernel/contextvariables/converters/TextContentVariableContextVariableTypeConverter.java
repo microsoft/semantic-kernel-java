@@ -29,6 +29,12 @@ public class TextContentVariableContextVariableTypeConverter extends
             });
     }
 
+    /**
+     * Escapes the XML string value.
+     * @param value The value containing the content to escape. 
+     * @return The escaped XML string value.
+     * @see ContextVariableTypeConverter#escapeXmlString(String)
+     */
     @Nullable
     public static String escapeXmlStringValue(@Nullable TextContent value) {
         if (value == null) {

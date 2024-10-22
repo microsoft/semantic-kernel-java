@@ -47,6 +47,11 @@ import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
 
+/**
+ * Represents a Redis vector store record collection.
+ *
+ * @param <Record> The type of record in the collection.
+ */
 public class RedisJsonVectorStoreRecordCollection<Record>
     implements VectorStoreRecordCollection<String, Record>,
     VectorizedSearch<Record> {
@@ -72,6 +77,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
      * Creates a new instance of the RedisVectorRecordStore.
      *
      * @param client  The Redis client.
+     * @param collectionName The name of the collection.
      * @param options The options for the store.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.vectorstorage.definition;
 
+/**
+ * Represents the kind of index to use for a vector store.
+ */
 public enum IndexKind {
     /**
      * Hierarchical Navigable Small World, which performs an approximate nearest neighbour (ANN) search.
@@ -31,6 +34,11 @@ public enum IndexKind {
         this.value = value;
     }
 
+    /**
+     * Gets the string value of the index kind.
+     *
+     * @return the string value of the index kind
+     */
     public String getValue() {
         return value;
     }

@@ -39,6 +39,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * RedisHashSetVectorStoreRecordCollection is a class that represents a
+ * collection of records stored in Redis using the Hash Set data structure.
+ * @param <Record> The record type.
+ */
 public class RedisHashSetVectorStoreRecordCollection<Record>
     implements VectorStoreRecordCollection<String, Record>,
     VectorizedSearch<Record> {

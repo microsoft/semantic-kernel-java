@@ -7,13 +7,16 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * A filter clause that filters on equality.
+ */
 public class AzureAISearchEqualToFilterClause extends EqualToFilterClause {
 
     /**
      * Initializes a new instance of the AzureAISearchEqualityFilterClause class.
      *
      * @param fieldName The field name to filter on.
-     * @param value The value.
+     * @param value The value to filter on.
      */
     public AzureAISearchEqualToFilterClause(String fieldName, Object value) {
         super(fieldName, value);

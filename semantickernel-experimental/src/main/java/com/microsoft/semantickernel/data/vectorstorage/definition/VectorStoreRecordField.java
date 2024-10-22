@@ -19,6 +19,8 @@ public class VectorStoreRecordField {
      * Creates a new instance of the VectorStoreRecordField class.
      *
      * @param name the name of the field
+     * @param storageName the storage name of the field
+     * @param fieldType the field type
      */
     public VectorStoreRecordField(
         @Nonnull String name,
@@ -66,6 +68,11 @@ public class VectorStoreRecordField {
         return fieldType;
     }
 
+    /**
+     * A builder for the VectorStoreRecordField class.
+     * @param <T> the type of the field
+     * @param <U> the type of the builder
+     */
     public abstract static class Builder<T, U extends Builder<T, U>>
         implements SemanticKernelBuilder<T> {
 

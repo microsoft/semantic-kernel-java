@@ -7,6 +7,9 @@ import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Represents an equality filter clause for SQL.
+ */
 public class SQLEqualToFilterClause extends EqualToFilterClause {
 
     /**

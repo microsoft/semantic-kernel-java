@@ -16,6 +16,9 @@ import java.util.Map;
 import com.microsoft.semantickernel.exceptions.SKException;
 import redis.clients.jedis.search.Schema;
 
+/**
+ * Maps a vector store record collection to a Redis schema.
+ */
 public class RedisVectorStoreCollectionCreateMapping {
     private static final HashSet<Class<?>> supportedFilterableNumericTypes = new HashSet<>(
         Arrays.asList(
@@ -72,6 +75,13 @@ public class RedisVectorStoreCollectionCreateMapping {
         return withRedisJsonRoot ? "$." + name : name;
     }
 
+    /**
+     * Maps a vector store record collection to a Redis schema.
+     *
+     * @param fields the fields
+     * @param storageType the Redis storage type
+     * @return the schema
+     */
     public static Schema mapToSchema(List<VectorStoreRecordField> fields,
         RedisStorageType storageType) {
         Schema schema = new Schema();

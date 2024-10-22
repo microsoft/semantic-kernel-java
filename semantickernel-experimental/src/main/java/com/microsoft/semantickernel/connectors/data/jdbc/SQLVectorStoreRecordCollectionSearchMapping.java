@@ -10,8 +10,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * A mapping for searching a collection of vector records in SQL.
+ */
 public class SQLVectorStoreRecordCollectionSearchMapping {
 
+    /**
+     * Builds a filter for searching a collection of vector records in SQL.
+     *
+     * @param vectorSearchFilter the search filter
+     * @param recordDefinition   the record definition
+     * @return the filter
+     */
     public static String buildFilter(VectorSearchFilter vectorSearchFilter,
         VectorStoreRecordDefinition recordDefinition) {
         if (vectorSearchFilter == null
@@ -34,6 +44,12 @@ public class SQLVectorStoreRecordCollectionSearchMapping {
         }).collect(Collectors.joining(" AND "));
     }
 
+    /**
+     * Gets the filter parameters.
+     *
+     * @param vectorSearchFilter the search filter
+     * @return the filter parameters
+     */
     public static List<Object> getFilterParameters(VectorSearchFilter vectorSearchFilter) {
         if (vectorSearchFilter == null
             || vectorSearchFilter.getFilterClauses().isEmpty()) {

@@ -21,6 +21,9 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import javax.annotation.Nonnull;
 
+/**
+ * Maps vector store record fields to Azure AI Search fields.
+ */
 class AzureAISearchVectorStoreCollectionCreateMapping {
 
     private static String getVectorSearchProfileName(VectorStoreRecordVectorField vectorField) {
@@ -71,12 +74,24 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
         }
     }
 
+    /**
+     * Maps a key field to a search field.
+     *
+     * @param keyField The key field.
+     * @return The search field.
+     */
     public static SearchField mapKeyField(VectorStoreRecordKeyField keyField) {
         return new SearchField(keyField.getEffectiveStorageName(), SearchFieldDataType.STRING)
             .setKey(true)
             .setFilterable(true);
     }
 
+    /**
+     * Maps a data field to a search field.
+     *
+     * @param dataField The data field.
+     * @return The search field.
+     */
     public static SearchField mapDataField(VectorStoreRecordDataField dataField) {
         if (dataField.getFieldType() == null) {
             throw new SKException(
@@ -89,6 +104,12 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
             .setSearchable(dataField.isFullTextSearchable());
     }
 
+    /**
+     * Maps a vector field to a search field.
+     *
+     * @param vectorField The vector field.
+     * @return The search field.
+     */
     public static SearchField mapVectorField(VectorStoreRecordVectorField vectorField) {
         return new SearchField(vectorField.getEffectiveStorageName(),
             SearchFieldDataType.collection(SearchFieldDataType.SINGLE))
@@ -97,6 +118,13 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
             .setVectorSearchProfileName(getVectorSearchProfileName(vectorField));
     }
 
+    /**
+     * Updates the vector search parameters for the specified vector field.
+     *
+     * @param algorithms   The list of vector search algorithms.
+     * @param profiles     The list of vector search profiles.
+     * @param vectorField  The vector field.
+     */
     public static void updateVectorSearchParameters(
         List<VectorSearchAlgorithmConfiguration> algorithms,
         List<VectorSearchProfile> profiles,
@@ -110,6 +138,12 @@ class AzureAISearchVectorStoreCollectionCreateMapping {
             getVectorSearchProfileName(vectorField), getAlgorithmConfigName(vectorField)));
     }
 
+    /**
+     * Gets the search field data type for the specified field type.
+     *
+     * @param fieldType The field type.
+     * @return The search field data type.
+     */
     public static SearchFieldDataType getSearchFieldDataType(Class<?> fieldType) {
         if (fieldType == String.class) {
             return SearchFieldDataType.STRING;

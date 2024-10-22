@@ -15,12 +15,15 @@ import java.util.stream.Collectors;
  * A {@link ContextVariableTypeConverter} for {@code java.util.Collection} variables. Use
  * {@code ContextVariableTypes.getGlobalVariableTypeForClass(String.class)} to get an instance of
  * this class.
- *
  * @see ContextVariableTypes#getGlobalVariableTypeForClass(Class)
  */
 public class CollectionVariableContextVariableTypeConverter extends
     ContextVariableTypeConverter<Collection> {
 
+    /**
+     * Creates a new instance of the {@link CollectionVariableContextVariableTypeConverter} class.
+     * @param delimiter The delimiter to use joining elements of the collection.
+     */
     @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public CollectionVariableContextVariableTypeConverter(String delimiter) {
         super(
@@ -35,12 +38,16 @@ public class CollectionVariableContextVariableTypeConverter extends
     /**
      * Creates a new instance of the {@link CollectionVariableContextVariableTypeConverter} class.
      */
-
     @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public CollectionVariableContextVariableTypeConverter() {
         this(",");
     }
 
+    /**
+     * Gets a function that converts a collection to a string.
+     * @param delimiter The delimiter to use joining elements of the collection.
+     * @return  A function that converts a collection to a string.
+     */
     @SuppressWarnings("NullAway")
     public static ToPromptStringFunction<Collection> getString(String delimiter) {
         return (types, collection) -> {

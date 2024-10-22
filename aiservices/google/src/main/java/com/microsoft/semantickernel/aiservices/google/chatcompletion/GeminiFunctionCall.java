@@ -9,6 +9,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Represents a function call in Gemini.
+ */
 public class GeminiFunctionCall {
     @Nonnull
     private final FunctionCall functionCall;
@@ -17,6 +20,11 @@ public class GeminiFunctionCall {
     private final String pluginName;
     private final String functionName;
 
+    /**
+     * Creates a new Gemini function call.
+     * @param functionCall The function call
+     * @param functionResult The result of the function invocation
+     */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public GeminiFunctionCall(
         @Nonnull FunctionCall functionCall,
@@ -29,19 +37,35 @@ public class GeminiFunctionCall {
         this.functionName = name[1];
     }
 
+    /**
+     * Gets the plugin name.
+     * @return The plugin name
+     */
     public String getPluginName() {
         return pluginName;
     }
 
+    /**
+     * Gets the function name.
+     * @return The function name
+     */
     public String getFunctionName() {
         return functionName;
     }
 
+    /**
+     * Gets the function call.
+     * @return The function call
+     */
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public FunctionCall getFunctionCall() {
         return functionCall;
     }
 
+    /**
+     * Gets the function result.
+     * @return The function result
+     */
     @Nullable
     public FunctionResult<?> getFunctionResult() {
         return functionResult;

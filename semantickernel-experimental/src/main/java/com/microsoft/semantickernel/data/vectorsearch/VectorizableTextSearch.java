@@ -6,6 +6,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * A vectorizable text search.
+ *
+ * @param <Record> The record type.
+ */
 public interface VectorizableTextSearch<Record> {
     /**
      * Vectorizable text search. This method searches for records that are similar to the given text.

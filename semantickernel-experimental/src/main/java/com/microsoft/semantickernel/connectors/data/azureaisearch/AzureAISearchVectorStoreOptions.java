@@ -3,6 +3,9 @@ package com.microsoft.semantickernel.connectors.data.azureaisearch;
 
 import javax.annotation.Nullable;
 
+/**
+ * Represents the options for the Azure AI Search vector store.
+ */
 public class AzureAISearchVectorStoreOptions {
 
     @Nullable

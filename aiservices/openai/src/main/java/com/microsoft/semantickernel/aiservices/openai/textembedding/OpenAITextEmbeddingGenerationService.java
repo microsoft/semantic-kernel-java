@@ -29,7 +29,15 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
     private static final int DEFAULT_DIMENSIONS = 1536;
     private final int dimensions;
 
+    /**
+     * Dimension of the OpenAI
+     * {@code text-embedding-3-small} model.
+     */
     public static final int EMBEDDING_DIMENSIONS_SMALL = 1536;
+    /**
+     * Dimension of the OpenAI
+     * {@code text-embedding-3-large} model.
+     */
     public static final int EMBEDDING_DIMENSIONS_LARGE = 3072;
 
     /**
@@ -37,6 +45,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
      *
      * @param client         OpenAI client
      * @param deploymentName deployment name
+     * @param dimensions     The dimensions for the embeddings.
      * @param modelId        OpenAI model id
      * @param serviceId      Service id
      */

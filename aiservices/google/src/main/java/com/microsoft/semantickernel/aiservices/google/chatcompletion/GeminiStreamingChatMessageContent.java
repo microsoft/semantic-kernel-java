@@ -27,6 +27,7 @@ public class GeminiStreamingChatMessageContent<T> extends GeminiChatMessageConte
      * @param innerContent        The inner content.
      * @param encoding            The encoding.
      * @param metadata            The metadata.
+     * @param id                  The id of the message.
      * @param geminiFunctionCalls The function calls.
      */
     public GeminiStreamingChatMessageContent(AuthorRole authorRole, String content,

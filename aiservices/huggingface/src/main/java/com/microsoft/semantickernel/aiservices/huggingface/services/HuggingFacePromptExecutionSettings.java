@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
+/**
+ * Represents the settings for executing a prompt with the Hugging Face API.
+ */
 public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings {
 
     @Nullable
@@ -25,6 +28,11 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
     @Nullable
     private final Long seed;
 
+    /**
+     * Create a new instance of HuggingFacePromptExecutionSettings.
+     *
+     * @param copy The PromptExecutionSettings to copy.
+     */
     public HuggingFacePromptExecutionSettings(PromptExecutionSettings copy) {
         super(
             copy.getServiceId(),
@@ -65,6 +73,13 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
      * @param stopSequences        The stop sequences to use for prompt execution.
      * @param tokenSelectionBiases The token selection biases to use for prompt execution.
      * @param responseFormat       The response format to use for prompt execution
+     * @param topK                 The topK setting for prompt execution.
+     * @param repetitionPenalty    The repetition penalty setting for prompt execution.
+     * @param maxTime              The max time setting for prompt execution.
+     * @param details              The details setting for prompt execution.
+     * @param logProbs             The logprobs setting for prompt execution.
+     * @param topLogProbs          The top log probs setting for prompt execution.
+     * @param seed                 The seed setting for prompt execution
      */
     public HuggingFacePromptExecutionSettings(
         String serviceId,
@@ -100,6 +115,14 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
         this.seed = seed;
     }
 
+    /**
+     * Create a new instance of PromptExecutionSettings from a PromptExecutionSettings.
+     * This method handles the whether the PromptExecutionSettings is already a
+     * HuggingFacePromptExecutionSettings or a new instance needs to be created
+     * from the provided PromptExecutionSettings.
+     * @param promptExecutionSettings The PromptExecutionSettings to copy.
+     * @return The PromptExecutionSettings mapped to a HuggingFacePromptExecutionSettings.
+     */
     public static HuggingFacePromptExecutionSettings fromExecutionSettings(
         PromptExecutionSettings promptExecutionSettings) {
         if (promptExecutionSettings instanceof HuggingFacePromptExecutionSettings) {
@@ -131,36 +154,64 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             null);
     }
 
+    /**
+     * Gets the topK setting for prompt execution.
+     * @return The topK setting for prompt execution
+     */
     @Nullable
     public Integer getTopK() {
         return topK;
     }
 
+    /**
+     * Gets the repetition penalty setting for prompt execution.
+     * @return The repetition penalty setting for prompt execution
+     */
     @Nullable
     public Double getRepetitionPenalty() {
         return repetitionPenalty;
     }
 
+    /**
+     * Gets the max time setting for prompt execution.
+     * @return The max time setting for prompt execution
+     */
     @Nullable
     public Double getMaxTime() {
         return maxTime;
     }
 
+    /**
+     * Gets the details setting for prompt execution.
+     * @return The details setting for prompt execution
+     */
     @Nullable
     public Boolean getDetails() {
         return details;
     }
 
+    /**
+     * Gets the logprobs setting for prompt execution.
+     * @return The logprobs setting for prompt execution
+     */
     @Nullable
     public Boolean getLogprobs() {
         return logProbs;
     }
 
+    /**
+     * Gets the top log probs setting for prompt execution.
+     * @return The top log probs setting for prompt execution
+     */
     @Nullable
     public Integer getTopLogProbs() {
         return topLogProbs;
     }
 
+    /**
+     * Gets the seed setting for prompt execution.
+     * @return The seed setting for prompt execution
+     */
     @Nullable
     public Long getSeed() {
         return seed;

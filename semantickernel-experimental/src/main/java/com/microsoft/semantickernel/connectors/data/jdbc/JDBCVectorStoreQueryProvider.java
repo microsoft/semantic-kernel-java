@@ -33,6 +33,9 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A JDBC vector store query provider.
+ */
 public class JDBCVectorStoreQueryProvider
     implements SQLVectorStoreQueryProvider {
 
@@ -78,6 +81,15 @@ public class JDBCVectorStoreQueryProvider
         supportedVectorTypes.put(Collection.class, "TEXT");
     }
 
+    /**
+     * Creates a new instance of the JDBCVectorStoreQueryProvider class.
+     * @param dataSource the data source
+     * @param collectionsTable the collections table
+     * @param prefixForCollectionTables the prefix for collection tables
+     * @param supportedKeyTypes the supported key types
+     * @param supportedDataTypes the supported data types
+     * @param supportedVectorTypes the supported vector types
+     */
     public JDBCVectorStoreQueryProvider(
         @SuppressFBWarnings("EI_EXPOSE_REP2") @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,

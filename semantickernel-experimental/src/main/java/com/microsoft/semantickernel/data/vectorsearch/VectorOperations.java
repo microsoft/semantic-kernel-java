@@ -17,6 +17,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Operations for working with vectors.
+ */
 public final class VectorOperations {
 
     /**

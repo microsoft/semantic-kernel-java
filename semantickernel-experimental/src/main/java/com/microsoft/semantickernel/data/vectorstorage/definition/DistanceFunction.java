@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.vectorstorage.definition;
 
+/**
+ * Distance functions for vector storage.
+ */
 public enum DistanceFunction {
     /**
      * Cosine (angular) similarity function.
@@ -29,6 +32,10 @@ public enum DistanceFunction {
         this.value = value;
     }
 
+    /**
+     * Gets the function name.
+     * @return The function name.
+     */
     public String getValue() {
         return value;
     }

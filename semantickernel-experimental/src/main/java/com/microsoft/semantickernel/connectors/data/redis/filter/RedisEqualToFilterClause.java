@@ -7,7 +7,16 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Represents a Redis filter clause.
+ */
 public class RedisEqualToFilterClause extends EqualToFilterClause {
+
+    /**
+     * Creates a new instance of RedisEqualToFilterClause.
+     * @param fieldName The name of the field to filter on.
+     * @param value The value to filter for. 
+     */
     public RedisEqualToFilterClause(String fieldName, Object value) {
         super(fieldName, value);
     }

@@ -94,6 +94,14 @@ public class ContextVariableTypes {
         variableTypes = new HashMap<>();
     }
 
+    /**
+     * Get the globally available collectors, which is the
+     * default collection of context variable types and those that
+     * have been added with
+     * {@link #addGlobalConverter(ContextVariableTypeConverter)}.
+     * 
+     * @return The collection of globally available converters.
+     */
     public static ContextVariableTypes getGlobalTypes() {
         return new ContextVariableTypes(DEFAULT_TYPES);
     }

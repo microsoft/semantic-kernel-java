@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * A vector search filter.
+ */
 public class VectorSearchFilter {
 
     /**
@@ -22,6 +25,9 @@ public class VectorSearchFilter {
 
     private final List<FilterClause> filterClauses;
 
+    /**
+     * Creates a new instance of the VectorSearchFilter class.
+     */
     public VectorSearchFilter() {
         this(Collections.emptyList());
     }
@@ -44,10 +50,18 @@ public class VectorSearchFilter {
         return filterClauses;
     }
 
+    /**
+     * Creates a {@link Builder} for the VectorSearchFilter class.
+     *
+     * @return A new instance of the VectorSearchFilter Builder.
+     */
     public static Builder builder() {
         return new Builder();
     }
 
+    /**
+     * A builder for the VectorSearchFilter class.
+     */
     public static class Builder {
         private final List<FilterClause> filterClauses = new ArrayList<>();
 
@@ -74,6 +88,11 @@ public class VectorSearchFilter {
             return this;
         }
 
+        /**
+         * Builds the VectorSearchFilter.
+         *
+         * @return The VectorSearchFilter.
+         */
         public VectorSearchFilter build() {
             return new VectorSearchFilter(filterClauses);
         }

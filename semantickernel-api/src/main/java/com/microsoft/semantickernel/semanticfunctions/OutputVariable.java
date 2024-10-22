@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 /**
  * Metadata for an output variable of a kernel function.
+ * @param <T> The type of the output variable.
  */
 public class OutputVariable<T> {
 

@@ -101,6 +101,7 @@ public interface SQLVectorStoreQueryProvider {
      * @param recordDefinition the record definition
      * @param mapper the mapper
      * @param options the options
+     * @param <Record> the record type
      * @return the records
      */
     <Record> List<Record> getRecords(String collectionName, List<String> keys,

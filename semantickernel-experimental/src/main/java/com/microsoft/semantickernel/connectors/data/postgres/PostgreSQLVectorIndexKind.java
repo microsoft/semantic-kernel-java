@@ -3,8 +3,22 @@ package com.microsoft.semantickernel.connectors.data.postgres;
 
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 
+/**
+ * Represents a PostgreSQL vector index kind.
+ */
 public enum PostgreSQLVectorIndexKind {
-    HNSW("hnsw"), IVFFLAT("ivfflat"), UNDEFINED(null);
+    /**
+     * The vector is indexed using an HNSW algorithm.
+     */
+    HNSW("hnsw"),
+    /**
+     * The vector is indexed using a Flat algorithm.
+     */
+    IVFFLAT("ivfflat"),
+    /**
+     * The indexing algorithm is undefined.
+     */
+    UNDEFINED(null);
 
     private final String value;
 
@@ -12,10 +26,19 @@ public enum PostgreSQLVectorIndexKind {
         this.value = value;
     }
 
+    /**
+     * Gets the pgvector value of the index kind.
+     * @return the pgvector value of the index kind
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * Converts an index kind to a PostgreSQL vector index kind.
+     * @param indexKind the index kind
+     * @return the PostgreSQL vector index kind
+     */
     public static PostgreSQLVectorIndexKind fromIndexKind(IndexKind indexKind) {
         switch (indexKind) {
             case HNSW:

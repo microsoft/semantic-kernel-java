@@ -8,6 +8,12 @@ import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptio
 import java.util.List;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents a collection of records in a vector store.
+ *
+ * @param <Key>    The type of the key of the records in the collection.
+ * @param <Record> The type of the records in the collection.
+ */
 public interface VectorStoreRecordCollection<Key, Record> extends VectorizedSearch<Record> {
 
     /**

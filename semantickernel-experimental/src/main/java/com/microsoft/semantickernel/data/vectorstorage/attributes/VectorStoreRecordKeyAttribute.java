@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 public @interface VectorStoreRecordKeyAttribute {
     /**
      * Storage name of the field.
+     * @return The storage name of the field.
      */
     String storageName() default "";
 }

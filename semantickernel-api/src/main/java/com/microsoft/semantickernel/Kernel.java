@@ -163,6 +163,15 @@ public class Kernel {
         return invokeAsync(KernelFunction.<T>createFromPrompt(prompt).build());
     }
 
+    /**
+     * Invokes a Prompt.
+     *
+     * @param <T>    The return type of the prompt.
+     * @param prompt The prompt to invoke.
+     * @param arguments The arguments to pass to the prompt.
+     * @return The result of the prompt invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
         @Nonnull KernelFunctionArguments arguments) {
         KernelFunction<T> function = KernelFunction.<T>createFromPrompt(prompt).build();
@@ -170,6 +179,17 @@ public class Kernel {
         return function.invokeAsync(this)
             .withArguments(arguments);
     }
+
+    /**
+     * Invokes a Prompt.
+     *
+     * @param <T>       The return type of the prompt.
+     * @param prompt    The prompt to invoke.
+     * @param arguments The arguments to pass to the prompt.
+     * @param invocationContext Additional context to used when invoking the prompt.    
+     * @return The result of the prompt invocation.
+     * @see KernelFunction#invokeAsync(Kernel)
+     */
 
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
         @Nonnull KernelFunctionArguments arguments, @Nonnull InvocationContext invocationContext) {

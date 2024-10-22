@@ -24,6 +24,10 @@ public interface AudioToTextService extends AIService {
         AudioContent content,
         @Nullable AudioToTextExecutionSettings executionSettings);
 
+    /**
+     * Builder for the AudioToTextService.
+     * @return The builder.
+     */
     static Builder builder() {
         return ServiceLoadUtil.findServiceLoader(Builder.class,
             "com.microsoft.semantickernel.aiservices.openai.audio.OpenAiAudioToTextService$Builder")

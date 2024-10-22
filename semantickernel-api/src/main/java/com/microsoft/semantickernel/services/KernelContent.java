@@ -11,16 +11,18 @@ import javax.annotation.Nullable;
  */
 public interface KernelContent<T> {
 
-    /*
+    /**
      * The inner content representation. Use this to bypass the current
      * abstraction. The usage of this property is considered "unsafe".
      * Use it only if strictly necessary.
+     * @return The inner content.
      */
     @Nullable
     T getInnerContent();
 
     /**
      * The metadata associated with the content.
+     * @return The metadata.
      */
     @Nullable
     FunctionResultMetadata getMetadata();

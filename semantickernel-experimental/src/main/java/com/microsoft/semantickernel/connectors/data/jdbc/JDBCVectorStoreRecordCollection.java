@@ -27,6 +27,14 @@ import javax.sql.DataSource;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+/**
+ * The JDBCVectorStoreRecordCollection class represents a collection of records
+ * in a JDBC vector store. It implements the SQLVectorStoreRecordCollection
+ * interface and provides methods for managing the collection, such as creating,
+ * deleting, and upserting records.
+ *
+ * @param <Record> the type of the records in the collection
+ */
 public class JDBCVectorStoreRecordCollection<Record>
     implements SQLVectorStoreRecordCollection<String, Record> {
 
@@ -312,7 +320,11 @@ public class JDBCVectorStoreRecordCollection<Record>
                 vectorStoreRecordMapper))
             .subscribeOn(Schedulers.boundedElastic());
     }
-
+    
+    /**
+     * Builder for a JDBCVectorStoreRecordCollection.
+     * @param <Record> the type of the records in the collection
+     */
     public static class Builder<Record>
         implements SemanticKernelBuilder<JDBCVectorStoreRecordCollection<Record>> {
 

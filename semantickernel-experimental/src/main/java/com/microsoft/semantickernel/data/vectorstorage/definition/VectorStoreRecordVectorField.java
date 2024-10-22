@@ -12,6 +12,10 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
     private final IndexKind indexKind;
     private final DistanceFunction distanceFunction;
 
+    /**
+     * Create a builder for the VectorStoreRecordVectorField class.
+     * @return a new instance of the builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -67,6 +71,9 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
         return distanceFunction;
     }
 
+    /**
+     * A builder for the VectorStoreRecordVectorField class.
+     */
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordVectorField, Builder> {
         private int dimensions;

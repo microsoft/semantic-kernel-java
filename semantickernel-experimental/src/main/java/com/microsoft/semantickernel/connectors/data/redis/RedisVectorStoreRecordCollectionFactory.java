@@ -17,6 +17,7 @@ public interface RedisVectorStoreRecordCollectionFactory {
      * @param collectionName The name of the collection.
      * @param recordClass    The class type of the record.
      * @param recordDefinition The record definition.
+     * @param <Record>       The type of the records in the collection.
      * @return The collection.
      */
     <Record> VectorStoreRecordCollection<String, Record> createVectorStoreRecordCollection(

@@ -13,6 +13,10 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Options for a Redis hash set vector store record collection.
+ * @param <Record> the record type
+ */
 public class RedisHashSetVectorStoreRecordCollectionOptions<Record>
     implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;

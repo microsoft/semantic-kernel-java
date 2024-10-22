@@ -21,6 +21,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * A query provider for a vector store in SQLite.
+ */
 public class SQLiteVectorStoreQueryProvider extends
     JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
 
@@ -103,6 +106,9 @@ public class SQLiteVectorStoreQueryProvider extends
         }
     }
 
+    /**
+     * A builder for {@code SQLiteVectorStoreQueryProvider}.
+     */
     public static class Builder
         extends JDBCVectorStoreQueryProvider.Builder {
         private DataSource dataSource;
