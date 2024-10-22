@@ -2,9 +2,9 @@ package com.microsoft.semantickernel.tests.connectors.memory.redis;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordData;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKey;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVector;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 

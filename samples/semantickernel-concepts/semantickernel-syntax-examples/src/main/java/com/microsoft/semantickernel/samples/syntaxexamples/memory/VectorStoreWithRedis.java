@@ -13,9 +13,9 @@ import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordData;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKey;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVector;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 
 import java.util.Arrays;
 import java.util.Collections;

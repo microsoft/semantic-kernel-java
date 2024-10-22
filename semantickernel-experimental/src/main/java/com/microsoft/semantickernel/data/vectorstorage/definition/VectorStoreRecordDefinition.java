@@ -2,9 +2,9 @@
 package com.microsoft.semantickernel.data.vectorstorage.definition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordData;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKey;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVector;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
