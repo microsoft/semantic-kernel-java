@@ -157,7 +157,7 @@ public class HuggingFaceClient {
     /**
      * Builder for a Hugging Face client.
      */
-     static class Builder {
+     public static class Builder {
 
         @Nullable
         private KeyCredential key = null;
