@@ -21,7 +21,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
@@ -31,14 +31,20 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>3.9.3</version>
+                                    <version>3.9.9</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
         </plugins>
+
     </build>
 
     <dependencyManagement>
@@ -175,7 +181,6 @@
                 <scope>provided</scope>
             </dependency>
 
-
             <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-annotations</artifactId>
@@ -192,8 +197,6 @@
                 <artifactId>google-cloud-vertexai</artifactId>
                 <version>1.1.0</version>
             </dependency>
-
-
 
             <dependency>
                 <groupId>com.github.victools</groupId>
