@@ -18,8 +18,8 @@ public interface VectorizedSearch<Record> {
      *
      * @param vector The vector to search with.
      * @param options The options to use for the search.
-     * @return A list of search results.
+     * @return Vector search results.
      */
-    Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+    Mono<VectorSearchResults<Record>> searchAsync(List<Float> vector,
         VectorSearchOptions options);
 }

@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.connectors.data.jdbc;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.filter.FilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
@@ -146,7 +147,7 @@ public interface SQLVectorStoreQueryProvider {
      * @param mapper the mapper, responsible for mapping the result set to the record type.
      * @return the search results
      */
-    <Record> List<VectorSearchResult<Record>> search(String collectionName,
+    <Record> VectorSearchResults<Record> search(String collectionName,
         List<Float> vector,
         VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,

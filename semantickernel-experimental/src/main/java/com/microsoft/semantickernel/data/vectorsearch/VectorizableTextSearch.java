@@ -17,8 +17,8 @@ public interface VectorizableTextSearch<Record> {
      *
      * @param searchText The text to search with.
      * @param options The options to use for the search.
-     * @return A list of search results.
+     * @return VectorSearchResults.
      */
-    Mono<List<VectorSearchResult<Record>>> searchAsync(String searchText,
+    Mono<VectorSearchResults<Record>> searchAsync(String searchText,
         VectorSearchOptions options);
 }

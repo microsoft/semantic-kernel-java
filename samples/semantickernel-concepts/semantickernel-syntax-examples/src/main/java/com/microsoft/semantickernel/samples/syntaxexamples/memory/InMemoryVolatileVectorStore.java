@@ -7,10 +7,13 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
+import com.microsoft.semantickernel.data.textsearch.TextSearchResultValue;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStore;
 import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreTextSearch;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreTextSearchOptions;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
@@ -38,12 +41,12 @@ public class InMemoryVolatileVectorStore {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
-        @JsonProperty("fileId") // Set a different name for the storage field if needed
-        @VectorStoreRecordKey()
+        @VectorStoreRecordKey
         private final String id;
-        @VectorStoreRecordData()
+        @VectorStoreRecordData
         private final String description;
         @VectorStoreRecordData
+        @TextSearchResultValue
         private final String link;
         @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
@@ -125,27 +128,24 @@ public class InMemoryVolatileVectorStore {
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
+        // Build a vectorized search
+        var vectorStoreTextSearch = VectorStoreTextSearch.<GitHubFile>builder()
+            .withVectorizedSearch(collection)
+            .withTextEmbeddingGenerationService(embeddingGeneration)
+            .build();
+
         // Search for results
         // Volatile store executes an exhaustive search, for approximate search use Azure AI Search, Redis or JDBC with PostgreSQL
-        var results = search("How to get started", collection, embeddingGeneration).block();
+        String query = "How to get started?";
+        var results = vectorStoreTextSearch.searchAsync(query, null)
+            .block();
 
-        if (results == null || results.isEmpty()) {
+        if (results == null || results.getTotalCount() == 0) {
             System.out.println("No search results found.");
             return;
         }
-        var searchResult = results.get(0);
-        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
-            searchResult.getScore(), searchResult.getRecord().link,
-            searchResult.getRecord().description);
-    }
 
-    private static Mono<List<VectorSearchResult<GitHubFile>>> search(
-        String searchText,
-        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
-        OpenAITextEmbeddingGenerationService embeddingGeneration) {
-        // Generate embeddings for the search text and search for the closest records
-        return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-            .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
+        System.out.printf("Best result for '%s': %s%n", query, results.getResults().get(0));
     }
 
     private static Mono<List<String>> storeData(

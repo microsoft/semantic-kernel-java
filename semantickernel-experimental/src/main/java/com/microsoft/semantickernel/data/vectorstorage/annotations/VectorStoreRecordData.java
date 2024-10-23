@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a data attribute in a record.
+ * Represents a data field in a record.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

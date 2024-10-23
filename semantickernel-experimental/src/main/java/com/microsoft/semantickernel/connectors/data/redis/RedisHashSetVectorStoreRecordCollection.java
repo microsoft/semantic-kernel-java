@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.connectors.data.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
@@ -391,7 +392,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
      * @return A list of search results.
      */
     @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+    public Mono<VectorSearchResults<Record>> searchAsync(List<Float> vector,
         VectorSearchOptions options) {
         if (recordDefinition.getVectorFields().isEmpty()) {
             return Mono
@@ -406,7 +407,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
             SearchResult searchResult = client.ftSearch(collectionName, ftSearchParams.getLeft(),
                 ftSearchParams.getRight());
 
-            return searchResult.getDocuments().stream()
+            List<VectorSearchResult<Record>> results = searchResult.getDocuments().stream()
                 .map(doc -> {
                     String key = removeKeyPrefixIfNeeded(doc.getId(), collectionName);
                     double score = 0;
@@ -436,6 +437,8 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
                     return new VectorSearchResult<>(record, score);
                 })
                 .collect(Collectors.toList());
+
+            return new VectorSearchResults<>(results);
         }).subscribeOn(Schedulers.boundedElastic()));
     }
 }

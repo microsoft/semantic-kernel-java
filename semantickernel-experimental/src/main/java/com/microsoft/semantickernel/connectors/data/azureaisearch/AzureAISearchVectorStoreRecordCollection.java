@@ -14,6 +14,7 @@ import com.azure.search.documents.models.SearchOptions;
 import com.azure.search.documents.models.VectorQuery;
 import com.azure.search.documents.models.VectorizableTextQuery;
 import com.azure.search.documents.models.VectorizedQuery;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizableTextSearch;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
@@ -287,7 +288,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         }).collect(Collectors.toList())).then();
     }
 
-    private Mono<List<VectorSearchResult<Record>>> searchAndMapAsync(
+    private Mono<VectorSearchResults<Record>> searchAndMapAsync(
         List<VectorQuery> vectorQueries, VectorSearchOptions options,
         GetRecordOptions getRecordOptions) {
 
@@ -296,8 +297,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
 
         SearchOptions searchOptions = new SearchOptions()
             .setFilter(filter)
-            .setTop(options.getLimit())
-            .setSkip(options.getOffset())
+            .setTop(options.getTop())
+            .setSkip(options.getSkip())
             .setScoringParameters()
             .setVectorSearchOptions(new com.azure.search.documents.models.VectorSearchOptions()
                 .setQueries(vectorQueries));
@@ -323,7 +324,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
                 }
 
                 return Mono.just(new VectorSearchResult<>(record, response.getScore()));
-            }).collectList();
+            }).collectList().flatMap(results -> Mono.just(
+                new VectorSearchResults<>(results)));
     }
 
     /**
@@ -334,7 +336,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
      * @return A list of search results.
      */
     @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(String searchText,
+    public Mono<VectorSearchResults<Record>> searchAsync(String searchText,
         VectorSearchOptions options) {
         if (firstVectorFieldName == null) {
             throw new SKException("No vector fields defined. Cannot perform vector search");
@@ -349,7 +351,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             .setFields(recordDefinition.getField(options.getVectorFieldName() != null
                 ? options.getVectorFieldName()
                 : firstVectorFieldName).getEffectiveStorageName())
-            .setKNearestNeighborsCount(options.getLimit()));
+            .setKNearestNeighborsCount(options.getTop()));
 
         return searchAndMapAsync(vectorQueries, options,
             new GetRecordOptions(options.isIncludeVectors()));
@@ -363,7 +365,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
      * @return A list of search results.
      */
     @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+    public Mono<VectorSearchResults<Record>> searchAsync(List<Float> vector,
         VectorSearchOptions options) {
         if (firstVectorFieldName == null) {
             throw new SKException("No vector fields defined. Cannot perform vector search");
@@ -378,7 +380,7 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             .setFields(recordDefinition.getField(options.getVectorFieldName() != null
                 ? options.getVectorFieldName()
                 : firstVectorFieldName).getEffectiveStorageName())
-            .setKNearestNeighborsCount(options.getLimit()));
+            .setKNearestNeighborsCount(options.getTop()));
 
         return searchAndMapAsync(vectorQueries, options,
             new GetRecordOptions(options.isIncludeVectors()));

@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorstorage.annotations;
+package com.microsoft.semantickernel.data.textsearch;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,14 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents the key field in a record.
+ * Annotation to mark a property on a record class as the name of the source data.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface VectorStoreRecordKey {
-    /**
-     * Storage name of the field.
-     * @return The storage name of the field.
-     */
-    String storageName() default "";
+public @interface TextSearchResultName {
 }

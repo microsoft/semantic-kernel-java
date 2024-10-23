@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
@@ -158,12 +157,12 @@ public class VolatileVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName(distanceFunction.getValue())
-            .withLimit(3)
+            .withTop(3)
             .build();
 
         // Embeddings similar to the third hotel
         List<VectorSearchResult<Hotel>> results = recordCollection
-            .searchAsync(SEARCH_EMBEDDINGS, options).block();
+            .searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
@@ -171,12 +170,12 @@ public class VolatileVectorStoreRecordCollectionTest {
 
         options = VectorSearchOptions.builder()
             .withVectorFieldName(distanceFunction.getValue())
-            .withOffset(1)
-            .withLimit(-100)
+            .withSkip(1)
+            .withTop(-100)
             .build();
 
         // Skip the first result
-        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block();
+        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(1, results.size());
         // The first hotel should be the most similar
@@ -191,7 +190,7 @@ public class VolatileVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName(distanceFunction.getValue())
-            .withLimit(3)
+            .withTop(3)
             .withVectorSearchFilter(
                 VectorSearchFilter.builder()
                     .equalTo("rating", 4.0).build())
@@ -199,7 +198,7 @@ public class VolatileVectorStoreRecordCollectionTest {
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
         List<VectorSearchResult<Hotel>> results = recordCollection
-            .searchAsync(SEARCH_EMBEDDINGS, options).block();
+            .searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The first hotel should be the most similar

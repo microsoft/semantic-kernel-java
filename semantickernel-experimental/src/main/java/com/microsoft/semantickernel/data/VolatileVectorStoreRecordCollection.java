@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.microsoft.semantickernel.data.filter.FilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -21,7 +19,6 @@ import com.microsoft.semantickernel.exceptions.SKException;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -269,7 +266,7 @@ public class VolatileVectorStoreRecordCollection<Record> implements
      * @return A list of search results.
      */
     @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+    public Mono<VectorSearchResults<Record>> searchAsync(List<Float> vector,
         final VectorSearchOptions options) {
         if (recordDefinition.getVectorFields().isEmpty()) {
             throw new SKException("No vector fields defined. Cannot perform vector search");
@@ -295,8 +292,10 @@ public class VolatileVectorStoreRecordCollection<Record> implements
             List<Record> records = VolatileVectorStoreCollectionSearchMapping.filterRecords(
                 new ArrayList<>(getCollection().values()), effectiveOptions.getVectorSearchFilter(),
                 recordDefinition, objectMapper);
-            return VectorOperations.exactSimilaritySearch(records, vector, vectorField,
-                distanceFunction, effectiveOptions);
+
+            return new VectorSearchResults<>(
+                VectorOperations.exactSimilaritySearch(records, vector, vectorField,
+                    distanceFunction, effectiveOptions));
         }).subscribeOn(Schedulers.boundedElastic());
     }
 }
