@@ -320,7 +320,7 @@ public class JDBCVectorStoreRecordCollection<Record>
                 vectorStoreRecordMapper))
             .subscribeOn(Schedulers.boundedElastic());
     }
-    
+
     /**
      * Builder for a JDBCVectorStoreRecordCollection.
      * @param <Record> the type of the records in the collection

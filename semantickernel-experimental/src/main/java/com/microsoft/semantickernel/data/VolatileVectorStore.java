@@ -52,7 +52,7 @@ public class VolatileVectorStore implements VectorStore {
             collections,
             (VolatileVectorStoreRecordCollectionOptions<Record>) options);
     }
-    
+
     /**
      * Gets the names of all collections in the vector store.
      *

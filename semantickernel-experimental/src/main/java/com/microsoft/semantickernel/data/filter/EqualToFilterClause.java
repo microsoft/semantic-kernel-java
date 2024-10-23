@@ -5,7 +5,6 @@ package com.microsoft.semantickernel.data.filter;
  * A filter clause that filters on a field equal to a value.
  */
 public class EqualToFilterClause implements FilterClause {
-
     private final String fieldName;
     private final Object value;
 
@@ -36,16 +35,5 @@ public class EqualToFilterClause implements FilterClause {
      */
     public Object getValue() {
         return value;
-    }
-
-    /**
-     * Gets the filter string.
-     *
-     * @return The filter.
-     */
-    @Override
-    public String getFilter() {
-        throw new UnsupportedOperationException(String.format(
-            "Not implemented. Use one of %s derived classes.", this.getClass().getSimpleName()));
     }
 }

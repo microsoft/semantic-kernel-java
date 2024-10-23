@@ -29,9 +29,9 @@ public class AzureAISearchVectorStore implements VectorStore {
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public AzureAISearchVectorStore(@Nonnull SearchIndexAsyncClient searchIndexAsyncClient,
-        @Nonnull AzureAISearchVectorStoreOptions options) {
+        @Nullable AzureAISearchVectorStoreOptions options) {
         this.searchIndexAsyncClient = searchIndexAsyncClient;
-        this.options = options;
+        this.options = options == null ? new AzureAISearchVectorStoreOptions() : options;
     }
 
     /**
@@ -130,9 +130,6 @@ public class AzureAISearchVectorStore implements VectorStore {
         public AzureAISearchVectorStore build() {
             if (searchIndexAsyncClient == null) {
                 throw new SKException("searchIndexAsyncClient is required");
-            }
-            if (options == null) {
-                throw new SKException("options is required");
             }
 
             return new AzureAISearchVectorStore(searchIndexAsyncClient, options);

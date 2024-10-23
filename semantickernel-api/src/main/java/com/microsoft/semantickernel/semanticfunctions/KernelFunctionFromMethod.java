@@ -156,7 +156,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
      * @return the function representing the method
      */
     @SuppressWarnings("unchecked")
-     public static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
+    public static <T> ImplementationFunc<T> getFunction(Method method, Object instance) {
         return (kernel, function, arguments, variableType, invocationContext) -> {
             InvocationContext context;
             if (invocationContext == null) {

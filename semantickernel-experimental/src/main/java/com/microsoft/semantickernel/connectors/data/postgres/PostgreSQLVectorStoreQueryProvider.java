@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreRecordCollectionSearchMapping;
+import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
+import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
@@ -29,6 +32,7 @@ import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +45,6 @@ import java.util.stream.Collectors;
  */
 public class PostgreSQLVectorStoreQueryProvider extends
     JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
-
-    private final Map<Class<?>, String> supportedKeyTypes;
-    private final Map<Class<?>, String> supportedDataTypes;
-    private final Map<Class<?>, String> supportedVectorTypes;
-
-    private final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
     private final ObjectMapper objectMapper;
@@ -57,16 +55,28 @@ public class PostgreSQLVectorStoreQueryProvider extends
         @Nonnull String collectionsTable,
         @Nonnull String prefixForCollectionTables,
         @Nonnull ObjectMapper objectMapper) {
-        super(dataSource, collectionsTable, prefixForCollectionTables);
-        this.dataSource = dataSource;
+        super(
+            dataSource,
+            collectionsTable,
+            prefixForCollectionTables,
+            buildSupportedKeyTypes(),
+            buildSupportedDataTypes(),
+            buildSupportedVectorTypes());
         this.collectionsTable = collectionsTable;
         this.prefixForCollectionTables = prefixForCollectionTables;
         this.objectMapper = objectMapper;
+    }
 
-        supportedKeyTypes = new HashMap<>();
-        supportedKeyTypes.put(String.class, "VARCHAR(255)");
+    private static Map<Class<?>, String> buildSupportedVectorTypes() {
+        HashMap<Class<?>, String> supportedVectorTypes = new HashMap<>();
+        supportedVectorTypes.put(String.class, "TEXT");
+        supportedVectorTypes.put(List.class, "VECTOR(%d)");
+        supportedVectorTypes.put(Collection.class, "VECTOR(%d)");
+        return supportedVectorTypes;
+    }
 
-        supportedDataTypes = new HashMap<>();
+    private static Map<Class<?>, String> buildSupportedDataTypes() {
+        HashMap<Class<?>, String> supportedDataTypes = new HashMap<>();
         supportedDataTypes.put(String.class, "TEXT");
         supportedDataTypes.put(Integer.class, "INTEGER");
         supportedDataTypes.put(int.class, "INTEGER");
@@ -79,41 +89,14 @@ public class PostgreSQLVectorStoreQueryProvider extends
         supportedDataTypes.put(Boolean.class, "BOOLEAN");
         supportedDataTypes.put(boolean.class, "BOOLEAN");
         supportedDataTypes.put(OffsetDateTime.class, "TIMESTAMPTZ");
-
-        supportedVectorTypes = new HashMap<>();
-        supportedDataTypes.put(String.class, "TEXT");
-        supportedVectorTypes.put(List.class, "VECTOR(%d)");
-        supportedVectorTypes.put(Collection.class, "VECTOR(%d)");
+        supportedDataTypes.put(List.class, "JSONB");
+        return supportedDataTypes;
     }
 
-    /**
-     * Gets the supported key types and their corresponding SQL types.
-     *
-     * @return the supported key types
-     */
-    @Override
-    public Map<Class<?>, String> getSupportedKeyTypes() {
-        return new HashMap<>(this.supportedKeyTypes);
-    }
-
-    /**
-     * Gets the supported data types and their corresponding SQL types.
-     *
-     * @return the supported data types
-     */
-    @Override
-    public Map<Class<?>, String> getSupportedDataTypes() {
-        return new HashMap<>(this.supportedDataTypes);
-    }
-
-    /**
-     * Gets the supported vector types and their corresponding SQL types.
-     *
-     * @return the supported vector types
-     */
-    @Override
-    public Map<Class<?>, String> getSupportedVectorTypes() {
-        return new HashMap<>(this.supportedVectorTypes);
+    private static HashMap<Class<?>, String> buildSupportedKeyTypes() {
+        HashMap<Class<?>, String> supportedKeyTypes = new HashMap<>();
+        supportedKeyTypes.put(String.class, "VARCHAR(255)");
+        return supportedKeyTypes;
     }
 
     /**
@@ -258,6 +241,12 @@ public class PostgreSQLVectorStoreQueryProvider extends
                         statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
                         continue;
                     }
+                } else if (field instanceof VectorStoreRecordDataField) {
+                    // Convert List field to a string
+                    if (field.getFieldType().equals(List.class)) {
+                        statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
+                        continue;
+                    }
                 }
 
                 statement.setObject(i + 1,
@@ -275,6 +264,12 @@ public class PostgreSQLVectorStoreQueryProvider extends
                 // Add casting for vector fields
                 if (field instanceof VectorStoreRecordVectorField) {
                     wildcard += "::vector";
+                }
+                if (field instanceof VectorStoreRecordDataField) {
+                    // Add casting for List fields
+                    if (field.getFieldType().equals(List.class)) {
+                        wildcard += "::jsonb";
+                    }
                 }
                 return wildcard;
             })
@@ -372,11 +367,8 @@ public class PostgreSQLVectorStoreQueryProvider extends
                 "Distance function is required for vector field: " + vectorField.getName());
         }
 
-        String filter = SQLVectorStoreRecordCollectionSearchMapping.buildFilter(
-            options.getVectorSearchFilter(),
-            recordDefinition);
-        List<Object> parameters = SQLVectorStoreRecordCollectionSearchMapping
-            .getFilterParameters(options.getVectorSearchFilter());
+        String filter = getFilter(options.getVectorSearchFilter(), recordDefinition);
+        List<Object> parameters = getFilterParameters(options.getVectorSearchFilter());
 
         String filterClause = filter.isEmpty() ? "" : "WHERE " + filter;
         String searchQuery = formatQuery(
@@ -416,6 +408,42 @@ public class PostgreSQLVectorStoreQueryProvider extends
         } catch (SQLException | JsonProcessingException e) {
             throw new SKException("Failed to search records", e);
         }
+    }
+
+    /**
+     * Gets the filter parameters for the given vector search filter to associate with the filter string
+     * generated by the getFilter method.
+     *
+     * @param filter The filter to get the filter parameters for.
+     * @return The filter parameters.
+     */
+    @Override
+    public List<Object> getFilterParameters(VectorSearchFilter filter) {
+        if (filter == null
+            || filter.getFilterClauses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return filter.getFilterClauses().stream().map(filterClause -> {
+            if (filterClause instanceof EqualToFilterClause) {
+                EqualToFilterClause equalToFilterClause = (EqualToFilterClause) filterClause;
+                return equalToFilterClause.getValue();
+            } else if (filterClause instanceof AnyTagEqualToFilterClause) {
+                AnyTagEqualToFilterClause anyTagEqualToFilterClause = (AnyTagEqualToFilterClause) filterClause;
+                return String.format("[\"%s\"]", anyTagEqualToFilterClause.getValue());
+            } else {
+                throw new SKException("Unsupported filter clause type '"
+                    + filterClause.getClass().getSimpleName() + "'.");
+            }
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
+        String fieldName = JDBCVectorStoreQueryProvider
+            .validateSQLidentifier(filterClause.getFieldName());
+
+        return String.format("%s @> ?::jsonb", fieldName);
     }
 
     /**

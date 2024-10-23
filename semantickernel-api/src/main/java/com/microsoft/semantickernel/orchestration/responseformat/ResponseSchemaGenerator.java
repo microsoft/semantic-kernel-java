@@ -30,15 +30,15 @@ public interface ResponseSchemaGenerator {
     public static ResponseSchemaGenerator jacksonGenerator() {
         try {
             return loadGenerator(
-                    "com.microsoft.semantickernel.aiservices.openai.chatcompletion.responseformat.JacksonResponseFormatGenerator");
+                "com.microsoft.semantickernel.aiservices.openai.chatcompletion.responseformat.JacksonResponseFormatGenerator");
         } catch (NoClassDefFoundError e) {
             LOGGER.error(
-                    "The Jackson response schema generator relies on the optional dependencies 'com.github.victools:jsonschema-generator', and 'com.github.victools:jsonschema-module-jackson'. To use this feature, please add this dependency to your project.");
+                "The Jackson response schema generator relies on the optional dependencies 'com.github.victools:jsonschema-generator', and 'com.github.victools:jsonschema-module-jackson'. To use this feature, please add this dependency to your project.");
             throw new SKException(
-                    "The Jackson response schema generator relies on the optional dependency 'com.github.victools:jsonschema-generator', and 'com.github.victools:jsonschema-module-jackson'. To use this feature, please add this dependency to your project.");
+                "The Jackson response schema generator relies on the optional dependency 'com.github.victools:jsonschema-generator', and 'com.github.victools:jsonschema-module-jackson'. To use this feature, please add this dependency to your project.");
         }
     }
-    
+
     /**
      * Load a response schema generator based on the given class name.
      * The class must implement the {@link ResponseSchemaGenerator} interface.

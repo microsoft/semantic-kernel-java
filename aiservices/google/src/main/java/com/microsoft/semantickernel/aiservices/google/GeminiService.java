@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.services.AIService;
 
 import javax.annotation.Nullable;
 
-
 /**
  * Makes a Gemini service available to the Semantic Kernel.
  */

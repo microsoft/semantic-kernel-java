@@ -8,7 +8,6 @@ import com.microsoft.semantickernel.connectors.data.hsqldb.HSQLDBVectorStoreQuer
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollection;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.connectors.data.jdbc.filter.SQLEqualToFilterClause;
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.sqlite.SQLiteVectorStoreQueryProvider;
@@ -159,19 +158,19 @@ public class JDBCVectorStoreRecordCollectionTest {
         return Arrays.asList(
             new Hotel("id_1", "Hotel 1", 1, "Hotel 1 description",
                 Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f), null, null, null,
-                4.0),
+                4.0, Arrays.asList("luxury", "city")),
             new Hotel("id_2", "Hotel 2", 2, "Hotel 2 description",
                 Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f), null, null, null,
-                4.0),
+                4.0, Arrays.asList("luxury", "city")),
             new Hotel("id_3", "Hotel 3", 3, "Hotel 3 description",
                 Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f), null, null, null,
-                5.0),
+                5.0, Arrays.asList("luxury", "beach")),
             new Hotel("id_4", "Hotel 4", 4, "Hotel 4 description",
                 Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f), null, null, null,
-                4.0),
+                4.0, Arrays.asList("luxury", "city")),
             new Hotel("id_5", "Hotel 5", 5, "Hotel 5 description",
                 Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f), null, null, null,
-                4.0)
+                4.0, Arrays.asList("luxury", "city"))
         );
     }
 
@@ -396,14 +395,13 @@ public class JDBCVectorStoreRecordCollectionTest {
     }
 
     private static Stream<Arguments> provideSearchParameters() {
-        return Stream.of(
-            Arguments.of(QueryProvider.MySQL, "euclidean"),
-            Arguments.of(QueryProvider.MySQL, "cosineDistance"),
-            Arguments.of(QueryProvider.MySQL, "dotProduct"),
-            Arguments.of(QueryProvider.PostgreSQL, "euclidean"),
-            Arguments.of(QueryProvider.PostgreSQL, "cosineDistance"),
-            Arguments.of(QueryProvider.PostgreSQL, "dotProduct")
-        );
+        return Arrays.stream(QueryProvider.values()).map(provider ->
+            Stream.of(
+                Arguments.of(provider, "euclidean"),
+                Arguments.of(provider, "cosineDistance"),
+                Arguments.of(provider, "dotProduct")
+            )
+        ).flatMap(s -> s);
     }
 
     @ParameterizedTest
@@ -464,13 +462,13 @@ public class JDBCVectorStoreRecordCollectionTest {
         assertNotNull(results);
         assertEquals(5, results.size());
         // The third hotel should be the most similar
-        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertEquals("id_3", results.get(0).getRecord().getId());
     }
 
     @ParameterizedTest
     @MethodSource("provideSearchParameters")
-    public void searchWithFilter(QueryProvider provider, String embeddingName) {
-        String collectionName = "searchWithFilter";
+    public void searchWithFilterEqualToFilter(QueryProvider provider, String embeddingName) {
+        String collectionName = "searchWithFilterEqualToFilter";
         JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
             collectionName);
 
@@ -482,7 +480,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             .withLimit(3)
             .withVectorSearchFilter(
                 VectorSearchFilter.builder()
-                    .withEqualToFilterClause(new SQLEqualToFilterClause("rating", 4.0)).build())
+                    .equalTo("rating", 4.0).build())
             .build();
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
@@ -491,7 +489,34 @@ public class JDBCVectorStoreRecordCollectionTest {
         assertNotNull(results);
         assertEquals(3, results.size());
         // The first hotel should be the most similar
-        assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
+        assertEquals("id_1", results.get(0).getRecord().getId());
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSearchParameters")
+    public void searchWithAnyTagEqualToFilter(QueryProvider provider, String embeddingName) {
+        String collectionName = "searchWithAnyTagEqualToFilter";
+        JDBCVectorStoreRecordCollection<Hotel> recordCollection = buildRecordCollection(provider,
+                collectionName);
+
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions options = VectorSearchOptions.builder()
+                .withVectorFieldName(embeddingName)
+                .withLimit(3)
+                .withVectorSearchFilter(
+                        VectorSearchFilter.builder()
+                                .anyTagEqualTo("tags", "city").build())
+                .build();
+
+        // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
+                options).block();
+        assertNotNull(results);
+        assertEquals(3, results.size());
+        // The first hotel should be the most similar
+        assertEquals("id_1", results.get(0).getRecord().getId());
     }
 
     // MySQL will always return the vectors as they're needed to compute the distances
@@ -520,7 +545,7 @@ public class JDBCVectorStoreRecordCollectionTest {
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
-        assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
+        assertEquals("id_3", results.get(0).getRecord().getId());
         assertNotNull(results.get(0).getRecord().getEuclidean());
     }
 }

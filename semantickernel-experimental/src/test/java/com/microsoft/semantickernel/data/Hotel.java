@@ -3,43 +3,43 @@ package com.microsoft.semantickernel.data;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 
 import java.util.List;
 
 public class Hotel {
-    @VectorStoreRecordKeyAttribute
+    @VectorStoreRecordKey
     private final String id;
 
-    @VectorStoreRecordDataAttribute(isFilterable = true)
+    @VectorStoreRecordData(isFilterable = true)
     private final String name;
 
-    @VectorStoreRecordDataAttribute
+    @VectorStoreRecordData
     private final int code;
 
     @JsonProperty("summary")
-    @VectorStoreRecordDataAttribute()
+    @VectorStoreRecordData()
     private final String description;
 
     @JsonProperty("summaryEmbedding1")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
+    @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> euclidean;
 
     @JsonProperty("summaryEmbedding2")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+    @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE)
     private final List<Float> cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.COSINE_SIMILARITY)
+    @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.COSINE_SIMILARITY)
     private final List<Float> cosineSimilarity;
 
     @JsonProperty("summaryEmbedding4")
-    @VectorStoreRecordVectorAttribute(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT)
+    @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT)
     private final List<Float> dotProduct;
-    @VectorStoreRecordDataAttribute
+    @VectorStoreRecordData
     private double rating;
 
     public Hotel() {

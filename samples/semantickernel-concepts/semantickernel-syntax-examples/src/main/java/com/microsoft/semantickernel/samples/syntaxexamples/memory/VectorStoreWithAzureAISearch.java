@@ -17,9 +17,9 @@ import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchV
 import com.microsoft.semantickernel.connectors.data.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -53,14 +53,13 @@ public class VectorStoreWithAzureAISearch {
     static class GitHubFile {
 
         @JsonProperty("fileId") // Set a different name for the storage field if needed
-        @VectorStoreRecordKeyAttribute()
+        @VectorStoreRecordKey()
         private final String id;
-        @VectorStoreRecordDataAttribute()
-        @VectorStoreRecordVectorAttribute(distanceFunction = DistanceFunction.COSINE_DISTANCE, dimensions = EMBEDDING_DIMENSIONS)
+        @VectorStoreRecordData()
         private final String description;
-        @VectorStoreRecordDataAttribute
+        @VectorStoreRecordData
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+        @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_SIMILARITY)
         private final List<Float> embedding;
 
         public GitHubFile() {
@@ -161,8 +160,8 @@ public class VectorStoreWithAzureAISearch {
         VectorStoreRecordCollection<String, GitHubFile> recordCollection,
         OpenAITextEmbeddingGenerationService embeddingGeneration) {
         // Generate embeddings for the search text and search for the closest records
-        return embeddingGeneration.generateEmbeddingsAsync(Collections.singletonList(searchText))
-            .flatMap(r -> recordCollection.searchAsync(r.get(0).getVector(), null));
+        return embeddingGeneration.generateEmbeddingAsync(searchText)
+            .flatMap(r -> recordCollection.searchAsync(r.getVector(), null));
     }
 
     private static Mono<List<String>> storeData(

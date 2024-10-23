@@ -417,7 +417,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
 
         return createCollectionIfNotExistsAsync().flatMap(collection -> Mono.fromCallable(() -> {
             Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
-                .buildQuery(vector, options, recordDefinition, RedisStorageType.JSON);
+                .getInstance().buildQuery(vector, options, recordDefinition, RedisStorageType.JSON);
 
             SearchResult searchResult = client.ftSearch(collectionName,
                 ftSearchParams.getLeft(), ftSearchParams.getRight());

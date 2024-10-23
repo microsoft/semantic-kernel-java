@@ -47,7 +47,7 @@ public class PreToolCallEvent implements KernelHookEvent {
     public KernelFunctionArguments getArguments() {
         return arguments;
     }
-    
+
     /**
      * Get the tool call function.
      * @return The tool call function.

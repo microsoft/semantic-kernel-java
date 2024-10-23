@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -29,7 +30,6 @@ import java.util.stream.Collectors;
 public class MySQLVectorStoreQueryProvider extends
     JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
 
-    private final DataSource dataSource;
     private final ObjectMapper objectMapper;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -39,7 +39,6 @@ public class MySQLVectorStoreQueryProvider extends
         @Nonnull String prefixForCollectionTables,
         @Nonnull ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
-        this.dataSource = dataSource;
         this.objectMapper = objectMapper;
     }
 
@@ -63,6 +62,12 @@ public class MySQLVectorStoreQueryProvider extends
                 if (field instanceof VectorStoreRecordVectorField) {
                     // Convert the vector field to a string
                     if (!field.getFieldType().equals(String.class)) {
+                        statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
+                        continue;
+                    }
+                } else if (field instanceof VectorStoreRecordDataField) {
+                    // Convert List field to a string
+                    if (field.getFieldType().equals(List.class)) {
                         statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
                         continue;
                     }

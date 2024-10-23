@@ -2,9 +2,9 @@
 package com.microsoft.semantickernel.data.vectorstorage.definition;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -167,9 +167,9 @@ public class VectorStoreRecordDefinition {
                 storageName = field.getAnnotation(JsonProperty.class).value();
             }
 
-            if (field.isAnnotationPresent(VectorStoreRecordKeyAttribute.class)) {
-                VectorStoreRecordKeyAttribute keyAttribute = field
-                    .getAnnotation(VectorStoreRecordKeyAttribute.class);
+            if (field.isAnnotationPresent(VectorStoreRecordKey.class)) {
+                VectorStoreRecordKey keyAttribute = field
+                    .getAnnotation(VectorStoreRecordKey.class);
 
                 if (storageName == null) {
                     storageName = keyAttribute.storageName().isEmpty() ? field.getName()
@@ -182,9 +182,9 @@ public class VectorStoreRecordDefinition {
                     .build());
             }
 
-            if (field.isAnnotationPresent(VectorStoreRecordDataAttribute.class)) {
-                VectorStoreRecordDataAttribute dataAttribute = field
-                    .getAnnotation(VectorStoreRecordDataAttribute.class);
+            if (field.isAnnotationPresent(VectorStoreRecordData.class)) {
+                VectorStoreRecordData dataAttribute = field
+                    .getAnnotation(VectorStoreRecordData.class);
 
                 if (storageName == null) {
                     storageName = dataAttribute.storageName().isEmpty() ? field.getName()
@@ -198,9 +198,9 @@ public class VectorStoreRecordDefinition {
                     .build());
             }
 
-            if (field.isAnnotationPresent(VectorStoreRecordVectorAttribute.class)) {
-                VectorStoreRecordVectorAttribute vectorAttribute = field
-                    .getAnnotation(VectorStoreRecordVectorAttribute.class);
+            if (field.isAnnotationPresent(VectorStoreRecordVector.class)) {
+                VectorStoreRecordVector vectorAttribute = field
+                    .getAnnotation(VectorStoreRecordVector.class);
 
                 if (storageName == null) {
                     storageName = vectorAttribute.storageName().isEmpty() ? field.getName()

@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.data.filter;
 /**
  * A filter clause that filters on any tag equal to a value.
  */
-public abstract class AnyTagEqualToFilterClause implements FilterClause {
+public class AnyTagEqualToFilterClause implements FilterClause {
 
     private final String fieldName;
     private final Object value;

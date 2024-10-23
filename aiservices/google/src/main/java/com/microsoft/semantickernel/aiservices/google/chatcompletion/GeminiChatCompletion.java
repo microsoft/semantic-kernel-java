@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-
 /**
  * A chat completion service that uses the Gemini model to generate chat completions.
  */
@@ -66,7 +65,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
     public GeminiChatCompletion(VertexAI client, String modelId) {
         super(client, modelId);
     }
-    
+
     /**
      * Create a new instance of {@link GeminiChatCompletion.Builder}.
      *

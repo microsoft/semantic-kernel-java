@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorstorage.attributes;
+package com.microsoft.semantickernel.data.vectorstorage.annotations;
 
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface VectorStoreRecordVectorAttribute {
+public @interface VectorStoreRecordVector {
 
     /**
      * Number of dimensions in the vector.

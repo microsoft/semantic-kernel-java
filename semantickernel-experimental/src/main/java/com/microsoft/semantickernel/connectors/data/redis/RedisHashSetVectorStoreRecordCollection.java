@@ -400,6 +400,7 @@ public class RedisHashSetVectorStoreRecordCollection<Record>
 
         return createCollectionIfNotExistsAsync().flatMap(collection -> Mono.fromCallable(() -> {
             Pair<String, FTSearchParams> ftSearchParams = RedisVectorStoreCollectionSearchMapping
+                .getInstance()
                 .buildQuery(vector, options, recordDefinition, RedisStorageType.HASH_SET);
 
             SearchResult searchResult = client.ftSearch(collectionName, ftSearchParams.getLeft(),

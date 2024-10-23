@@ -18,8 +18,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
                 "TEXT" }),
         @JsonSubTypes.Type(value = JsonObjectResponseFormat.class, name = "json_object", names = {
                 "json_object", "JSON_OBJECT" }),
-        
-            })
+
+})
 public abstract class ResponseFormat {
 
     /**

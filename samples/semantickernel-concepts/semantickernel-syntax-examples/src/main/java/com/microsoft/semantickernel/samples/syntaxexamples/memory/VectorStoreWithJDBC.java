@@ -5,7 +5,6 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreOptions;
@@ -13,9 +12,9 @@ import com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreRecordCo
 import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import java.nio.charset.StandardCharsets;
@@ -42,14 +41,14 @@ public class VectorStoreWithJDBC {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
-        @JsonProperty("fileId") // Set a different name for the storage field if needed
-        @VectorStoreRecordKeyAttribute()
+
+        @VectorStoreRecordKey()
         private final String id;
-        @VectorStoreRecordDataAttribute()
+        @VectorStoreRecordData()
         private final String description;
-        @VectorStoreRecordDataAttribute
+        @VectorStoreRecordData
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+        @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {

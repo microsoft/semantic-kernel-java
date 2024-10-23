@@ -65,7 +65,8 @@ public class SKException extends RuntimeException {
 
         Throwable wrappedCause = cause.getCause();
 
-        if ((cause instanceof SKCheckedException || cause instanceof SKException) && wrappedCause != null) {
+        if ((cause instanceof SKCheckedException || cause instanceof SKException)
+            && wrappedCause != null) {
             return new SKException(message, wrappedCause);
         } else {
             return new SKException(message, cause);

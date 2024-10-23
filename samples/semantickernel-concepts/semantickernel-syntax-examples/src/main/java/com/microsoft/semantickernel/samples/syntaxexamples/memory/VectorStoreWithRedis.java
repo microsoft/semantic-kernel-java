@@ -5,21 +5,17 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
-import com.azure.core.util.ClientOptions;
-import com.azure.core.util.MetricsOptions;
-import com.azure.core.util.TracingOptions;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
-import com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.redis.RedisJsonVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.connectors.data.redis.RedisStorageType;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.connectors.data.redis.RedisVectorStoreOptions;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordDataAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordKeyAttribute;
-import com.microsoft.semantickernel.data.vectorstorage.attributes.VectorStoreRecordVectorAttribute;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
+import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,13 +43,13 @@ public class VectorStoreWithRedis {
 
     public static class GitHubFile {
         @JsonProperty("fileId") // Set a different name for the storage field if needed
-        @VectorStoreRecordKeyAttribute()
+        @VectorStoreRecordKey()
         private final String id;
-        @VectorStoreRecordDataAttribute()
+        @VectorStoreRecordData()
         private final String description;
-        @VectorStoreRecordDataAttribute
+        @VectorStoreRecordData
         private final String link;
-        @VectorStoreRecordVectorAttribute(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
+        @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
 
         public GitHubFile() {

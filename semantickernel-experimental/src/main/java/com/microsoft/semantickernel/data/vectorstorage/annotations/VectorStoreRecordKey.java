@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-package com.microsoft.semantickernel.data.vectorstorage.attributes;
+package com.microsoft.semantickernel.data.vectorstorage.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface VectorStoreRecordKeyAttribute {
+public @interface VectorStoreRecordKey {
     /**
      * Storage name of the field.
      * @return The storage name of the field.

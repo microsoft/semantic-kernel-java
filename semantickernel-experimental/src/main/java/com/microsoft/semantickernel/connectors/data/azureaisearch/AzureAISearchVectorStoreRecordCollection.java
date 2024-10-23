@@ -70,7 +70,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
             double.class,
             Boolean.class,
             boolean.class,
-            OffsetDateTime.class));
+            OffsetDateTime.class,
+            List.class));
 
     private static final HashSet<Class<?>> supportedVectorTypes = new HashSet<>(
         Arrays.asList(
@@ -290,8 +291,8 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
         List<VectorQuery> vectorQueries, VectorSearchOptions options,
         GetRecordOptions getRecordOptions) {
 
-        String filter = AzureAISearchVectorStoreCollectionSearchMapping
-            .buildFilterString(options.getVectorSearchFilter(), recordDefinition);
+        String filter = AzureAISearchVectorStoreCollectionSearchMapping.getInstance()
+            .getFilter(options.getVectorSearchFilter(), recordDefinition);
 
         SearchOptions searchOptions = new SearchOptions()
             .setFilter(filter)

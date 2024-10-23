@@ -66,7 +66,8 @@ public class SKCheckedException extends Exception {
 
         Throwable wrappedCause = cause.getCause();
 
-        if ((cause instanceof SKCheckedException || cause instanceof SKException) && wrappedCause != null) {
+        if ((cause instanceof SKCheckedException || cause instanceof SKException)
+            && wrappedCause != null) {
             return new SKCheckedException(message, wrappedCause);
         } else {
             return new SKCheckedException(message, cause);
