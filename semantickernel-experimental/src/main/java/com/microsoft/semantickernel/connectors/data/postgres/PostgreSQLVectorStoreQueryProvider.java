@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
 import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -334,7 +335,7 @@ public class PostgreSQLVectorStoreQueryProvider extends
      * @return the search results
      */
     @Override
-    public <Record> List<VectorSearchResult<Record>> search(String collectionName,
+    public <Record> VectorSearchResults<Record> search(String collectionName,
         List<Float> vector, VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
@@ -391,8 +392,8 @@ public class PostgreSQLVectorStoreQueryProvider extends
             for (Object parameter : parameters) {
                 statement.setObject(parameterIndex++, parameter);
             }
-            statement.setInt(parameterIndex++, options.getLimit());
-            statement.setInt(parameterIndex, options.getOffset());
+            statement.setInt(parameterIndex++, options.getTop());
+            statement.setInt(parameterIndex, options.getSkip());
 
             List<VectorSearchResult<Record>> records = new ArrayList<>();
             ResultSet resultSet = statement.executeQuery();
@@ -404,7 +405,7 @@ public class PostgreSQLVectorStoreQueryProvider extends
                     resultSet.getDouble("score")));
             }
 
-            return records;
+            return new VectorSearchResults<>(records);
         } catch (SQLException | JsonProcessingException e) {
             throw new SKException("Failed to search records", e);
         }

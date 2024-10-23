@@ -234,8 +234,8 @@ public final class VectorOperations {
 
         return results.stream()
             .sorted(comparator)
-            .skip(options.getOffset())
-            .limit(options.getLimit())
+            .skip(options.getSkip())
+            .limit(options.getTop())
             .collect(Collectors.toList());
     }
 }

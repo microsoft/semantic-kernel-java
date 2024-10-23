@@ -416,12 +416,12 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName(embeddingName)
-            .withLimit(3)
+            .withTop(3)
             .build();
 
         // Embeddings similar to the third hotel
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
-            options).block();
+            options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
@@ -429,12 +429,12 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         options = VectorSearchOptions.builder()
             .withVectorFieldName(embeddingName)
-            .withOffset(1)
-            .withLimit(-100)
+            .withSkip(1)
+            .withTop(-100)
             .build();
 
         // Skip the first result
-        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block();
+        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(1, results.size());
         // The first hotel should be the most similar
@@ -453,12 +453,12 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName("indexedEuclidean")
-            .withLimit(5)
+            .withTop(5)
             .build();
 
         // Embeddings similar to the third hotel
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
-            options).block();
+            options).block().getResults();
         assertNotNull(results);
         assertEquals(5, results.size());
         // The third hotel should be the most similar
@@ -477,7 +477,7 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName(embeddingName)
-            .withLimit(3)
+            .withTop(3)
             .withVectorSearchFilter(
                 VectorSearchFilter.builder()
                     .equalTo("rating", 4.0).build())
@@ -485,7 +485,7 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
-            options).block();
+            options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The first hotel should be the most similar
@@ -504,7 +504,7 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
                 .withVectorFieldName(embeddingName)
-                .withLimit(3)
+                .withTop(3)
                 .withVectorSearchFilter(
                         VectorSearchFilter.builder()
                                 .anyTagEqualTo("tags", "city").build())
@@ -512,7 +512,7 @@ public class JDBCVectorStoreRecordCollectionTest {
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
-                options).block();
+                options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The first hotel should be the most similar
@@ -530,7 +530,7 @@ public class JDBCVectorStoreRecordCollectionTest {
         recordCollection.upsertBatchAsync(hotels, null).block();
 
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
-            null).block();
+            null).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
@@ -541,7 +541,7 @@ public class JDBCVectorStoreRecordCollectionTest {
             .withIncludeVectors(true)
             .build();
 
-        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block();
+        results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar

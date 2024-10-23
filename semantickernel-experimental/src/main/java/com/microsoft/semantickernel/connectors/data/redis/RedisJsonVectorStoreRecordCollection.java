@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
@@ -405,10 +406,10 @@ public class RedisJsonVectorStoreRecordCollection<Record>
      *
      * @param vector  The vector to search with.
      * @param options The options to use for the search.
-     * @return A list of search results.
+     * @return The search results.
      */
     @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+    public Mono<VectorSearchResults<Record>> searchAsync(List<Float> vector,
         VectorSearchOptions options) {
         if (recordDefinition.getVectorFields().isEmpty()) {
             return Mono
@@ -422,7 +423,7 @@ public class RedisJsonVectorStoreRecordCollection<Record>
             SearchResult searchResult = client.ftSearch(collectionName,
                 ftSearchParams.getLeft(), ftSearchParams.getRight());
 
-            return searchResult.getDocuments().stream()
+            List<VectorSearchResult<Record>> results = searchResult.getDocuments().stream()
                 .map(doc -> {
                     Map<String, Object> properties = new HashMap<>();
                     for (Map.Entry<String, Object> entry : doc.getProperties()) {
@@ -445,8 +446,9 @@ public class RedisJsonVectorStoreRecordCollection<Record>
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
+
+            return new VectorSearchResults<>(results);
         }).subscribeOn(Schedulers.boundedElastic()));
     }
 }

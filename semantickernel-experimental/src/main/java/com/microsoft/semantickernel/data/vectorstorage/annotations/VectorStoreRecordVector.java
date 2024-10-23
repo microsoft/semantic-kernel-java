@@ -11,7 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a vector attribute in a record.
+ * Represents a vector field in a record.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

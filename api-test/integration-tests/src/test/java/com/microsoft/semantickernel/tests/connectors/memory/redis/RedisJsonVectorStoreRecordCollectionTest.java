@@ -387,9 +387,9 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .build();
 
         // Embeddings similar to the third hotel
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block().getResults();
         assertNotNull(results);
-        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size(), indexingFailureMessage);
+        assertEquals(VectorSearchOptions.DEFAULT_TOP, results.size(), indexingFailureMessage);
         // The third hotel should be the most similar
         assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId(), indexingFailureMessage);
         // Score should be different than zero
@@ -412,9 +412,9 @@ public class RedisJsonVectorStoreRecordCollectionTest {
                 .build();
 
         // Embeddings similar to the third hotel
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block().getResults();
         assertNotNull(results);
-        assertEquals(VectorSearchOptions.DEFAULT_RESULT_LIMIT, results.size(), indexingFailureMessage);
+        assertEquals(VectorSearchOptions.DEFAULT_TOP, results.size(), indexingFailureMessage);
         // The third hotel should be the most similar
         assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId(), indexingFailureMessage);
         assertNotNull(results.get(0).getRecord().getEuclidean());
@@ -431,12 +431,12 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
         VectorSearchOptions searchOptions = VectorSearchOptions.builder()
                 .withVectorFieldName(embeddingName)
-                .withOffset(1)
-                .withLimit(4)
+                .withSkip(1)
+                .withTop(4)
                 .build();
 
         // Embeddings similar to the third hotel
-        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block();
+        List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS, searchOptions).block().getResults();
         assertNotNull(results);
         assertEquals(4, results.size(), indexingFailureMessage);
         // The first hotel should be the most similar
@@ -454,7 +454,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
         VectorSearchOptions options = VectorSearchOptions.builder()
             .withVectorFieldName(embeddingName)
-            .withLimit(3)
+            .withTop(3)
             .withVectorSearchFilter(
                 VectorSearchFilter.builder()
                     .equalTo("rating", 4.0).build())
@@ -462,7 +462,7 @@ public class RedisJsonVectorStoreRecordCollectionTest {
 
         // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
         List<VectorSearchResult<Hotel>> results = recordCollection.searchAsync(SEARCH_EMBEDDINGS,
-            options).block();
+            options).block().getResults();
         assertNotNull(results);
         assertEquals(3, results.size());
         // The first hotel should be the most similar

@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.connectors.data.mysql.MySQLVectorStoreQueryP
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.connectors.data.postgres.PostgreSQLVectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorsearch.VectorizedSearch;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
@@ -312,7 +313,7 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @return A list of search results.
      */
     @Override
-    public Mono<List<VectorSearchResult<Record>>> searchAsync(List<Float> vector,
+    public Mono<VectorSearchResults<Record>> searchAsync(List<Float> vector,
         VectorSearchOptions vectorSearchOptions) {
         return Mono.fromCallable(
             () -> queryProvider.search(this.collectionName, vector, vectorSearchOptions,

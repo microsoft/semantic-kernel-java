@@ -14,7 +14,7 @@ public class VectorSearchOptions {
     /**
      * The default limit of the number of results to return.
      */
-    public static final int DEFAULT_RESULT_LIMIT = 3;
+    public static final int DEFAULT_TOP = 3;
 
     /**
      * Creates a new instance of the VectorSearchOptions class with default values.
@@ -31,25 +31,28 @@ public class VectorSearchOptions {
     private final VectorSearchFilter vectorSearchFilter;
     @Nullable
     private final String vectorFieldName;
-    private final int limit;
-    private final int offset;
+    private final int top;
+    private final int skip;
     private final boolean includeVectors;
+    private final boolean includeTotalCount;
 
     /**
      * Creates a new instance of the VectorSearchOptions class.
      * @param vectorSearchFilter The vector search filter.
      * @param vectorFieldName The name of the vector field.
-     * @param limit The limit of the number of results to return.
-     * @param offset The offset of the results to return.
+     * @param top The limit of the number of results to return.
+     * @param skip The offset of the results to return.
      * @param includeVectors A value indicating whether to include vectors in the results.
      */
     public VectorSearchOptions(VectorSearchFilter vectorSearchFilter,
-        String vectorFieldName, int limit, int offset, boolean includeVectors) {
+        String vectorFieldName, int top, int skip, boolean includeVectors,
+        boolean includeTotalCount) {
         this.vectorSearchFilter = vectorSearchFilter;
         this.vectorFieldName = vectorFieldName;
-        this.limit = Math.max(1, limit);
-        this.offset = Math.max(0, offset);
+        this.top = Math.max(1, top);
+        this.skip = Math.max(0, skip);
         this.includeVectors = includeVectors;
+        this.includeTotalCount = includeTotalCount;
     }
 
     /**
@@ -77,8 +80,8 @@ public class VectorSearchOptions {
      *
      * @return The limit of the number of results to return.
      */
-    public int getLimit() {
-        return limit;
+    public int getTop() {
+        return top;
     }
 
     /**
@@ -86,8 +89,8 @@ public class VectorSearchOptions {
      *
      * @return The offset of the results to return.
      */
-    public int getOffset() {
-        return offset;
+    public int getSkip() {
+        return skip;
     }
 
     /**
@@ -97,6 +100,15 @@ public class VectorSearchOptions {
      */
     public boolean isIncludeVectors() {
         return includeVectors;
+    }
+
+    /**
+     * Gets a value indicating whether to include the total count of the results.
+     *
+     * @return A value indicating whether to include the total count of the results.
+     */
+    public boolean isIncludeTotalCount() {
+        return includeTotalCount;
     }
 
     /**
@@ -114,17 +126,10 @@ public class VectorSearchOptions {
     public static class Builder implements SemanticKernelBuilder<VectorSearchOptions> {
         private VectorSearchFilter vectorSearchFilter;
         private String vectorFieldName;
-        private int limit;
-        private int offset;
-        private boolean includeVectors;
-
-        /**
-         * Creates a new instance of the Builder class with default values.
-         */
-        public Builder() {
-            this.limit = DEFAULT_RESULT_LIMIT;
-            this.includeVectors = false;
-        }
+        private int top = DEFAULT_TOP;
+        private int skip = 0;
+        private boolean includeVectors = false;
+        private boolean includeTotalCount = false;
 
         /**
          * Sets the vector search filter.
@@ -149,21 +154,21 @@ public class VectorSearchOptions {
 
         /**
          * Sets the limit of the number of results to return.
-         * @param limit the limit of the number of results to return
+         * @param top the limit of the number of results to return
          * @return {@code this} builder
          */
-        public Builder withLimit(int limit) {
-            this.limit = limit;
+        public Builder withTop(int top) {
+            this.top = top;
             return this;
         }
 
         /**
          * Sets the offset of the results to return.
-         * @param offset the offset of the results to return
+         * @param skip the offset of the results to return
          * @return {@code this} builder
          */
-        public Builder withOffset(int offset) {
-            this.offset = offset;
+        public Builder withSkip(int skip) {
+            this.skip = skip;
             return this;
         }
 
@@ -177,10 +182,24 @@ public class VectorSearchOptions {
             return this;
         }
 
+        /**
+         * Sets a value indicating whether to include the total count of the results.
+         * @param includeTotalCount a value indicating whether to include the total count of the results
+         * @return {@code this} builder
+         */
+        public Builder withIncludeTotalCount(boolean includeTotalCount) {
+            this.includeTotalCount = includeTotalCount;
+            return this;
+        }
+
+        /**
+         * Builds a new instance of the VectorSearchOptions class.
+         * @return a new instance of the VectorSearchOptions class
+         */
         @Override
         public VectorSearchOptions build() {
-            return new VectorSearchOptions(vectorSearchFilter, vectorFieldName, limit, offset,
-                includeVectors);
+            return new VectorSearchOptions(vectorSearchFilter, vectorFieldName, top, skip,
+                includeVectors, includeTotalCount);
         }
     }
 }

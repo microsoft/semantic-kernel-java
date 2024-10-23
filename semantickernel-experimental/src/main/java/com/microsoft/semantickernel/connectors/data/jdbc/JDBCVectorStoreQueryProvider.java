@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.vectorsearch.VectorOperations;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
@@ -35,6 +36,7 @@ import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 /**
  * A JDBC vector store query provider.
@@ -526,7 +528,7 @@ public class JDBCVectorStoreQueryProvider
      * @return the search results
      */
     @Override
-    public <Record> List<VectorSearchResult<Record>> search(String collectionName,
+    public <Record> VectorSearchResults<Record> search(String collectionName,
         List<Float> vector, VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
@@ -556,8 +558,9 @@ public class JDBCVectorStoreQueryProvider
                 ? DistanceFunction.EUCLIDEAN_DISTANCE
                 : vectorField.getDistanceFunction();
 
-        return VectorOperations.exactSimilaritySearch(records, vector, vectorField,
-            distanceFunction, options);
+        return new VectorSearchResults<>(
+            VectorOperations.exactSimilaritySearch(records, vector, vectorField,
+                distanceFunction, options));
     }
 
     /**

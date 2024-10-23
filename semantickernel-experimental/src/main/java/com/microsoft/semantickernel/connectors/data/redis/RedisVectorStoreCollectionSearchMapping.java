@@ -64,9 +64,9 @@ public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
             vectorField.getEffectiveStorageName(), VECTOR_SCORE_FIELD);
 
         FTSearchParams searchParams = new FTSearchParams()
-            .addParam("K", options.getLimit() + options.getOffset())
+            .addParam("K", options.getTop() + options.getSkip())
             .addParam("BLOB", convertListToByteArray(vector))
-            .limit(options.getOffset(), options.getLimit())
+            .limit(options.getSkip(), options.getTop())
             .sortBy(VECTOR_SCORE_FIELD, SortingOrder.ASC)
             .dialect(2);
 
