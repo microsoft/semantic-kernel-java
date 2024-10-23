@@ -37,8 +37,14 @@ public class SKException extends RuntimeException {
         super(message, cause);
     }
 
-    public SKException(Throwable e) {
-        super(e);
+    /**
+     * Initializes a new instance of the {@code SKException} class with its
+     * message set to {@code null} and the cause set to {@code e}.
+     * 
+     * @param cause The exception that is the cause of the current exception.
+     */
+    public SKException(Throwable cause) {
+        super(cause);
     }
 
     /**
@@ -46,23 +52,24 @@ public class SKException extends RuntimeException {
      * unwrapped and the cause extracted.
      *
      * @param message The message to be displayed
-     * @param e       The exception to be thrown
+     * @param cause   The exception that is the cause of the current exception.
      * @return An unchecked exception
      */
     public static SKException build(
         String message,
-        @Nullable Exception e) {
+        @Nullable Exception cause) {
 
-        if (e == null) {
+        if (cause == null) {
             return new SKException(message);
         }
 
-        Throwable cause = e.getCause();
+        Throwable wrappedCause = cause.getCause();
 
-        if ((e instanceof SKCheckedException || e instanceof SKException) && cause != null) {
-            return new SKException(message, cause);
+        if ((cause instanceof SKCheckedException || cause instanceof SKException)
+            && wrappedCause != null) {
+            return new SKException(message, wrappedCause);
         } else {
-            return new SKException(message, e);
+            return new SKException(message, cause);
         }
     }
 

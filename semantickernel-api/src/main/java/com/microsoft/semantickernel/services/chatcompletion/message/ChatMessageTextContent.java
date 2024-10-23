@@ -81,6 +81,9 @@ public class ChatMessageTextContent extends ChatMessageContent<String> {
         return buildContent(AuthorRole.SYSTEM, content);
     }
 
+    /**
+     * Builder for the {@link ChatMessageTextContent} class.
+     */
     public static class Builder implements SemanticKernelBuilder<ChatMessageTextContent> {
 
         @Nullable

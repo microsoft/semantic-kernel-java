@@ -70,6 +70,9 @@ public class ToolCallBehavior {
     }
 
     private static final int DEFAULT_MAXIMUM_AUTO_INVOKE_ATTEMPTS = 5;
+    /**
+     * The separator between the plugin name and the function name.
+     */
     public static final String FUNCTION_NAME_SEPARATOR = "-";
     private final int maximumAutoInvokeAttempts;
 

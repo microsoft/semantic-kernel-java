@@ -126,6 +126,9 @@ public class TextToAudioExecutionSettings {
             }
             return new TextToAudioExecutionSettings(voice, responseFormat, speed);
         }
+
+        private Builder() {
+        }
     }
 
 }

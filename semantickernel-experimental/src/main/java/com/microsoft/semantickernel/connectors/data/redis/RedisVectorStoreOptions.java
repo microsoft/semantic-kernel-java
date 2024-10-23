@@ -6,6 +6,9 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Options for the Redis vector store.
+ */
 public class RedisVectorStoreOptions {
     @Nullable
     private final RedisVectorStoreRecordCollectionFactory vectorStoreRecordCollectionFactory;
@@ -15,7 +18,7 @@ public class RedisVectorStoreOptions {
 
     /**
      * Creates a new instance of the Redis vector store options.
-     *
+     * @param storageType The storage type.
      * @param vectorStoreRecordCollectionFactory The vector store record collection factory.
      */
     public RedisVectorStoreOptions(

@@ -5,6 +5,11 @@ package com.microsoft.semantickernel.data.vectorstorage.definition;
  * Represents the key field in a record.
  */
 public class VectorStoreRecordKeyField extends VectorStoreRecordField {
+
+    /**
+     * Create a builder for the VectorStoreRecordKeyField class.
+     * @return a new instance of the builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -20,6 +25,9 @@ public class VectorStoreRecordKeyField extends VectorStoreRecordField {
         super(name, storageName, type);
     }
 
+    /**
+     * A builder for the VectorStoreRecordKeyField class.
+     */
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordKeyField, Builder> {
         @Override

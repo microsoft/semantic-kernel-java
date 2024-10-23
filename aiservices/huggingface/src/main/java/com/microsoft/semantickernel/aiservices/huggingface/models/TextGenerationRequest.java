@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.huggingface.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,6 +10,9 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Represents a request to generate text using the Hugging Face API.
+ */
 @JsonInclude(Include.NON_NULL)
 public class TextGenerationRequest {
 
@@ -42,6 +44,13 @@ public class TextGenerationRequest {
     @JsonProperty("options")
     private final HuggingFaceTextOptions options;
 
+    /**
+     * Create a new instance of TextGenerationRequest.
+     * @param inputs The input string to generate text for.
+     * @param stream Enable streaming.
+     * @param parameters Parameters used by the model for generation.
+     * @param options Options used by the model for generation.
+     */
     public TextGenerationRequest(
         @Nullable String inputs,
         boolean stream,
@@ -53,6 +62,12 @@ public class TextGenerationRequest {
         this.options = options;
     }
 
+    /**
+     * Create a new instance of TextGenerationRequest.
+     * @param prompt The prompt to generate text for.
+     * @param executionSettings The settings for executing the prompt.
+     * @return A new instance of TextGenerationRequest.
+     */
     public static TextGenerationRequest fromPromptAndExecutionSettings(String prompt,
         HuggingFacePromptExecutionSettings executionSettings) {
         return new TextGenerationRequest(
@@ -72,6 +87,9 @@ public class TextGenerationRequest {
             new HuggingFaceTextOptions());
     }
 
+    /**
+     * Parameters used by the model for generation.
+     */
     public static class HuggingFaceTextParameters {
 
         /// <summary>
@@ -156,6 +174,19 @@ public class TextGenerationRequest {
         @JsonProperty("details")
         private final Boolean details;
 
+        /**
+         * Creator method for jackson deserialization. 
+         * @param topK The number of top tokens considered within the sample operation to create new text.
+         * @param topP The tokens that are within the sample operation of text generation.
+         * @param temperature The temperature of the sampling operation.
+         * @param repetitionPenalty The repetition penalty.
+         * @param maxNewTokens The amount of new tokens to be generated.
+         * @param maxTime The amount of time in seconds that the query should take maximum.
+         * @param returnFullText A value indicating whether the return results will contain the original query.
+         * @param numReturnSequences The number of propositions to be returned.
+         * @param doSample A value indicating whether to use sampling.
+         * @param details A value indicating whether to include the details of the generation.
+         */
         public HuggingFaceTextParameters(
             @JsonProperty("top_k") @Nullable Integer topK,
             @JsonProperty("top_p") @Nullable Double topP,
@@ -179,56 +210,99 @@ public class TextGenerationRequest {
             this.details = details;
         }
 
+        /**
+         * Gets the number of top tokens considered within the sample operation to create new text.
+         * @return The number of top tokens considered within the sample operation to create new text.
+         */
         @Nullable
         public Integer getTopK() {
             return topK;
         }
 
+        /**
+         * Gets the tokens that are within the sample operation of text generation.
+         * @return The tokens that are within the sample operation of text generation.
+         */
         @Nullable
         public Double getTopP() {
             return topP;
         }
 
+        /**
+         * Gets the temperature of the sampling operation.
+         * @return The temperature of the sampling operation.
+         */
         @Nullable
         public Double getTemperature() {
             return temperature;
         }
 
+        /**
+         * Gets the repetition penalty.
+         * @return The repetition penalty.
+         */
         @Nullable
         public Double getRepetitionPenalty() {
             return repetitionPenalty;
         }
 
+        /**
+         * Gets the amount of new tokens to be generated.
+         * @return The amount of new tokens to be generated.
+         */
         @Nullable
         public Integer getMaxNewTokens() {
             return maxNewTokens;
         }
 
+        /**
+         * Gets the amount of time in seconds that the query should take maximum.
+         * @return The amount of time in seconds that the query should take maximum.
+         */
         @Nullable
         public Double getMaxTime() {
             return maxTime;
         }
 
+        /**
+         * Gets a value indicating whether the return results will contain the original query.
+         * @return A value indicating whether the return results will contain the original query.
+         */
         public boolean isReturnFullText() {
             return returnFullText;
         }
 
+        /**
+         * Gets the number of propositions to be returned.
+         * @return The number of propositions to be returned.
+         */
         @Nullable
         public Integer getNumReturnSequences() {
             return numReturnSequences;
         }
 
+        /**
+         * Gets a value indicating whether to use sampling.
+         * @return A value indicating whether to use sampling.
+         */
         @Nullable
         public Boolean getDoSample() {
             return doSample;
         }
 
+        /**
+         * Gets a value indicating whether to include the details of the generation.
+         * @return A value indicating whether to include the details of the generation.
+         */
         @Nullable
         public Boolean getDetails() {
             return details;
         }
     }
 
+    /**
+     * Options used by the model for generation.
+     */
     @SuppressFBWarnings("SS_SHOULD_BE_STATIC")
     public static class HuggingFaceTextOptions {
 
@@ -249,10 +323,18 @@ public class TextGenerationRequest {
         @JsonProperty("wait_for_model")
         private final boolean waitForModel = false;
 
+        /**
+         * Gets a value indicating whether to use the cache layer on the inference API.
+         * @return A value indicating whether to use the cache layer on the inference API.
+         */
         public boolean isUseCache() {
             return useCache;
         }
 
+        /**
+         * Gets a value indicating whether to wait for the model if it is not ready.
+         * @return A value indicating whether to wait for the model if it is not ready.
+         */
         public boolean isWaitForModel() {
             return waitForModel;
         }

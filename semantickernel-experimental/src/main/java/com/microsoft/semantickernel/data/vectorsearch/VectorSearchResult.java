@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.vectorsearch;
 
+/**
+ * Represents a vector search result.
+ * @param <Record> The type of the record.
+ */
 public class VectorSearchResult<Record> {
     private final Record record;
     private final double score;

@@ -12,6 +12,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map.Entry;
 
+/**
+ * Options for a Redis vector store record collection.
+ *
+ * @param <Record> the record type
+ */
 public class RedisJsonVectorStoreRecordCollectionOptions<Record>
     implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;

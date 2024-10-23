@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
+/**
+ * The HSQLDB vector store query provider.
+ * Provides the necessary methods to interact with a HSQLDB vector store and vector store collections.
+ */
 public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider {
 
     private final ObjectMapper objectMapper;
@@ -121,7 +125,6 @@ public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
     @Override
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     // SQL query is generated dynamically with valid identifiers
-
     public void upsertRecords(String collectionName, List<?> records,
         VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
         validateSQLidentifier(getCollectionTableName(collectionName));
@@ -176,6 +179,9 @@ public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         return new Builder();
     }
 
+    /**
+     * The builder for the HSQLDB vector store query provider.
+     */
     public static class Builder
         extends JDBCVectorStoreQueryProvider.Builder {
 
@@ -185,6 +191,12 @@ public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         private int defaultVarCharLength = 255;
         private ObjectMapper objectMapper = new ObjectMapper();
 
+        /**
+         * Sets the data source.
+         *
+         * @param dataSource the data source
+         * @return the builder
+         */
         @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withDataSource(DataSource dataSource) {
             this.dataSource = dataSource;
@@ -213,6 +225,12 @@ public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             return this;
         }
 
+        /**
+         * Sets the default VARCHAR length.
+         *
+         * @param defaultVarCharLength the default VARCHAR length
+         * @return the builder
+         */
         public Builder setDefaultVarCharLength(int defaultVarCharLength) {
             this.defaultVarCharLength = defaultVarCharLength;
             return this;
@@ -230,6 +248,11 @@ public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             return this;
         }
 
+        /**
+         * Builds the HSQLDB vector store query provider.
+         *
+         * @return the HSQLDB vector store query provider
+         */
         public HSQLDBVectorStoreQueryProvider build() {
             if (dataSource == null) {
                 throw new SKException("DataSource is required");

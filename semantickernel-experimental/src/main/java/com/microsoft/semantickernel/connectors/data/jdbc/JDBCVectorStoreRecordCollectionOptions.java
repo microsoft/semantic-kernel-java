@@ -13,6 +13,10 @@ import static com.microsoft.semantickernel.connectors.data.jdbc.JDBCVectorStoreQ
 import static com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider.DEFAULT_COLLECTIONS_TABLE;
 import static com.microsoft.semantickernel.connectors.data.jdbc.SQLVectorStoreQueryProvider.DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
 
+/**
+ * Options for a JDBC vector store record collection.
+ * @param <Record> the record type
+ */
 public class JDBCVectorStoreRecordCollectionOptions<Record>
     implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
@@ -105,6 +109,10 @@ public class JDBCVectorStoreRecordCollectionOptions<Record>
         return queryProvider;
     }
 
+    /**
+     * Builder for JDBC vector store record collection options.
+     * @param <Record> the record type
+     */
     public static class Builder<Record> {
         private Class<Record> recordClass;
         private VectorStoreRecordDefinition recordDefinition;

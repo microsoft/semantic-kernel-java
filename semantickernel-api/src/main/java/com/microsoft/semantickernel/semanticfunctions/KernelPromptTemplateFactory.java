@@ -16,6 +16,12 @@ import javax.annotation.Nonnull;
  */
 public class KernelPromptTemplateFactory implements PromptTemplateFactory {
 
+    /**
+     * Initializes a new instance of the {@code KernelPromptTemplateFactory} class.
+     */
+    public KernelPromptTemplateFactory() {
+    }
+
     @Override
     public PromptTemplate tryCreate(@Nonnull PromptTemplateConfig templateConfig) {
         if (templateConfig.getTemplate() == null) {

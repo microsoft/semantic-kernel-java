@@ -12,10 +12,16 @@ import com.github.victools.jsonschema.generator.SchemaVersion;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
 import com.microsoft.semantickernel.orchestration.responseformat.ResponseSchemaGenerator;
 
+/**
+ * Represents a response format generator that uses Jackson.
+ */
 public class JacksonResponseFormatGenerator implements ResponseSchemaGenerator {
 
     private final SchemaGenerator generator;
 
+    /**
+     * Creates a new instance of the {@link JacksonResponseFormatGenerator} class.
+     */
     public JacksonResponseFormatGenerator() {
         JacksonModule module = new JacksonModule();
         SchemaGeneratorConfigBuilder builder = new SchemaGeneratorConfigBuilder(
@@ -31,6 +37,11 @@ public class JacksonResponseFormatGenerator implements ResponseSchemaGenerator {
         generator = new SchemaGenerator(builder.build());
     }
 
+    /**
+     * Creates a new instance of the {@link JacksonResponseFormatGenerator} class.
+     *
+     * @param generator The schema generator.
+     */
     public JacksonResponseFormatGenerator(SchemaGenerator generator) {
         this.generator = generator;
     }

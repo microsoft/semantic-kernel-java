@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.semanticfunctions;
 
+/**
+ * Options to customize the behavior of a prompt.
+ */
 public enum PromptTemplateOption {
     /**
      * Allow methods on objects provided as arguments to an invocation, to be invoked when rendering

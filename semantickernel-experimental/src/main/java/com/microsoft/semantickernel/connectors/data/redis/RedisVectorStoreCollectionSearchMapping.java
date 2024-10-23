@@ -18,6 +18,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.search.FTSearchParams;
 
+/**
+ * A mapping for searching a collection of vector records in Redis.
+ */
 public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
 
     static final String VECTOR_SCORE_FIELD = "vector_score";
@@ -33,6 +36,14 @@ public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
         return RedisVectorStoreCollectionSearchMappingHolder.INSTANCE;
     }
 
+    /**
+     * Builds a query for searching a collection of vector records in Redis.
+     * @param vector the vector to search for
+     * @param options the search options
+     * @param recordDefinition the record definition
+     * @param storageType the storage type
+     * @return the query and search parameters
+     */
     public Pair<String, FTSearchParams> buildQuery(List<Float> vector,
         VectorSearchOptions options,
         VectorStoreRecordDefinition recordDefinition,
@@ -79,6 +90,11 @@ public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
         return Pair.of(knn, searchParams);
     }
 
+    /**
+     * Converts a list of floats to a byte array.
+     * @param embeddings the embeddings
+     * @return the byte array
+     */
     public static byte[] convertListToByteArray(List<Float> embeddings) {
         ByteBuffer bytes = ByteBuffer.allocate(Float.BYTES * embeddings.size());
         bytes.order(ByteOrder.LITTLE_ENDIAN);
@@ -86,6 +102,11 @@ public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
         return bytes.array();
     }
 
+    /**
+     * Converts a byte array to a list of floats.
+     * @param bytes the byte array
+     * @return the list of floats
+     */
     public static List<Float> convertByteArrayToList(byte[] bytes) {
         ByteBuffer buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
         List<Float> embeddings = new java.util.ArrayList<>();

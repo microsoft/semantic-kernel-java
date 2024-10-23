@@ -21,6 +21,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.BiFunction;
 
+/**
+ * Maps a JDBC result set to a record.
+ *
+ * @param <Record> the record type
+ */
 public class JDBCVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, ResultSet> {
 
@@ -52,6 +57,11 @@ public class JDBCVectorStoreRecordMapper<Record>
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    /**
+     * Builder for {@link JDBCVectorStoreRecordMapper}.
+     *
+     * @param <Record> the record type
+     */
     public static class Builder<Record>
         implements SemanticKernelBuilder<JDBCVectorStoreRecordMapper<Record>> {
         private Class<Record> recordClass;

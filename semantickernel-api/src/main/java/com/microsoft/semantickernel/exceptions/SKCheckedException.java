@@ -37,32 +37,40 @@ public class SKCheckedException extends Exception {
         super(message, cause);
     }
 
-    public SKCheckedException(Throwable e) {
-        super(e);
+    /**
+     * Initializes a new instance of the {@code SKCheckedException} class with its
+     * message set to {@code null} and the cause set to {@code e}.
+     *
+     * @param cause The exception that is the cause of the current exception.
+     */
+    public SKCheckedException(Throwable cause) {
+        super(cause);
     }
 
     /**
-     * Forms a checked exception, if the exception is already an SK exception, it will be unwrapped
+     * Forms a checked exception, if the exception is already an SK exception, it
+     * will be unwrapped
      * and the cause extracted.
      *
      * @param message The message to be displayed
-     * @param e       The exception to be thrown
+     * @param cause   The exception that is the cause of the current exception.
      * @return A checked exception
      */
     public static SKCheckedException build(
         String message,
-        @Nullable Exception e) {
+        @Nullable Exception cause) {
 
-        if (e == null) {
+        if (cause == null) {
             return new SKCheckedException(message);
         }
 
-        Throwable cause = e.getCause();
+        Throwable wrappedCause = cause.getCause();
 
-        if ((e instanceof SKCheckedException || e instanceof SKException) && cause != null) {
-            return new SKCheckedException(message, cause);
+        if ((cause instanceof SKCheckedException || cause instanceof SKException)
+            && wrappedCause != null) {
+            return new SKCheckedException(message, wrappedCause);
         } else {
-            return new SKCheckedException(message, e);
+            return new SKCheckedException(message, cause);
         }
     }
 

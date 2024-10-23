@@ -6,6 +6,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * A vectorized search.
+ *
+ * @param <Record> The record type.
+ */
 public interface VectorizedSearch<Record> {
 
     /**

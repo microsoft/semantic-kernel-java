@@ -9,6 +9,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Represents the options for a volatile vector store record collection.
+ *
+ * @param <Record> the record type
+ */
 public class VolatileVectorStoreRecordCollectionOptions<Record>
     implements VectorStoreRecordCollectionOptions<String, Record> {
     private final Class<Record> recordClass;
@@ -22,6 +27,7 @@ public class VolatileVectorStoreRecordCollectionOptions<Record>
      *
      * @param recordClass The record class.
      * @param recordDefinition The record definition.
+     * @param objectMapper An instanc of Jackson ObjectMapper.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2") // ObjectMapper only has package visibility
     public VolatileVectorStoreRecordCollectionOptions(@Nonnull Class<Record> recordClass,

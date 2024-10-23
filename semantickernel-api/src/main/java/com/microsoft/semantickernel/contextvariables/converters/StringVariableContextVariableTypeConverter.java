@@ -29,6 +29,14 @@ public class StringVariableContextVariableTypeConverter extends
             s -> s);
     }
 
+    /**
+     * Converts the specified object to a string.
+     * Has special handling for {@link ContextVariable} objects and 
+     * for objects that look like an object reference
+     * @param s the object to convert
+     * @return the string representation of the object, or {@code null} 
+     * if the object cannot be converted to a string or is an object reference. 
+     */
     @Nullable
     public static String convertToString(@Nullable Object s) {
         String converted = convert(s, String.class);

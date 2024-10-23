@@ -21,6 +21,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.function.BiFunction;
 
+/**
+ * A mapper to convert between a record and a PostgreSQL storage model.
+ *
+ * @param <Record>       the record type
+ */
 public class PostgreSQLVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, ResultSet> {
 
@@ -44,6 +49,11 @@ public class PostgreSQLVectorStoreRecordMapper<Record>
         return new Builder<>();
     }
 
+    /**
+     * A builder for the PostgreSQLVectorStoreRecordMapper.
+     *
+     * @param <Record> the record type
+     */
     public static class Builder<Record>
         implements SemanticKernelBuilder<PostgreSQLVectorStoreRecordMapper<Record>> {
         private Class<Record> recordClass;

@@ -30,10 +30,18 @@ public class VectorStoreRecordDefinition {
     private final List<VectorStoreRecordField> allFields;
     private final Map<String, VectorStoreRecordField> allFieldsMap;
 
+    /**
+     * Gets the key field in the record definition.
+     * @return VectorStoreRecordKeyField
+     */
     public VectorStoreRecordKeyField getKeyField() {
         return keyField;
     }
 
+    /**
+     * Gets the data fields in the record definition.
+     * @return List of VectorStoreRecordDataField
+     */
     public List<VectorStoreRecordDataField> getDataFields() {
         return dataFields;
     }
@@ -212,6 +220,12 @@ public class VectorStoreRecordDefinition {
         return checkFields(keyFields, dataFields, vectorFields);
     }
 
+    /**
+     * Validate that the record class contains only supported field types.
+     * @param fields The declared fields in the record class.
+     * @param supportedTypes The supported field types.
+     * @throws IllegalArgumentException if unsupported field types are found.
+     */
     public static void validateSupportedTypes(List<VectorStoreRecordField> fields,
         Set<Class<?>> supportedTypes) {
         Set<Class<?>> unsupportedTypes = new HashSet<>();

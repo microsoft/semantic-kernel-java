@@ -15,6 +15,10 @@ public class Embedding {
 
     private static final Embedding EMPTY = new Embedding();
 
+    /**
+     * Returns an empty {@code Embedding} instance.
+     * @return An empty {@code Embedding} instance.
+     */
     public static Embedding empty() {
         return EMPTY;
     }

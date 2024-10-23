@@ -13,8 +13,21 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Provides methods to filter records based on a {@link VectorSearchFilter}.
+ */
 public class VolatileVectorStoreCollectionSearchMapping {
 
+    /**
+     * Filters the records based on the given {@link VectorSearchFilter}.
+     *
+     * @param records The records to filter.
+     * @param filter The filter to apply.
+     * @param recordDefinition The record definition.
+     * @param objectMapper The object mapper.
+     * @param <Record> The record type.
+     * @return The filtered records.
+     */
     public static <Record> List<Record> filterRecords(List<Record> records,
         VectorSearchFilter filter,
         VectorStoreRecordDefinition recordDefinition, ObjectMapper objectMapper) {

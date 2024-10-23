@@ -9,10 +9,21 @@ import java.net.URL;
 import java.util.Base64;
 import javax.annotation.Nullable;
 
+/**
+ * Represents an image content in a chat message.
+ *
+ * @param <T> the type of the inner content within the message
+ */
 public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
 
     private final ImageDetail detail;
 
+    /**
+     * Create a new instance of the {@link ChatMessageImageContent} class.
+     * @param content The chat message content
+     * @param modelId The LLM id to use for the chat
+     * @param detail The detail level of the image to include in the chat message
+     */
     public ChatMessageImageContent(
         String content,
         @Nullable String modelId,
@@ -69,6 +80,10 @@ public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
         return new Builder<>();
     }
 
+    /**
+     * Builder for the {@link ChatMessageImageContent} class.
+     * @param <T> the type of the inner content within the message
+     */
     public static class Builder<T> implements SemanticKernelBuilder<ChatMessageImageContent<T>> {
 
         @Nullable
@@ -82,7 +97,7 @@ public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
          * Set the model ID to use for the chat message.
          *
          * @param modelId the model ID
-         * @return this builder
+         * @return {@code this} builder
          */
         public Builder<T> withModelId(String modelId) {
             this.modelId = modelId;
@@ -90,10 +105,11 @@ public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
         }
 
         /**
+         * Set the image content to include in the chat message.
          * @param imageType For instance jpg or png. For known types known to OpenAI see: <a
          *                  href="https://platform.openai.com/docs/guides/vision/what-type-of-files-can-i-upload">docs</a>.
          * @param content   the image content
-         * @return this builder
+         * @return {@code this} builder
          */
         public Builder<T> withImage(
             String imageType,
@@ -108,7 +124,7 @@ public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
          * Set the URL of the image to include in the chat message.
          *
          * @param url the URL of the image
-         * @return this builder
+         * @return {@code this} builder
          */
         public Builder<T> withImageUrl(String url) {
             this.content = url;
@@ -119,7 +135,7 @@ public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
          * Set the URL of the image to include in the chat message.
          *
          * @param url the URL of the image
-         * @return this builder
+         * @return {@code this} builder
          */
         public Builder<T> withImageUrl(URL url) {
             this.content = url.toString();
@@ -130,7 +146,7 @@ public class ChatMessageImageContent<T> extends ChatMessageContent<T> {
          * Set the detail level of the image to include in the chat message.
          *
          * @param detail the detail level of the image
-         * @return this builder
+         * @return {@code this} builder
          */
         public Builder<T> withDetail(ImageDetail detail) {
             this.detail = detail;

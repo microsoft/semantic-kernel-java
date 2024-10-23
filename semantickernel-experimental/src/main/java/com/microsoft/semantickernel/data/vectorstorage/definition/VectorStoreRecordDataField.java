@@ -4,10 +4,17 @@ package com.microsoft.semantickernel.data.vectorstorage.definition;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Represents a data field in a record.
+ */
 public class VectorStoreRecordDataField extends VectorStoreRecordField {
     private final boolean isFilterable;
     private final boolean isFullTextSearchable;
 
+    /**
+     * Create a builder for the VectorStoreRecordDataField class.
+     * @return a new instance of the builder
+     */
     public static Builder builder() {
         return new Builder();
     }
@@ -19,6 +26,7 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
      * @param storageName the storage name of the field
      * @param fieldType the field type
      * @param isFilterable a value indicating whether the field is filterable
+     * @param isFullTextSearchable a value indicating whether the field is full text searchable
      */
     public VectorStoreRecordDataField(
         @Nonnull String name,
@@ -49,6 +57,9 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
         return isFullTextSearchable;
     }
 
+    /**
+     * Builder for the VectorStoreRecordDataField class.
+     */
     public static class Builder
         extends VectorStoreRecordField.Builder<VectorStoreRecordDataField, Builder> {
         private boolean isFilterable;

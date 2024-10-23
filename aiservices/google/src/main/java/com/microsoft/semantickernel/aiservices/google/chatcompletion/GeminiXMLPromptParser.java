@@ -17,15 +17,26 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Parses an XML prompt for a Gemini chat.
+ */
 public class GeminiXMLPromptParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeminiXMLPromptParser.class);
 
+    /**
+     * Represents a parsed prompt for Gemini chat.
+     */
     public static class GeminiParsedPrompt {
 
         private final ChatHistory chatHistory;
         private final List<FunctionDeclaration> functions;
 
+        /**
+         * Creates a new parsed prompt.
+         * @param parsedChatHistory The chat history
+         * @param parsedFunctions The functions declarations.
+         */
         protected GeminiParsedPrompt(
             ChatHistory parsedChatHistory,
             @Nullable List<FunctionDeclaration> parsedFunctions) {
@@ -36,10 +47,18 @@ public class GeminiXMLPromptParser {
             this.functions = parsedFunctions;
         }
 
+        /**
+         * Gets the chat history.
+         * @return A copy of the chat history.
+         */
         public ChatHistory getChatHistory() {
             return new ChatHistory(chatHistory.getMessages());
         }
 
+        /**
+         * Gets the functions declarations.
+         * @return A copy of the functions declarations.
+         */
         public List<FunctionDeclaration> getFunctions() {
             return Collections.unmodifiableList(functions);
         }
@@ -131,6 +150,11 @@ public class GeminiXMLPromptParser {
         }
     }
 
+    /**
+     * Create a GeminiParsedPrompt by parsing a raw prompt.
+     * @param rawPrompt the raw prompt to parse.
+     * @return The parsed prompt.
+     */
     public static GeminiParsedPrompt parse(String rawPrompt) {
         ChatPromptParseVisitor<GeminiParsedPrompt> visitor = ChatXMLPromptParser.parse(
             rawPrompt,

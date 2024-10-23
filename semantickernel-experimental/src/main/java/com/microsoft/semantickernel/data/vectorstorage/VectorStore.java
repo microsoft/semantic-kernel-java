@@ -16,6 +16,8 @@ public interface VectorStore {
      *
      * @param collectionName   The name of the collection.
      * @param options          The options for the collection.
+     * @param <Key>            The key type.
+     * @param <Record>         The record type.
      * @return The collection.
      */
     <Key, Record> VectorStoreRecordCollection<Key, Record> getCollection(

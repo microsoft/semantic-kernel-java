@@ -22,6 +22,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * The MySQL vector store query provider.
+ * Provides the necessary methods to interact with a MySQL
+ * vector store and vector store collections.
+ */
 public class MySQLVectorStoreQueryProvider extends
     JDBCVectorStoreQueryProvider implements SQLVectorStoreQueryProvider {
 
@@ -115,6 +120,9 @@ public class MySQLVectorStoreQueryProvider extends
         }
     }
 
+    /**
+     * The MySQL vector store query provider builder.
+     */
     public static class Builder
         extends JDBCVectorStoreQueryProvider.Builder {
         private DataSource dataSource;

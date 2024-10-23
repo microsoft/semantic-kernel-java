@@ -13,6 +13,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents an Azure AI Search vector store.
+ */
 public class AzureAISearchVectorStore implements VectorStore {
 
     private final SearchIndexAsyncClient searchIndexAsyncClient;

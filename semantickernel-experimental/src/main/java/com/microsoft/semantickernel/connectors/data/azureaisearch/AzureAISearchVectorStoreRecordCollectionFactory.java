@@ -16,6 +16,7 @@ public interface AzureAISearchVectorStoreRecordCollectionFactory {
      * @param collectionName The name of the collection.
      * @param recordClass    The class type of the record.
      * @param recordDefinition The record definition.
+     * @param <Record>       The record type.
      * @return The new Azure AI Search vector store record collection.
      */
     <Record> AzureAISearchVectorStoreRecordCollection<Record> createVectorStoreRecordCollection(

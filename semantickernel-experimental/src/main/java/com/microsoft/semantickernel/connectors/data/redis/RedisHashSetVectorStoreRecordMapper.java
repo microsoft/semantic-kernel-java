@@ -30,6 +30,10 @@ import java.util.function.Function;
 
 import static com.microsoft.semantickernel.connectors.data.redis.RedisHashSetVectorStoreRecordCollection.stringToBytes;
 
+/**
+ * A mapper to convert between a record and a Redis hash set storage model.
+ * @param <Record> the record type
+ */
 public class RedisHashSetVectorStoreRecordMapper<Record>
     extends VectorStoreRecordMapper<Record, Entry<String, Map<byte[], byte[]>>> {
 

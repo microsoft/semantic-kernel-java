@@ -43,6 +43,11 @@ import javax.annotation.Nonnull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+/**
+ * Represents an Azure AI Search vector store record collection.
+ *
+ * @param <Record> The type of the record.
+ */
 public class AzureAISearchVectorStoreRecordCollection<Record> implements
     VectorStoreRecordCollection<String, Record>,
     VectorizedSearch<Record>,
@@ -83,6 +88,13 @@ public class AzureAISearchVectorStoreRecordCollection<Record> implements
     private final List<String> nonVectorFields = new ArrayList<>();
     private final String firstVectorFieldName;
 
+    /**
+     * Creates a new instance of {@link AzureAISearchVectorStoreRecordCollection}.
+     *
+     * @param searchIndexAsyncClient The Azure AI Search client.
+     * @param collectionName         The name of the collection.
+     * @param options                The options for the collection.
+     */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public AzureAISearchVectorStoreRecordCollection(
         @Nonnull SearchIndexAsyncClient searchIndexAsyncClient,

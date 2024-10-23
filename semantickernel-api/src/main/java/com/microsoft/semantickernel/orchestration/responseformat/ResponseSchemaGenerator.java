@@ -39,6 +39,13 @@ public interface ResponseSchemaGenerator {
         }
     }
 
+    /**
+     * Load a response schema generator based on the given class name.
+     * The class must implement the {@link ResponseSchemaGenerator} interface.
+     *
+     * @param className The class name of the generator.
+     * @return The response schema generator.
+     */
     public static ResponseSchemaGenerator loadGenerator(String className) {
         return ServiceLoadUtil
             .findServiceLoader(ResponseSchemaGenerator.class,

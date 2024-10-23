@@ -38,12 +38,20 @@ public class PreToolCallEvent implements KernelHookEvent {
         this.contextVariableTypes = contextVariableTypes;
     }
 
+    /**
+     * Gets the tool call arguments.
+     * @return The tool call arguments.
+     */
     @SuppressFBWarnings("EI_EXPOSE_REP")
     @Nullable
     public KernelFunctionArguments getArguments() {
         return arguments;
     }
 
+    /**
+     * Get the tool call function.
+     * @return The tool call function.
+     */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public KernelFunction<?> getFunction() {
         return function;
