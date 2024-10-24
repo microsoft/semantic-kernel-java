@@ -43,6 +43,7 @@ public class VectorSearchOptions {
      * @param top The limit of the number of results to return.
      * @param skip The offset of the results to return.
      * @param includeVectors A value indicating whether to include vectors in the results.
+     * @param includeTotalCount A value indicating whether to include the total count of the results.
      */
     public VectorSearchOptions(VectorSearchFilter vectorSearchFilter,
         String vectorFieldName, int top, int skip, boolean includeVectors,
