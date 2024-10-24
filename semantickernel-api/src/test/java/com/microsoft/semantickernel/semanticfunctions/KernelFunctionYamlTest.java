@@ -97,6 +97,7 @@ public class KernelFunctionYamlTest {
 
     /**
      * Test of fromYaml method, of class KernelFunctionYaml.
+     * @throws Exception if parsing the YAML throws an Exception
      */
     @Test
     @Disabled

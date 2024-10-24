@@ -13,7 +13,7 @@
     <url>https://www.github.com/microsoft/semantic-kernel</url>
 
     <properties>
-        <com.fasterxml.jackson.core.version>2.17.1</com.fasterxml.jackson.core.version>
+        <com.fasterxml.jackson.core.version>2.18.0</com.fasterxml.jackson.core.version>
     </properties>
 
     <build>
@@ -21,7 +21,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>enforce-maven</id>
@@ -31,14 +31,20 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <version>3.9.3</version>
+                                    <version>3.9.9</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.8.0</version>
+            </plugin>
         </plugins>
+
     </build>
 
     <dependencyManagement>
@@ -46,7 +52,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom</artifactId>
-                <version>1.39.0</version>
+                <version>1.43.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -94,22 +100,23 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
+                <!-- change to beta.12 -->
                 <version>1.0.0-beta.11</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-identity</artifactId>
-                <version>1.12.2</version>
+                <version>1.14.0</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-core</artifactId>
-                <version>1.49.1</version>
+                <version>1.53.0</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-search-documents</artifactId>
-                <version>11.7.0-beta.3</version>
+                <version>11.8.0-beta.1</version>
                 <exclusions>
                     <exclusion>
                         <groupId>com.azure</groupId>
@@ -120,7 +127,7 @@
             <dependency>
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
-                <version>5.2.0-beta5</version>
+                <version>5.2.0</version>
             </dependency>
 
             <dependency>
@@ -146,6 +153,7 @@
                 <version>${com.fasterxml.jackson.core.version}</version>
                 <scope>runtime</scope>
             </dependency>
+            <!-- 4.4.0+ has as dependency on a higher version of Java than Java 8 -->
             <dependency>
                 <groupId>com.github.jknack</groupId>
                 <artifactId>handlebars</artifactId>
@@ -159,7 +167,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>2.0.12</version>
+                <version>2.0.16</version>
             </dependency>
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
@@ -175,25 +183,22 @@
                 <scope>provided</scope>
             </dependency>
 
-
             <dependency>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-annotations</artifactId>
-                <version>4.8.3</version>
+                <version>4.8.6</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>1.11.0</version>
+                <version>1.12.0</version>
             </dependency>
 
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>google-cloud-vertexai</artifactId>
-                <version>1.1.0</version>
+                <version>1.12.0</version>
             </dependency>
-
-
 
             <dependency>
                 <groupId>com.github.victools</groupId>
