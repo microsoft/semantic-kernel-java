@@ -1,0 +1,19 @@
+// Copyright (c) Microsoft. All rights reserved.
+package com.microsoft.semantickernel.data.jdbc;
+
+import com.microsoft.semantickernel.data.vectorstorage.VectorStore;
+import reactor.core.publisher.Mono;
+
+/**
+ * Represents a SQL vector store.
+ */
+public interface SQLVectorStore
+    extends VectorStore {
+
+    /**
+     * Prepares the vector store.
+     *
+     * @return A {@link Mono} that completes when the vector store is prepared to be used.
+     */
+    Mono<Void> prepareAsync();
+}
