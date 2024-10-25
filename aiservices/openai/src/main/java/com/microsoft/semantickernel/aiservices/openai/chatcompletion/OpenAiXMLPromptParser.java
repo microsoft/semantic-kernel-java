@@ -118,19 +118,23 @@ class OpenAiXMLPromptParser {
         if (message instanceof ChatRequestUserMessage) {
             ChatRequestUserMessage chatRequestMessage = (ChatRequestUserMessage) message;
             String content = StringEscapeUtils.unescapeXml(
-                chatRequestMessage.getContent().toString());
+                BinaryDataUtils.toString(chatRequestMessage.getContent()));
 
             return new ChatRequestUserMessage(content)
                 .setName(chatRequestMessage.getName());
         } else if (message instanceof ChatRequestSystemMessage) {
             ChatRequestSystemMessage chatRequestMessage = (ChatRequestSystemMessage) message;
-            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+            String content = StringEscapeUtils
+                .unescapeXml(
+                    BinaryDataUtils.toString(chatRequestMessage.getContent()));
 
             return new ChatRequestSystemMessage(content)
                 .setName(chatRequestMessage.getName());
         } else if (message instanceof ChatRequestAssistantMessage) {
             ChatRequestAssistantMessage chatRequestMessage = (ChatRequestAssistantMessage) message;
-            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+            String content = StringEscapeUtils
+                .unescapeXml(
+                    BinaryDataUtils.toString(chatRequestMessage.getContent()));
 
             return new ChatRequestAssistantMessage(content)
                 .setToolCalls(chatRequestMessage.getToolCalls())
@@ -145,7 +149,9 @@ class OpenAiXMLPromptParser {
                 content);
         } else if (message instanceof ChatRequestToolMessage) {
             ChatRequestToolMessage chatRequestMessage = (ChatRequestToolMessage) message;
-            String content = StringEscapeUtils.unescapeXml(chatRequestMessage.getContent());
+            String content = StringEscapeUtils
+                .unescapeXml(
+                    BinaryDataUtils.toString(chatRequestMessage.getContent()));
 
             return new ChatRequestToolMessage(
                 content,
