@@ -1,3 +1,7 @@
+# 1.3.1
+
+- Upgrade to azure-ai-openai 1.0.0-beta.12
+
 # 1.3.0
 
 - Added support for Json Schema to Open AI Chat Completions
