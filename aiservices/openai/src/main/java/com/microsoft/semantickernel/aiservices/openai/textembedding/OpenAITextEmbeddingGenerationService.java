@@ -26,7 +26,6 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
 
     private static final Logger LOGGER = LoggerFactory
         .getLogger(OpenAITextEmbeddingGenerationService.class);
-    private static final int DEFAULT_DIMENSIONS = 1536;
     private final int dimensions;
 
     /**
@@ -100,8 +99,10 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
     protected Mono<List<Embedding>> internalGenerateTextEmbeddingsAsync(List<String> data) {
         EmbeddingsOptions options = new EmbeddingsOptions(data)
             .setModel(getModelId())
-            .setDimensions(dimensions)
             .setInputType("string");
+        if (dimensions > 0) {
+            options.setDimensions(dimensions);
+        }
 
         return getClient()
             .getEmbeddings(getModelId(), options)
@@ -118,7 +119,7 @@ public class OpenAITextEmbeddingGenerationService extends OpenAiService<OpenAIAs
     public static class Builder extends
         OpenAiServiceBuilder<OpenAIAsyncClient, OpenAITextEmbeddingGenerationService, OpenAITextEmbeddingGenerationService.Builder> {
 
-        private int dimensions = DEFAULT_DIMENSIONS;
+        private int dimensions = -1;
 
         /**
          * Sets the dimensions for the embeddings.
