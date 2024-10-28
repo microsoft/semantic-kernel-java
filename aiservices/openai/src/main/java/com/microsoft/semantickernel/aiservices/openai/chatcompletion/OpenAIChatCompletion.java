@@ -6,6 +6,7 @@ import com.azure.ai.openai.models.ChatChoice;
 import com.azure.ai.openai.models.ChatCompletions;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolCall;
 import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinition;
+import com.azure.ai.openai.models.ChatCompletionsFunctionToolDefinitionFunction;
 import com.azure.ai.openai.models.ChatCompletionsJsonResponseFormat;
 import com.azure.ai.openai.models.ChatCompletionsNamedToolSelection;
 import com.azure.ai.openai.models.ChatCompletionsOptions;
@@ -26,6 +27,7 @@ import com.azure.ai.openai.models.ChatRequestUserMessage;
 import com.azure.ai.openai.models.ChatResponseMessage;
 import com.azure.ai.openai.models.CompletionsUsage;
 import com.azure.ai.openai.models.FunctionCall;
+import com.azure.ai.openai.models.FunctionDefinition;
 import com.azure.json.JsonOptions;
 import com.azure.json.implementation.DefaultJsonReader;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -734,7 +736,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     if (message instanceof ChatRequestUserMessage) {
                         return new OpenAIChatMessageContent<>(
                             AuthorRole.USER,
-                            ((ChatRequestUserMessage) message).getContent().toString(),
+                            BinaryDataUtils
+                                .toString(((ChatRequestUserMessage) message).getContent()),
                             null,
                             null,
                             null,
@@ -743,7 +746,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     } else if (message instanceof ChatRequestSystemMessage) {
                         return new OpenAIChatMessageContent<>(
                             AuthorRole.SYSTEM,
-                            ((ChatRequestSystemMessage) message).getContent(),
+                            BinaryDataUtils
+                                .toString(((ChatRequestSystemMessage) message).getContent()),
                             null,
                             null,
                             null,
@@ -755,7 +759,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                                 ((ChatRequestAssistantMessage) message).getToolCalls());
                             return new OpenAIChatMessageContent<>(
                                 AuthorRole.ASSISTANT,
-                                ((ChatRequestAssistantMessage) message).getContent(),
+                                BinaryDataUtils
+                                    .toString(((ChatRequestAssistantMessage) message).getContent()),
                                 null,
                                 null,
                                 null,
@@ -767,7 +772,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     } else if (message instanceof ChatRequestToolMessage) {
                         return new OpenAIChatMessageContent<>(
                             AuthorRole.TOOL,
-                            ((ChatRequestToolMessage) message).getContent(),
+                            BinaryDataUtils
+                                .toString(((ChatRequestToolMessage) message).getContent()),
                             null,
                             null,
                             null,
@@ -966,10 +972,14 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
             List<ChatCompletionsToolDefinition> toolDefinitions = new ArrayList<>();
 
+            FunctionDefinition function = OpenAIFunction.toFunctionDefinition(
+                toolChoice.getMetadata(),
+                toolChoice.getPluginName());
+
             toolDefinitions.add(new ChatCompletionsFunctionToolDefinition(
-                OpenAIFunction.toFunctionDefinition(
-                    toolChoice.getMetadata(),
-                    toolChoice.getPluginName())));
+                new ChatCompletionsFunctionToolDefinitionFunction(function.getName())
+                    .setDescription(function.getDescription())
+                    .setParameters(function.getParameters())));
 
             options.setTools(toolDefinitions);
             try {
@@ -1003,7 +1013,10 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     function.getName());
             })
             .map(OpenAIFunction::getFunctionDefinition)
-            .map(ChatCompletionsFunctionToolDefinition::new)
+            .map(it -> new ChatCompletionsFunctionToolDefinitionFunction(it.getName())
+                .setDescription(it.getDescription())
+                .setParameters(it.getParameters()))
+            .map(it -> new ChatCompletionsFunctionToolDefinition(it))
             .collect(Collectors.toList());
 
         if (toolDefinitions.isEmpty()) {
