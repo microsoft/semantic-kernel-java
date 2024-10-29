@@ -1,6 +1,7 @@
-# 1.3.1
+# 1.4.0
 
 - Upgrade to azure-ai-openai 1.0.0-beta.12
+- Add vector stores with vector search support for Azure AI Search, Redis, JDBC with Postgres, MySQL, SQLite and HSQLDB. Moving these features out of the experimental stage.
 
 # 1.3.0
 
