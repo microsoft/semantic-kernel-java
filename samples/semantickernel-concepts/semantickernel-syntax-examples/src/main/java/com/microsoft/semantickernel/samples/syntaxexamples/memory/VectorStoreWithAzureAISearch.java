@@ -5,16 +5,17 @@ import com.azure.ai.openai.OpenAIAsyncClient;
 import com.azure.ai.openai.OpenAIClientBuilder;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
+import com.azure.core.util.ClientOptions;
+import com.azure.core.util.MetricsOptions;
+import com.azure.core.util.TracingOptions;
 import com.azure.search.documents.indexes.SearchIndexAsyncClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEmbeddingGenerationService;
 import com.microsoft.semantickernel.data.azureaisearch.AzureAISearchVectorStore;
 import com.microsoft.semantickernel.data.azureaisearch.AzureAISearchVectorStoreOptions;
 import com.microsoft.semantickernel.data.azureaisearch.AzureAISearchVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.textsearch.TextSearchResultValue;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreTextSearch;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
@@ -49,12 +50,11 @@ public class VectorStoreWithAzureAISearch {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
-        @VectorStoreRecordKey()
+        @VectorStoreRecordKey
         private final String id;
-        @VectorStoreRecordData()
+        @VectorStoreRecordData
         private final String description;
         @VectorStoreRecordData
-        @TextSearchResultValue
         private final String link;
         @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_SIMILARITY)
         private final List<Float> embedding;
@@ -64,10 +64,10 @@ public class VectorStoreWithAzureAISearch {
         }
 
         public GitHubFile(
-            @JsonProperty("fileId") String id,
-            @JsonProperty("description") String description,
-            @JsonProperty("link") String link,
-            @JsonProperty("embedding") List<Float> embedding) {
+            String id,
+            String description,
+            String link,
+            List<Float> embedding) {
             this.id = id;
             this.description = description;
             this.link = link;
@@ -108,6 +108,7 @@ public class VectorStoreWithAzureAISearch {
         var searchClient = new SearchIndexClientBuilder()
             .endpoint(AZURE_AI_SEARCH_ENDPOINT)
             .credential(new AzureKeyCredential(AZURE_AISEARCH_KEY))
+            .clientOptions(clientOptions())
             .buildAsyncClient();
 
         storeAndSearch(searchClient, embeddingGeneration);
@@ -137,24 +138,27 @@ public class VectorStoreWithAzureAISearch {
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        // Build a vectorized search
-        var vectorStoreTextSearch = VectorStoreTextSearch.<GitHubFile>builder()
-            .withVectorizedSearch(collection)
-            .withTextEmbeddingGenerationService(embeddingGeneration)
-            .build();
-
         // Search for results
         // Might need to wait for the data to be indexed
-        String query = "How to get started?";
-        var results = vectorStoreTextSearch.searchAsync(query, null)
-            .block();
+        var results = search("How to get started", collection, embeddingGeneration).block();
 
         if (results == null || results.getTotalCount() == 0) {
             System.out.println("No search results found.");
             return;
         }
+        var searchResult = results.getResults().get(0);
+        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
+    }
 
-        System.out.printf("Best result for '%s': %s%n", query, results.getResults().get(0));
+    private static Mono<VectorSearchResults<GitHubFile>> search(
+        String searchText,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Generate embeddings for the search text and search for the closest records
+        return embeddingGeneration.generateEmbeddingAsync(searchText)
+            .flatMap(r -> recordCollection.searchAsync(r.getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
@@ -196,5 +200,12 @@ public class VectorStoreWithAzureAISearch {
                 { "https://github.com/microsoft/semantic-kernel/blob/main/samples/apps/chat-summary-webapp-react/README.md",
                         "README: README associated with a sample chat summary react-based webapp" },
         }).collect(Collectors.toMap(element -> element[0], element -> element[1]));
+    }
+
+    private static ClientOptions clientOptions() {
+        return new ClientOptions()
+            .setTracingOptions(new TracingOptions())
+            .setMetricsOptions(new MetricsOptions())
+            .setApplicationId("Semantic-Kernel");
     }
 }

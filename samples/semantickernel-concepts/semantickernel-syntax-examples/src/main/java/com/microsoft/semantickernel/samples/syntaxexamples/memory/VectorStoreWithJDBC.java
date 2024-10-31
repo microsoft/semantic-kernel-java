@@ -9,15 +9,14 @@ import com.microsoft.semantickernel.aiservices.openai.textembedding.OpenAITextEm
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.data.jdbc.mysql.MySQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.data.textsearch.TextSearchResultValue;
+import com.microsoft.semantickernel.data.jdbc.postgres.PostgreSQLVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreTextSearch;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
-import com.mysql.cj.jdbc.MysqlDataSource;
+
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -27,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.postgresql.ds.PGSimpleDataSource;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -42,12 +42,11 @@ public class VectorStoreWithJDBC {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     static class GitHubFile {
-        @VectorStoreRecordKey()
+        @VectorStoreRecordKey
         private final String id;
-        @VectorStoreRecordData()
+        @VectorStoreRecordData
         private final String description;
         @VectorStoreRecordData
-        @TextSearchResultValue
         private final String link;
         @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
@@ -89,8 +88,8 @@ public class VectorStoreWithJDBC {
         }
     }
 
-    // Run a MySQL server with:
-    // docker run -d --name mysql-container -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sk -p 3306:3306 mysql:latest
+    // Run a PostgreSQL server with:
+    // docker run -d --name pgvector-container -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=root -e POSTGRES_DB=sk -p 5432:5432 pgvector/pgvector:pg17
 
     public static void main(String[] args) throws SQLException {
         System.out.println("==============================================================");
@@ -123,14 +122,14 @@ public class VectorStoreWithJDBC {
 
     public static void storeAndSearch(OpenAITextEmbeddingGenerationService embeddingGeneration) {
         // Configure the data source
-        var dataSource = new MysqlDataSource();
-        dataSource.setUrl("jdbc:mysql://localhost:3306/sk");
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        dataSource.setUrl("jdbc:postgresql://localhost:5432/sk");
+        dataSource.setUser("postgres");
         dataSource.setPassword("root");
-        dataSource.setUser("root");
 
         // Build a query provider
         // Other available query providers are PostgreSQLVectorStoreQueryProvider and SQLiteVectorStoreQueryProvider
-        var queryProvider = MySQLVectorStoreQueryProvider.builder()
+        var queryProvider = PostgreSQLVectorStoreQueryProvider.builder()
             .withDataSource(dataSource)
             .build();
 
@@ -155,23 +154,26 @@ public class VectorStoreWithJDBC {
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        // Build a vectorized search
-        var vectorStoreTextSearch = VectorStoreTextSearch.<GitHubFile>builder()
-            .withVectorizedSearch(collection)
-            .withTextEmbeddingGenerationService(embeddingGeneration)
-            .build();
-
         // Search for results
-        String query = "How to get started?";
-        var results = vectorStoreTextSearch.searchAsync(query, null)
-            .block();
+        var results = search("How to get started", collection, embeddingGeneration).block();
 
         if (results == null || results.getTotalCount() == 0) {
             System.out.println("No search results found.");
             return;
         }
+        var searchResult = results.getResults().get(0);
+        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
+    }
 
-        System.out.printf("Best result for '%s': %s%n", query, results.getResults().get(0));
+    private static Mono<VectorSearchResults<GitHubFile>> search(
+        String searchText,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Generate embeddings for the search text and search for the closest records
+        return embeddingGeneration.generateEmbeddingAsync(searchText)
+            .flatMap(r -> recordCollection.searchAsync(r.getVector(), null));
     }
 
     private static Mono<List<String>> storeData(

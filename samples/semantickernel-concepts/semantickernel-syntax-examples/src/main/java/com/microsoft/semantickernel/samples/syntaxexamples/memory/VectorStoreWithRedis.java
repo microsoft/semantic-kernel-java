@@ -10,9 +10,8 @@ import com.microsoft.semantickernel.data.redis.RedisJsonVectorStoreRecordCollect
 import com.microsoft.semantickernel.data.redis.RedisStorageType;
 import com.microsoft.semantickernel.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.data.redis.RedisVectorStoreOptions;
-import com.microsoft.semantickernel.data.textsearch.TextSearchResultValue;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VectorStoreTextSearch;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
@@ -42,12 +41,11 @@ public class VectorStoreWithRedis {
     private static final int EMBEDDING_DIMENSIONS = 1536;
 
     public static class GitHubFile {
-        @VectorStoreRecordKey()
+        @VectorStoreRecordKey
         private final String id;
-        @VectorStoreRecordData()
+        @VectorStoreRecordData
         private final String description;
         @VectorStoreRecordData
-        @TextSearchResultValue
         private final String link;
         @VectorStoreRecordVector(dimensions = EMBEDDING_DIMENSIONS, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.COSINE_DISTANCE)
         private final List<Float> embedding;
@@ -146,23 +144,27 @@ public class VectorStoreWithRedis {
             .then(storeData(collection, embeddingGeneration, sampleData()))
             .block();
 
-        // Build a vectorized search
-        var vectorStoreTextSearch = VectorStoreTextSearch.<GitHubFile>builder()
-            .withVectorizedSearch(collection)
-            .withTextEmbeddingGenerationService(embeddingGeneration)
-            .build();
-
         // Search for results
-        String query = "How to get started?";
-        var results = vectorStoreTextSearch.searchAsync(query, null)
-            .block();
+        // Might need to wait for the data to be indexed
+        var results = search("How to get started", collection, embeddingGeneration).block();
 
         if (results == null || results.getTotalCount() == 0) {
             System.out.println("No search results found.");
             return;
         }
+        var searchResult = results.getResults().get(0);
+        System.out.printf("Search result with score: %f.%n Link: %s, Description: %s%n",
+            searchResult.getScore(), searchResult.getRecord().link,
+            searchResult.getRecord().description);
+    }
 
-        System.out.printf("Best result for '%s': %s%n", query, results.getResults().get(0));
+    private static Mono<VectorSearchResults<GitHubFile>> search(
+        String searchText,
+        VectorStoreRecordCollection<String, GitHubFile> recordCollection,
+        OpenAITextEmbeddingGenerationService embeddingGeneration) {
+        // Generate embeddings for the search text and search for the closest records
+        return embeddingGeneration.generateEmbeddingAsync(searchText)
+            .flatMap(r -> recordCollection.searchAsync(r.getVector(), null));
     }
 
     private static Mono<List<String>> storeData(
