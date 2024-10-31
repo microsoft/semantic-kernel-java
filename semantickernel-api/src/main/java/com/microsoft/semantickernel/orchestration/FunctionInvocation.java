@@ -11,6 +11,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
+import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
@@ -47,6 +48,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     protected PromptExecutionSettings promptExecutionSettings;
     @Nullable
     protected ToolCallBehavior toolCallBehavior;
+    @Nullable
+    protected SemanticKernelTelemetry telemetry;
 
     private boolean isSubscribed = false;
 
@@ -313,6 +316,17 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     }
 
     /**
+     * Supply a tracer to the function invocation.
+     *
+     * @param tracer The tracer to supply to the function invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withTelemetry(SemanticKernelTelemetry telemetry) {
+        this.telemetry = telemetry;
+        return this;
+    }
+
+    /**
      * Use an invocation context variable to supply the types, tool call behavior, prompt execution
      * settings, and kernel hooks to the function invocation.
      *
@@ -329,6 +343,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         withToolCallBehavior(invocationContext.getToolCallBehavior());
         withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
         addKernelHooks(invocationContext.getKernelHooks());
+        withTelemetry(invocationContext.getTelemetry());
         return this;
     }
 
@@ -356,6 +371,10 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 function.getPluginName(), function.getName());
         }
 
+        if (telemetry == null) {
+            telemetry = new SemanticKernelTelemetry();
+        }
+
         isSubscribed = true;
 
         performSubscribe(
@@ -369,7 +388,8 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 promptExecutionSettings,
                 toolCallBehavior,
                 contextVariableTypes,
-                InvocationReturnMode.NEW_MESSAGES_ONLY));
+                InvocationReturnMode.NEW_MESSAGES_ONLY,
+                telemetry));
     }
 
 }

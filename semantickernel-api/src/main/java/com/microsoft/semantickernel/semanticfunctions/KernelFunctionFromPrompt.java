@@ -10,6 +10,8 @@ import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderingEvent;
+import com.microsoft.semantickernel.implementation.telemetry.FunctionSpan;
+import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -274,8 +276,22 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         @Nullable KernelFunctionArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
-        return invokeInternalAsync(kernel, arguments, variableType, invocationContext)
-            .takeLast(1).single();
+        return Mono.deferContextual(contextView -> {
+            FunctionSpan span = FunctionSpan.build(
+                SemanticKernelTelemetry.getTelemetry(invocationContext),
+                contextView,
+                this.getPluginName(),
+                this.getName(),
+                arguments);
+
+            return invokeInternalAsync(kernel, arguments, variableType, invocationContext)
+                .contextWrite(span.getReactorContextModifier())
+                .takeLast(1)
+                .single()
+                .doOnSuccess(span::onFunctionSuccess)
+                .doOnError(span::onFunctionError)
+                .doOnTerminate(span::close);
+        });
     }
 
     /**

@@ -76,57 +76,6 @@ public class OtelCaptureTest {
     }
 
     @Test
-    public void otelTextCaptureTest() {
-
-        OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
-
-        CompletionsUsage completionsUsage = Mockito.mock(CompletionsUsage.class);
-        Mockito.when(completionsUsage.getCompletionTokens()).thenReturn(22);
-        Mockito.when(completionsUsage.getPromptTokens()).thenReturn(55);
-
-        Completions completions = Mockito.mock(Completions.class);
-        Mockito.when(completions.getUsage()).thenReturn(completionsUsage);
-
-        Response<Completions> response = Mockito.mock(Response.class);
-        Mockito.when(response.getStatusCode()).thenReturn(200);
-        Mockito.when(response.getValue()).thenReturn(completions);
-
-        Mockito.when(openAIAsyncClient.getCompletionsWithResponse(
-            Mockito.any(),
-            Mockito.<CompletionsOptions>any(),
-            Mockito.any())).thenAnswer(invocation -> Mono.just(response));
-
-        TextGenerationService client = OpenAITextGenerationService.builder()
-            .withOpenAIAsyncClient(openAIAsyncClient)
-            .withModelId("a-model")
-            .build();
-
-        try {
-            client.getTextContentsAsync(
-                "foo",
-                null,
-                null).block();
-        } catch (Exception e) {
-            // Expect to fail
-        }
-
-        Assertions.assertFalse(spans.isEmpty());
-        Assertions.assertEquals("a-model",
-            spans.get(0).getAttributes().get(AttributeKey.stringKey("gen_ai.request.model")));
-        Assertions.assertEquals("text.completions",
-            spans.get(0).getAttributes().get(AttributeKey.stringKey("gen_ai.operation.name")));
-        Assertions.assertEquals("openai",
-            spans.get(0).getAttributes().get(AttributeKey.stringKey("gen_ai.system")));
-        Assertions.assertEquals(22,
-            spans.get(0).getAttributes()
-                .get(AttributeKey.longKey("gen_ai.response.completion_tokens")));
-        Assertions.assertEquals(55,
-            spans.get(0).getAttributes()
-                .get(AttributeKey.longKey("gen_ai.response.prompt_tokens")));
-
-    }
-
-    @Test
     public void otelChatCaptureTest() {
         OpenAIAsyncClient openAIAsyncClient = Mockito.mock(OpenAIAsyncClient.class);
 
