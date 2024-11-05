@@ -6,9 +6,12 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.instrumentation.reactor.v3_1.ContextPropagationOperator;
 import java.io.Closeable;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import org.slf4j.Logger;
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 import reactor.util.context.ContextView;
 
 public abstract class SemanticKernelTelemetrySpan implements Closeable {
@@ -16,11 +19,29 @@ public abstract class SemanticKernelTelemetrySpan implements Closeable {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(
         SemanticKernelTelemetrySpan.class);
 
+    private static final long SPAN_TIMEOUT_MS = Long.parseLong((String) System.getProperties()
+        .getOrDefault("semantickernel.telemetry.span_timeout", "120000"));
+
     private final Span span;
     private final Function<reactor.util.context.Context, reactor.util.context.Context> reactorContextModifier;
     private final Scope spanScope;
     private final Scope contextScope;
     private final AtomicBoolean closed = new AtomicBoolean(false);
+
+    // Timeout to close the span if it was not closed within the specified time to avoid memory leaks
+    private final Disposable watchdog;
+
+    // This is a finalizer guardian to ensure that the span is closed if it was not closed explicitly
+    @SuppressWarnings("unused")
+    private final Object finalizerGuardian = new Object() {
+        @Override
+        protected void finalize() {
+            if (closed.get() == false) {
+                LOGGER.warn("Span was not closed");
+                close();
+            }
+        }
+    };
 
     public SemanticKernelTelemetrySpan(Span span,
         Function<reactor.util.context.Context, reactor.util.context.Context> reactorContextModifier,
@@ -29,6 +50,15 @@ public abstract class SemanticKernelTelemetrySpan implements Closeable {
         this.reactorContextModifier = reactorContextModifier;
         this.spanScope = spanScope;
         this.contextScope = contextScope;
+
+        watchdog = Mono.just(1)
+            .delay(Duration.ofMillis(SPAN_TIMEOUT_MS))
+            .subscribe(i -> {
+                if (closed.get() == false) {
+                    LOGGER.warn("Span was not closed, timing out");
+                    close();
+                }
+            });
     }
 
     public interface SpanConstructor<T extends SemanticKernelTelemetrySpan> {
@@ -71,14 +101,27 @@ public abstract class SemanticKernelTelemetrySpan implements Closeable {
         if (closed.compareAndSet(false, true)) {
             LOGGER.trace("Closing span: {}", span);
             if (span.isRecording()) {
-                span.end();
+                try {
+                    span.end();
+                } catch (Exception e) {
+                    LOGGER.error("Error closing span", e);
+                }
             }
             if (contextScope != null) {
-                contextScope.close();
+                try {
+                    contextScope.close();
+                } catch (Exception e) {
+                    LOGGER.error("Error closing context scope", e);
+                }
             }
             if (spanScope != null) {
-                spanScope.close();
+                try {
+                    spanScope.close();
+                } catch (Exception e) {
+                    LOGGER.error("Error closing span scope", e);
+                }
             }
+            watchdog.dispose();
         }
     }
 
