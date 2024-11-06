@@ -41,7 +41,7 @@ public class Hotel {
     @VectorStoreRecordVector(dimensions = 8, indexKind = IndexKind.HNSW, distanceFunction = DistanceFunction.EUCLIDEAN_DISTANCE)
     private final List<Float> indexedEuclidean;
 
-    @VectorStoreRecordData
+    @VectorStoreRecordData(isFilterable = true)
     private final List<String> tags;
 
     @VectorStoreRecordData

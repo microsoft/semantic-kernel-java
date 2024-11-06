@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.data.redis.RedisStorageType;
 import com.microsoft.semantickernel.data.redis.RedisVectorStore;
 import com.microsoft.semantickernel.data.redis.RedisVectorStoreOptions;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollectionOptions;
-import com.microsoft.semantickernel.tests.data.jdbc.Hotel;
 import com.redis.testcontainers.RedisContainer;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
