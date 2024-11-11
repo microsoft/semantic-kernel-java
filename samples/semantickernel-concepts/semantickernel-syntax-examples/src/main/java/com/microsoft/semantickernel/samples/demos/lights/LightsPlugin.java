@@ -26,8 +26,8 @@ public class LightsPlugin {
 
     @DefineKernelFunction(name = "change_state", description = "Changes the state of the light")
     public LightModel changeState(
-        @KernelFunctionParameter(name = "id", description = "The ID of the light to change") int id,
-        @KernelFunctionParameter(name = "isOn", description = "The new state of the light") boolean isOn) {
+        @KernelFunctionParameter(name = "id", description = "The ID of the light to change", type = int.class) int id,
+        @KernelFunctionParameter(name = "isOn", description = "The new state of the light", type = boolean.class) boolean isOn) {
         System.out.println("Changing light " + id + " " + isOn);
         Optional<LightModel> light = lights.stream()
             .filter(l -> l.getId() == id)
