@@ -476,7 +476,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             ContextVariableTypeConverter<?> c = sourceType.getConverter();
 
             Object converted = c.toObject(invocationContext.getContextVariableTypes(), sourceValue,
-                targetArgType);
+                targetArgType, false);
             if (converted != null) {
                 return converted;
             }

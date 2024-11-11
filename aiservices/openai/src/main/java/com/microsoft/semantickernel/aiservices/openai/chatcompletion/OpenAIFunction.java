@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -149,7 +150,13 @@ class OpenAIFunction {
     private static String getSchemaForFunctionParameter(@Nullable InputVariable parameter) {
         List<String> entries = new ArrayList<>();
 
-        entries.add("\"type\":\"string\"");
+        String type = "string";
+
+        if (parameter != null && parameter.getType() != null) {
+            type = getJavaTypeToOpenAiFunctionType(parameter.getType());
+        }
+
+        entries.add("\"type\":\"" + type + "\"");
 
         // Add description if present
         if (parameter != null && parameter.getDescription() != null && !parameter.getDescription()
@@ -178,5 +185,29 @@ class OpenAIFunction {
         String schema = String.join(",", entries);
 
         return "{" + schema + "}";
+    }
+
+    private static String getJavaTypeToOpenAiFunctionType(String javaType) {
+        switch (javaType.toLowerCase(Locale.ROOT)) {
+            case "boolean":
+                return "boolean";
+            case "integer":
+            case "int":
+            case "long":
+            case "short":
+            case "byte":
+                return "integer";
+            case "double":
+            case "float":
+                return "number";
+            case "string":
+                return "string";
+            case "array":
+                return "array";
+            case "void":
+                return "null";
+            default:
+                return "object";
+        }
     }
 }
