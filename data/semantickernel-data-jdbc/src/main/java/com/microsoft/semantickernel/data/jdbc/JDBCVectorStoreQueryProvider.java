@@ -29,9 +29,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +56,8 @@ public class JDBCVectorStoreQueryProvider
     protected final DataSource dataSource;
     private final String collectionsTable;
     private final String prefixForCollectionTables;
+
+    private final Object dbCreationLock = new Object();
 
     @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
     protected JDBCVectorStoreQueryProvider(
@@ -89,12 +94,13 @@ public class JDBCVectorStoreQueryProvider
 
     /**
      * Creates a new instance of the JDBCVectorStoreQueryProvider class.
-     * @param dataSource the data source
-     * @param collectionsTable the collections table
+     *
+     * @param dataSource                the data source
+     * @param collectionsTable          the collections table
      * @param prefixForCollectionTables the prefix for collection tables
-     * @param supportedKeyTypes the supported key types
-     * @param supportedDataTypes the supported data types
-     * @param supportedVectorTypes the supported vector types
+     * @param supportedKeyTypes         the supported key types
+     * @param supportedDataTypes        the supported data types
+     * @param supportedVectorTypes      the supported vector types
      */
     public JDBCVectorStoreQueryProvider(
         @SuppressFBWarnings("EI_EXPOSE_REP2") @Nonnull DataSource dataSource,
@@ -276,48 +282,57 @@ public class JDBCVectorStoreQueryProvider
      */
     @Override
     @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    @GuardedBy("dbCreationLock")
     // SQL query is generated dynamically with valid identifiers
     public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
 
-        // No approximate search is supported in JDBCVectorStoreQueryProvider
-        if (recordDefinition.getVectorFields().stream()
-            .anyMatch(
-                field -> field.getIndexKind() != null && field.getIndexKind() != IndexKind.FLAT
-                    && field.getIndexKind() != IndexKind.UNDEFINED)) {
-            LOGGER
-                .warn(String.format("Indexes are not supported in %s. Ignoring indexKind property.",
-                    this.getClass().getName()));
+        synchronized (dbCreationLock) {
+            // No approximate search is supported in JDBCVectorStoreQueryProvider
+            if (recordDefinition.getVectorFields().stream()
+                .anyMatch(
+                    field -> field.getIndexKind() != null && field.getIndexKind() != IndexKind.FLAT
+                        && field.getIndexKind() != IndexKind.UNDEFINED)) {
+                LOGGER
+                    .warn(String.format(
+                        "Indexes are not supported in %s. Ignoring indexKind property.",
+                        this.getClass().getName()));
+            }
+
+            String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
+                + "%s VARCHAR(255) PRIMARY KEY, "
+                + "%s, "
+                + "%s);",
+                getCollectionTableName(collectionName),
+                getKeyColumnName(recordDefinition.getKeyField()),
+                getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
+                    getSupportedDataTypes()),
+                getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getVectorFields()),
+                    getSupportedVectorTypes()));
+
+            String insertCollectionQuery = this.getInsertCollectionQuery(collectionsTable);
+
+            try (Connection connection = dataSource.getConnection();
+                PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
+                createTable.execute();
+            } catch (SQLException e) {
+                throw new SKException("Failed to create collection", e);
+            }
+
+            try (Connection connection = dataSource.getConnection();
+                PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
+                insert.setObject(1, collectionName);
+                insert.execute();
+            } catch (SQLException e) {
+                throw new SKException("Failed to insert collection", e);
+            }
         }
+    }
 
-        String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
-            + "%s VARCHAR(255) PRIMARY KEY, "
-            + "%s, "
-            + "%s);",
-            getCollectionTableName(collectionName),
-            getKeyColumnName(recordDefinition.getKeyField()),
-            getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
-                getSupportedDataTypes()),
-            getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getVectorFields()),
-                getSupportedVectorTypes()));
-
-        String insertCollectionQuery = formatQuery("INSERT INTO %s (collectionId) VALUES (?)",
+    protected String getInsertCollectionQuery(String collectionsTable) {
+        return formatQuery(
+            "INSERT IGNORE INTO %s (collectionId) VALUES (?)",
             validateSQLidentifier(collectionsTable));
-
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement createTable = connection.prepareStatement(createStorageTable)) {
-            createTable.execute();
-        } catch (SQLException e) {
-            throw new SKException("Failed to create collection", e);
-        }
-
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement insert = connection.prepareStatement(insertCollectionQuery)) {
-            insert.setObject(1, collectionName);
-            insert.execute();
-        } catch (SQLException e) {
-            throw new SKException("Failed to insert collection", e);
-        }
     }
 
     /**
@@ -327,26 +342,29 @@ public class JDBCVectorStoreQueryProvider
      * @throws SKException if an error occurs while deleting the collection
      */
     @Override
+    @GuardedBy("dbCreationLock")
     public void deleteCollection(String collectionName) {
-        String deleteCollectionOperation = formatQuery("DELETE FROM %s WHERE collectionId = ?",
-            validateSQLidentifier(collectionsTable));
-        String dropTableOperation = formatQuery("DROP TABLE %s",
-            getCollectionTableName(collectionName));
+        synchronized (dbCreationLock) {
+            String deleteCollectionOperation = formatQuery("DELETE FROM %s WHERE collectionId = ?",
+                validateSQLidentifier(collectionsTable));
+            String dropTableOperation = formatQuery("DROP TABLE %s",
+                getCollectionTableName(collectionName));
 
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement deleteCollection = connection
-                .prepareStatement(deleteCollectionOperation)) {
-            deleteCollection.setObject(1, collectionName);
-            deleteCollection.execute();
-        } catch (SQLException e) {
-            throw new SKException("Failed to delete collection", e);
-        }
+            try (Connection connection = dataSource.getConnection();
+                PreparedStatement deleteCollection = connection
+                    .prepareStatement(deleteCollectionOperation)) {
+                deleteCollection.setObject(1, collectionName);
+                deleteCollection.execute();
+            } catch (SQLException e) {
+                throw new SKException("Failed to delete collection", e);
+            }
 
-        try (Connection connection = dataSource.getConnection();
-            PreparedStatement dropTable = connection.prepareStatement(dropTableOperation)) {
-            dropTable.execute();
-        } catch (SQLException e) {
-            throw new SKException("Failed to drop table", e);
+            try (Connection connection = dataSource.getConnection();
+                PreparedStatement dropTable = connection.prepareStatement(dropTableOperation)) {
+                dropTable.execute();
+            } catch (SQLException e) {
+                throw new SKException("Failed to drop table", e);
+            }
         }
     }
 
@@ -518,8 +536,8 @@ public class JDBCVectorStoreQueryProvider
      *
      * @param <Record>         the record type
      * @param collectionName   the collection name
-     * @param vector the vector to search with
-     * @param options the search options
+     * @param vector           the vector to search with
+     * @param options          the search options
      * @param recordDefinition the record definition
      * @param mapper           the mapper, responsible for mapping the result set to the record
      *                         type.
@@ -622,8 +640,8 @@ public class JDBCVectorStoreQueryProvider
     }
 
     /**
-     * Gets the filter parameters for the given vector search filter to associate with the filter string
-     * generated by the getFilter method.
+     * Gets the filter parameters for the given vector search filter to associate with the filter
+     * string generated by the getFilter method.
      *
      * @param filter The filter to get the filter parameters for.
      * @return The filter parameters.
