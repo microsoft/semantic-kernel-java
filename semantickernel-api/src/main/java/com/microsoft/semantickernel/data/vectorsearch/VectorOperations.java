@@ -38,15 +38,17 @@ public final class VectorOperations {
             throw new SKException("Vectors lengths must be equal");
         }
 
-        float dotProduct = dot(x, y);
-        float normX = dot(x, x);
-        float normY = dot(y, y);
+        double dotProduct = 0.0;
+        double normX = 0.0;
+        double normY = 0.0;
 
-        if (normX == 0 || normY == 0) {
-            throw new SKException("Vectors cannot have zero norm");
+        for (int i = 0; i < x.size(); i++) {
+            dotProduct += x.get(i) * y.get(i);
+            normX += x.get(i) * x.get(i);
+            normY += y.get(i) * y.get(i);
         }
 
-        return dotProduct / (float) (Math.sqrt(normX) * Math.sqrt(normY));
+        return (float) (dotProduct / (float) (Math.sqrt(normX) * Math.sqrt(normY)));
     }
 
     /**
