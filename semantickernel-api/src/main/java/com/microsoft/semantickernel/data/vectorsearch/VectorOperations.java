@@ -38,9 +38,9 @@ public final class VectorOperations {
             throw new SKException("Vectors lengths must be equal");
         }
 
-        double dotProduct = 0.0;
-        double normX = 0.0;
-        double normY = 0.0;
+        float dotProduct = 0.0F;
+        float normX = 0.0F;
+        float normY = 0.0F;
 
         for (int i = 0; i < x.size(); i++) {
             dotProduct += x.get(i) * y.get(i);
@@ -48,7 +48,7 @@ public final class VectorOperations {
             normY += y.get(i) * y.get(i);
         }
 
-        return (float) (dotProduct / (float) (Math.sqrt(normX) * Math.sqrt(normY)));
+        return (dotProduct / (float) (Math.sqrt(normX) * Math.sqrt(normY)));
     }
 
     /**
