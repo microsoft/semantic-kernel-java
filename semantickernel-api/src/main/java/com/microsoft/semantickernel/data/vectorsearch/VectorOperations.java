@@ -48,6 +48,10 @@ public final class VectorOperations {
             normY += y.get(i) * y.get(i);
         }
 
+        if (normX == 0 || normY == 0) {
+            throw new SKException("Vectors cannot have zero norm");
+        }
+
         return (dotProduct / (float) (Math.sqrt(normX) * Math.sqrt(normY)));
     }
 
