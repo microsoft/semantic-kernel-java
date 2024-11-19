@@ -112,6 +112,13 @@ public class SQLiteVectorStoreQueryProvider extends
         }
     }
 
+    @Override
+    protected String getInsertCollectionQuery(String collectionsTable) {
+        return formatQuery(
+            "INSERT OR IGNORE INTO %s (collectionId) VALUES (?)",
+            validateSQLidentifier(collectionsTable));
+    }
+
     /**
      * A builder for {@code SQLiteVectorStoreQueryProvider}.
      */

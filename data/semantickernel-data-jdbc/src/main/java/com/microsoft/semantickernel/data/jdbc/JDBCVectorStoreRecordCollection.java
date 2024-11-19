@@ -6,8 +6,8 @@ import com.microsoft.semantickernel.data.jdbc.mysql.MySQLVectorStoreQueryProvide
 import com.microsoft.semantickernel.data.jdbc.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.jdbc.postgres.PostgreSQLVectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
-import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
+import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.options.DeleteRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
@@ -27,10 +27,9 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 /**
- * The JDBCVectorStoreRecordCollection class represents a collection of records
- * in a JDBC vector store. It implements the SQLVectorStoreRecordCollection
- * interface and provides methods for managing the collection, such as creating,
- * deleting, and upserting records.
+ * The JDBCVectorStoreRecordCollection class represents a collection of records in a JDBC vector
+ * store. It implements the SQLVectorStoreRecordCollection interface and provides methods for
+ * managing the collection, such as creating, deleting, and upserting records.
  *
  * @param <Record> the type of the records in the collection
  */
@@ -322,6 +321,7 @@ public class JDBCVectorStoreRecordCollection<Record>
 
     /**
      * Builder for a JDBCVectorStoreRecordCollection.
+     *
      * @param <Record> the type of the records in the collection
      */
     public static class Builder<Record>
