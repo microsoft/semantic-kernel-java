@@ -14,8 +14,6 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.services.StreamingTextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextContent;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
-import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
-import io.opentelemetry.api.trace.Span;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -84,23 +82,14 @@ public class OpenAITextGenerationService extends OpenAiService<OpenAIAsyncClient
 
         CompletionsOptions completionsOptions = getCompletionsOptions(text, requestSettings);
 
-        Span span = SemanticKernelTelemetry.startTextCompletionSpan(
-            getModelId(),
-            SemanticKernelTelemetry.OPEN_AI_PROVIDER,
-            completionsOptions.getMaxTokens(),
-            completionsOptions.getTemperature(),
-            completionsOptions.getTopP());
         return getClient()
             .getCompletionsWithResponse(getDeploymentName(), completionsOptions,
                 OpenAIRequestSettings.getRequestOptions())
             .flatMap(completionsResult -> {
                 if (completionsResult.getStatusCode() >= 400) {
-                    SemanticKernelTelemetry.endSpanWithError(span);
                     return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
                         "Request failed: " + completionsResult.getStatusCode()));
                 }
-                SemanticKernelTelemetry.endSpanWithUsage(span,
-                    completionsResult.getValue().getUsage());
                 return Mono.just(completionsResult.getValue());
             })
             .map(completions -> {

@@ -50,6 +50,7 @@ import com.microsoft.semantickernel.hooks.PostChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PreToolCallEvent;
 import com.microsoft.semantickernel.implementation.CollectionUtil;
+import com.microsoft.semantickernel.implementation.telemetry.ChatCompletionSpan;
 import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
@@ -69,7 +70,6 @@ import com.microsoft.semantickernel.services.chatcompletion.StreamingChatContent
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageContentType;
 import com.microsoft.semantickernel.services.chatcompletion.message.ChatMessageImageContent;
 import com.microsoft.semantickernel.services.openai.OpenAiServiceBuilder;
-import io.opentelemetry.api.trace.Span;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -419,26 +419,32 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     invocationContext)))
             .getOptions();
 
-        Span span = SemanticKernelTelemetry.startChatCompletionSpan(
-            getModelId(),
-            SemanticKernelTelemetry.OPEN_AI_PROVIDER,
-            options.getMaxTokens(),
-            options.getTemperature(),
-            options.getTopP());
-        return getClient()
-            .getChatCompletionsWithResponse(getDeploymentName(), options,
-                OpenAIRequestSettings.getRequestOptions())
-            .flatMap(completionsResult -> {
-                if (completionsResult.getStatusCode() >= 400) {
-                    SemanticKernelTelemetry.endSpanWithError(span);
-                    return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
-                        "Request failed: " + completionsResult.getStatusCode()));
-                }
-                SemanticKernelTelemetry.endSpanWithUsage(span,
-                    completionsResult.getValue().getUsage());
+        return Mono.deferContextual(contextView -> {
+            ChatCompletionSpan span = ChatCompletionSpan.startChatCompletionSpan(
+                SemanticKernelTelemetry.getTelemetry(invocationContext),
+                contextView,
+                getModelId(),
+                SemanticKernelTelemetry.OPEN_AI_PROVIDER,
+                options.getMaxTokens(),
+                options.getTemperature(),
+                options.getTopP());
 
-                return Mono.just(completionsResult.getValue());
-            })
+            return getClient()
+                .getChatCompletionsWithResponse(getDeploymentName(), options,
+                    OpenAIRequestSettings.getRequestOptions())
+                .contextWrite(span.getReactorContextModifier())
+                .flatMap(completionsResult -> {
+                    if (completionsResult.getStatusCode() >= 400) {
+                        return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
+                            "Request failed: " + completionsResult.getStatusCode()));
+                    }
+
+                    return Mono.just(completionsResult.getValue());
+                })
+                .doOnError(span::endSpanWithError)
+                .doOnSuccess(span::endSpanWithUsage)
+                .doOnTerminate(span::close);
+        })
             .flatMap(completions -> {
 
                 List<ChatResponseMessage> responseMessages = completions

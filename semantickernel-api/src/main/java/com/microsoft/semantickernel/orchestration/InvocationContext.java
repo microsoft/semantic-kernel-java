@@ -6,6 +6,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
+import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -24,6 +25,7 @@ public class InvocationContext {
     private final ToolCallBehavior toolCallBehavior;
     private final ContextVariableTypes contextVariableTypes;
     private final InvocationReturnMode invocationReturnMode;
+    private final SemanticKernelTelemetry telemetry;
 
     /**
      * Create a new instance of InvocationContext.
@@ -38,7 +40,8 @@ public class InvocationContext {
         @Nullable PromptExecutionSettings promptExecutionSettings,
         @Nullable ToolCallBehavior toolCallBehavior,
         @Nullable ContextVariableTypes contextVariableTypes,
-        InvocationReturnMode invocationReturnMode) {
+        InvocationReturnMode invocationReturnMode,
+        SemanticKernelTelemetry telemetry) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
         this.toolCallBehavior = toolCallBehavior;
@@ -48,6 +51,7 @@ public class InvocationContext {
         } else {
             this.contextVariableTypes = new ContextVariableTypes(contextVariableTypes);
         }
+        this.telemetry = telemetry;
     }
 
     /**
@@ -59,6 +63,7 @@ public class InvocationContext {
         this.toolCallBehavior = null;
         this.contextVariableTypes = new ContextVariableTypes();
         this.invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
+        this.telemetry = null;
     }
 
     /**
@@ -73,12 +78,14 @@ public class InvocationContext {
             this.toolCallBehavior = null;
             this.contextVariableTypes = new ContextVariableTypes();
             this.invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
+            this.telemetry = null;
         } else {
             this.hooks = context.hooks;
             this.promptExecutionSettings = context.promptExecutionSettings;
             this.toolCallBehavior = context.toolCallBehavior;
             this.contextVariableTypes = context.contextVariableTypes;
             this.invocationReturnMode = context.invocationReturnMode;
+            this.telemetry = context.telemetry;
         }
     }
 
@@ -114,7 +121,8 @@ public class InvocationContext {
             .withKernelHooks(context.getKernelHooks())
             .withContextVariableConverter(context.contextVariableTypes)
             .withPromptExecutionSettings(context.getPromptExecutionSettings())
-            .withToolCallBehavior(context.getToolCallBehavior());
+            .withToolCallBehavior(context.getToolCallBehavior())
+            .withTelemetry(context.getTelemetry());
     }
 
     /**
@@ -166,6 +174,10 @@ public class InvocationContext {
         return invocationReturnMode;
     }
 
+    public SemanticKernelTelemetry getTelemetry() {
+        return telemetry;
+    }
+
     /**
      * Builder for {@link InvocationContext}.
      */
@@ -179,6 +191,8 @@ public class InvocationContext {
         @Nullable
         private ToolCallBehavior toolCallBehavior;
         private InvocationReturnMode invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
+        @Nullable
+        private SemanticKernelTelemetry telemetry;
 
         /**
          * Add kernel hooks to the builder.
@@ -252,10 +266,24 @@ public class InvocationContext {
             return this;
         }
 
+        /**
+         * Add a tracer to the builder.
+         *
+         * @param tracer the tracer to add.
+         * @return this {@link Builder}
+         */
+        public Builder withTelemetry(@Nullable SemanticKernelTelemetry telemetry) {
+            this.telemetry = telemetry;
+            return this;
+        }
+
         @Override
         public InvocationContext build() {
+            if (telemetry == null) {
+                telemetry = new SemanticKernelTelemetry();
+            }
             return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
-                contextVariableTypes, invocationReturnMode);
+                contextVariableTypes, invocationReturnMode, telemetry);
         }
     }
 

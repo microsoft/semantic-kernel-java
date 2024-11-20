@@ -10,13 +10,14 @@ import com.microsoft.semantickernel.Kernel.Builder;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
+import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionYaml;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 public class KernelFunctionYaml_Example {
 
@@ -29,7 +30,10 @@ public class KernelFunctionYaml_Example {
         .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     public static void main(String[] args) throws ConfigurationException, IOException {
+        run(null);
+    }
 
+    public static void run(@Nullable SemanticKernelTelemetry telemetry) throws IOException {
         OpenAIAsyncClient client;
 
         if (AZURE_CLIENT_KEY != null) {
@@ -51,12 +55,13 @@ public class KernelFunctionYaml_Example {
         Builder kernelBuilder = Kernel.builder()
             .withAIService(ChatCompletionService.class, openAIChatCompletion);
 
-        semanticKernelTemplate(kernelBuilder.build());
-        handlebarsTemplate(kernelBuilder.build());
-
+        semanticKernelTemplate(kernelBuilder.build(), telemetry);
+        handlebarsTemplate(kernelBuilder.build(), telemetry);
     }
 
-    private static void handlebarsTemplate(Kernel kernel) throws IOException {
+    private static void handlebarsTemplate(Kernel kernel,
+        @Nullable SemanticKernelTelemetry telemetry)
+        throws IOException {
         String yaml = EmbeddedResourceLoader.readFile("GenerateStoryHandlebars.yaml",
             KernelFunctionYaml_Example.class);
 
@@ -69,12 +74,15 @@ public class KernelFunctionYaml_Example {
                     .withVariable("length", 5)
                     .withVariable("topic", "dogs")
                     .build())
+            .withTelemetry(telemetry)
             .block();
 
         System.out.println(result.getResult());
     }
 
-    private static void semanticKernelTemplate(Kernel kernel) throws IOException {
+    private static void semanticKernelTemplate(Kernel kernel,
+        @Nullable SemanticKernelTelemetry telemetry)
+        throws IOException {
         String yaml = EmbeddedResourceLoader.readFile("GenerateStory.yaml",
             KernelFunctionYaml_Example.class);
 
@@ -87,6 +95,7 @@ public class KernelFunctionYaml_Example {
                     .withVariable("length", 5)
                     .withVariable("topic", "cats")
                     .build())
+            .withTelemetry(telemetry)
             .block();
 
         System.out.println(result.getResult());

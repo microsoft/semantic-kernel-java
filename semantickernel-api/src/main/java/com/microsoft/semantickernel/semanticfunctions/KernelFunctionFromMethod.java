@@ -14,6 +14,8 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.hooks.FunctionInvokedEvent;
 import com.microsoft.semantickernel.hooks.FunctionInvokingEvent;
 import com.microsoft.semantickernel.hooks.KernelHooks;
+import com.microsoft.semantickernel.implementation.telemetry.FunctionSpan;
+import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
@@ -150,9 +152,10 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     /**
      * Gets the function from the method.
-     * @param method the method to invoke
+     *
+     * @param method   the method to invoke
      * @param instance the instance to invoke the method on
-     * @param <T> the return type of the function
+     * @param <T>      the return type of the function
      * @return the function representing the method
      */
     @SuppressWarnings("unchecked")
@@ -367,6 +370,8 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
         if (Kernel.class.isAssignableFrom(targetArgType)) {
             return kernel;
+        } else if (SemanticKernelTelemetry.class.isAssignableFrom(targetArgType)) {
+            return invocationContext.getTelemetry();
         }
 
         String variableName = getGetVariableName(parameter);
@@ -692,6 +697,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     /**
      * Gets the constants from an enum type.
+     *
      * @param type the type to get the enum constants from
      * @return a list of the enum constants or {@code null} if the type is not an enum
      */
@@ -726,11 +732,27 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         @Nullable KernelFunctionArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
-        return function.invokeAsync(kernel, this, arguments, variableType, invocationContext);
+
+        return Mono.deferContextual(contextView -> {
+            FunctionSpan span = FunctionSpan.build(
+                SemanticKernelTelemetry.getTelemetry(invocationContext),
+                contextView,
+                this.getPluginName(),
+                this.getName(),
+                arguments);
+
+            return function
+                .invokeAsync(kernel, this, arguments, variableType, invocationContext)
+                .contextWrite(span.getReactorContextModifier())
+                .doOnSuccess(span::onFunctionSuccess)
+                .doOnError(span::onFunctionError)
+                .doOnTerminate(span::close);
+        });
     }
 
     /**
      * Concrete implementation of the abstract method in KernelFunction.
+     *
      * @param <T> the return type of the function
      */
     public interface ImplementationFunc<T> {
@@ -775,6 +797,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
 
     /**
      * A builder for {@link KernelFunction}.
+     *
      * @param <T> the return type of the function
      */
     public static class Builder<T> {
