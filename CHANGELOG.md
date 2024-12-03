@@ -1,3 +1,11 @@
+# 1.4.1
+
+- Add Otel Telemetry on function invocations
+- Fix bug to add type information to OpenAI function parameters
+- Improve efficiency of cosine similarity calculation
+- Fix concurrency bugs on database creation
+- Add sample demonstrating a text splitter for chunking text for embedding
+
 # 1.4.0
 
 - Upgrade to azure-ai-openai 1.0.0-beta.12
