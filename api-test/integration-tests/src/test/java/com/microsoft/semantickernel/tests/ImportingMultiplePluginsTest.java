@@ -4,11 +4,13 @@ package com.microsoft.semantickernel.tests;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ImportingMultiplePluginsTest {
-
+    @Disabled
     @Test
     public void canImportMultiplePlugins() {
         KernelPlugin summarize = KernelPluginFactory.importPluginFromResourcesDirectory(

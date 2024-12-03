@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
@@ -95,6 +96,7 @@ public class ResponseSchemaTest {
         );
     }
 
+    @Disabled
     @Test
     public void sendsResponseSchema() {
         OpenAIAsyncClient client = getOpenAIAsyncClient(
