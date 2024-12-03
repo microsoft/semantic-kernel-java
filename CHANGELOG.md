@@ -5,6 +5,7 @@
 - Improve efficiency of cosine similarity calculation
 - Fix concurrency bugs on database creation
 - Add sample demonstrating a text splitter for chunking text for embedding
+- Add hybridSearchAsync support to Azure AI Search
 
 # 1.4.0
 
