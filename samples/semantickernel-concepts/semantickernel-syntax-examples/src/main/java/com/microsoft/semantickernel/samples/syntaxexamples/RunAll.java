@@ -20,8 +20,8 @@ import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example59_O
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example60_AdvancedMethodFunctions;
 import com.microsoft.semantickernel.samples.syntaxexamples.java.KernelFunctionYaml_Example;
 import com.microsoft.semantickernel.samples.syntaxexamples.memory.VectorStoreWithAzureAISearch;
-import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example10_DescribeAllPluginsAndFunctions;
-import com.microsoft.semantickernel.samples.syntaxexamples.plugins.Example13_ConversationSummaryPlugin;
+import com.microsoft.semantickernel.samples.syntaxexamples.plugin.Example10_DescribeAllPluginsAndFunctions;
+import com.microsoft.semantickernel.samples.syntaxexamples.plugin.Example13_ConversationSummaryPlugin;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example06_TemplateLanguage;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example56_TemplateMethodFunctionsWithMultipleArguments;
 import com.microsoft.semantickernel.samples.syntaxexamples.template.Example64_MultiplePromptTemplates;
