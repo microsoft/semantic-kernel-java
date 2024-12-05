@@ -189,21 +189,30 @@ class OpenAIFunction {
 
     private static String getJavaTypeToOpenAiFunctionType(String javaType) {
         switch (javaType.toLowerCase(Locale.ROOT)) {
+            case "java.lang.boolean":
             case "boolean":
                 return "boolean";
+            case "java.lang.integer":
             case "integer":
             case "int":
+            case "java.lang.long":
             case "long":
+            case "java.lang.short":
             case "short":
+            case "java.lang.byte":
             case "byte":
                 return "integer";
+            case "java.lang.double":
             case "double":
+            case "java.lang.float":
             case "float":
                 return "number";
+            case "java.lang.string":
             case "string":
                 return "string";
             case "array":
                 return "array";
+            case "java.lang.void":
             case "void":
                 return "null";
             default:
