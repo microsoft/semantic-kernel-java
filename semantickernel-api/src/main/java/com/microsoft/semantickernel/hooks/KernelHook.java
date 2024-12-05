@@ -115,8 +115,11 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
                 .setN(options.getN())
                 .setResponseFormat(options.getResponseFormat())
                 .setSeed(options.getSeed())
-                .setStream(options.isStream())
-                .setToolChoice(options.getToolChoice());
+                .setStream(options.isStream());
+
+            if (options.getToolChoice() != null) {
+                newOptions.setToolChoice(options.getToolChoice());
+            }
 
             if (options.getFunctionCall() != null) {
                 newOptions = newOptions.setFunctionCall(options.getFunctionCall());

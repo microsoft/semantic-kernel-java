@@ -1,3 +1,7 @@
+# 1.4.2
+
+- Fix bug effecting using native Java methods with OpenAI tool calling
+
 # 1.4.1
 
 - Add Otel Telemetry on function invocations
