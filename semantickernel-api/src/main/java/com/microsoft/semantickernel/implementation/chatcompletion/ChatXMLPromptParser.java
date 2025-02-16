@@ -109,7 +109,7 @@ public class ChatXMLPromptParser {
         // </function>
 
         try (InputStream is = new ByteArrayInputStream(prompt.getBytes(StandardCharsets.UTF_8))) {
-            XMLInputFactory factory = XMLInputFactory.newFactory();
+            XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLEventReader reader = factory.createXMLEventReader(is);
             FunctionDefinition functionDefinition = null;
             Map<String, String> parameters = new HashMap<>();
