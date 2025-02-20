@@ -24,6 +24,17 @@ public class LightsPlugin {
         return lights;
     }
 
+    @DefineKernelFunction(name = "add_light", description = "Adds a new light")
+    public String addLight(
+        @KernelFunctionParameter(name = "newLight", description = "new Light Details", type = LightModel.class) LightModel light) {
+        if( light != null) {
+            System.out.println("Adding light " + light.getName());
+            lights.add(light);
+            return "Light added";
+        }
+        return "Light failed to added";
+    }
+
     @DefineKernelFunction(name = "change_state", description = "Changes the state of the light")
     public LightModel changeState(
         @KernelFunctionParameter(name = "id", description = "The ID of the light to change", type = int.class) int id,

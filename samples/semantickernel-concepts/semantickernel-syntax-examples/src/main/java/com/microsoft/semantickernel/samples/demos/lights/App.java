@@ -70,9 +70,7 @@ public class App {
             ChatCompletionService.class);
 
         ContextVariableTypes
-            .addGlobalConverter(ContextVariableTypeConverter.builder(LightModel.class)
-                .toPromptString(new Gson()::toJson)
-                .build());
+            .addGlobalConverter(new LightModelTypeConverter());
 
         KernelHooks hook = new KernelHooks();
 
@@ -99,9 +97,7 @@ public class App {
         InvocationContext invocationContext = new Builder()
             .withReturnMode(InvocationReturnMode.LAST_MESSAGE_ONLY)
             .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
-            .withContextVariableConverter(ContextVariableTypeConverter.builder(LightModel.class)
-                .toPromptString(new Gson()::toJson)
-                .build())
+            .withContextVariableConverter(new LightModelTypeConverter())
             .build();
 
         // Create a history to store the conversation

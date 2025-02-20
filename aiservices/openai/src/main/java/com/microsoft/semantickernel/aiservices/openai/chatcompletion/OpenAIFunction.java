@@ -7,19 +7,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.orchestration.responseformat.ResponseSchemaGenerator;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
+import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 class OpenAIFunction {
+    private static final ConcurrentHashMap<String, String> SCHEMA_CACHE = new ConcurrentHashMap<>();
 
     private final String pluginName;
     private final String name;
@@ -159,14 +165,17 @@ class OpenAIFunction {
         entries.add("\"type\":\"" + type + "\"");
 
         // Add description if present
+        String description =null;
         if (parameter != null && parameter.getDescription() != null && !parameter.getDescription()
             .isEmpty()) {
-            String description = parameter.getDescription();
+            description = parameter.getDescription();
             description = description.replaceAll("\\r?\\n|\\r", "");
             description = description.replace("\"", "\\\"");
-
-            description = String.format("\"description\":\"%s\"", description);
-            entries.add(description);
+            entries.add(String.format("\"description\":\"%s\"", description));
+        }
+        // If custom type, generate schema
+        if("object".equalsIgnoreCase(type)) {
+            return getObjectSchema(parameter.getType(), description);
         }
 
         // Add enum options if parameter is an enum
@@ -218,5 +227,25 @@ class OpenAIFunction {
             default:
                 return "object";
         }
+    }
+
+    private static String getObjectSchema(String type, String description){
+        String schema= "";
+        try {
+            if(SCHEMA_CACHE.containsKey(type)) {
+                schema= SCHEMA_CACHE.get(type);
+            } else {
+                Class<?> clazz = Class.forName(type);
+                schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
+                SCHEMA_CACHE.put(type, schema);
+            }
+        } catch (ClassNotFoundException | SKException ignored) {
+
+        }
+        Map<String, Object> properties = BinaryData.fromString(schema).toObject(Map.class);
+        if(StringUtils.isNotBlank(description)) {
+            properties.put("description", description);
+        }
+        return BinaryData.fromObject(properties).toString();
     }
 }
