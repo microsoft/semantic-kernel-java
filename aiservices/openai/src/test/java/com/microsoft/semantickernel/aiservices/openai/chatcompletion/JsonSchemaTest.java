@@ -46,7 +46,9 @@ public class JsonSchemaTest {
         OpenAIFunction openAIFunction = OpenAIFunction.build(
             testFunction.getMetadata(),
             plugin.getName());
-        System.out.println(openAIFunction.getFunctionDefinition());
+
+       String parameters = "{\"type\":\"object\",\"required\":[\"person\",\"input\"],\"properties\":{\"input\":{\"type\":\"string\",\"description\":\"input string\"},\"person\":{\"type\":\"object\",\"properties\":{\"age\":{\"type\":\"integer\",\"description\":\"The age of the person.\"},\"name\":{\"type\":\"string\",\"description\":\"The name of the person.\"},\"title\":{\"type\":\"string\",\"enum\":[\"MS\",\"MRS\",\"MR\"],\"description\":\"The title of the person.\"}},\"required\":[\"age\",\"name\",\"title\"],\"additionalProperties\":false,\"description\":\"input person\"}}}";
+       Assertions.assertEquals(parameters, openAIFunction.getFunctionDefinition().getParameters().toString());
 
     }
 

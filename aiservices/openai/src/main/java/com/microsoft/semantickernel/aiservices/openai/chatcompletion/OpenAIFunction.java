@@ -25,7 +25,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 class OpenAIFunction {
-    private static final ConcurrentHashMap<String, String> SCHEMA_CACHE = new ConcurrentHashMap<>();
 
     private final String pluginName;
     private final String name;
@@ -230,15 +229,11 @@ class OpenAIFunction {
     }
 
     private static String getObjectSchema(String type, String description){
-        String schema= "";
+        String schema= "{ \"type\" : \"object\" }";
         try {
-            if(SCHEMA_CACHE.containsKey(type)) {
-                schema= SCHEMA_CACHE.get(type);
-            } else {
                 Class<?> clazz = Class.forName(type);
                 schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
-                SCHEMA_CACHE.put(type, schema);
-            }
+
         } catch (ClassNotFoundException | SKException ignored) {
 
         }
