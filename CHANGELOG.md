@@ -1,3 +1,7 @@
+# 1.4.3
+
+- Bug fix for execution on Android (https://github.com/microsoft/semantic-kernel-java/pull/284)
+
 # 1.4.2
 
 - Fix bug effecting using native Java methods with OpenAI tool calling
