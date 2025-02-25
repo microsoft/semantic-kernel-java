@@ -98,6 +98,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
         static ChatCompletionsOptions cloneOptionsWithMessages(
             ChatCompletionsOptions options,
             List<ChatRequestMessage> messages) {
+
             ChatCompletionsOptions newOptions = new ChatCompletionsOptions(messages)
                 .setPresencePenalty(options.getPresencePenalty())
                 .setFrequencyPenalty(options.getFrequencyPenalty())
@@ -114,8 +115,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
                 .setFunctions(options.getFunctions())
                 .setN(options.getN())
                 .setResponseFormat(options.getResponseFormat())
-                .setSeed(options.getSeed())
-                .setStream(options.isStream());
+                .setSeed(options.getSeed());
 
             if (options.getToolChoice() != null) {
                 newOptions.setToolChoice(options.getToolChoice());

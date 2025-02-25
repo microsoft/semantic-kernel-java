@@ -1,6 +1,7 @@
 # 1.4.3
 
 - Bug fix for execution on Android (https://github.com/microsoft/semantic-kernel-java/pull/284)
+- Upgrade to azure-ai-openai 1.0.0-beta.14
 
 # 1.4.2
 
