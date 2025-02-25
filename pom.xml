@@ -14,7 +14,7 @@
     <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.12</azure-ai-openai.version>
+        <azure-ai-openai.version>1.0.0-beta.14</azure-ai-openai.version>
         <checkstyle.version>10.18.2</checkstyle.version>
         <com.uber.nullaway.version>0.10.21</com.uber.nullaway.version>
         <compilingJdk8>false</compilingJdk8>
