@@ -1,10 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.demos.lights;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+
 public class LightModel {
 
+    @JsonPropertyDescription("The unique identifier of the light")
     private int id;
+
+    @JsonPropertyDescription("The name of the light")
     private String name;
+
+    @JsonPropertyDescription("The state of the light")
     private Boolean isOn;
 
     public LightModel(int id, String name, Boolean isOn) {
