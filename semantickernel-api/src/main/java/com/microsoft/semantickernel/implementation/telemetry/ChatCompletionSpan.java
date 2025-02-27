@@ -104,8 +104,8 @@ public class ChatCompletionSpan extends SemanticKernelTelemetrySpan {
         CompletionsUsage usage = chatCompletions.getUsage();
         getSpan().setStatus(StatusCode.OK);
         getSpan()
-            .setAttribute("gen_ai.response.completion_tokens", usage.getCompletionTokens());
-        getSpan().setAttribute("gen_ai.response.prompt_tokens", usage.getPromptTokens());
+            .setAttribute("gen_ai.usage.output_tokens", usage.getCompletionTokens());
+        getSpan().setAttribute("gen_ai.usage.input_tokens", usage.getPromptTokens());
         close();
     }
 
