@@ -118,9 +118,9 @@ public class OtelCaptureTest {
             spans.get(0).getAttributes().get(AttributeKey.stringKey("gen_ai.system")));
         Assertions.assertEquals(21,
             spans.get(0).getAttributes()
-                .get(AttributeKey.longKey("gen_ai.response.completion_tokens")));
+                .get(AttributeKey.longKey("gen_ai.usage.output_tokens")));
         Assertions.assertEquals(42,
             spans.get(0).getAttributes()
-                .get(AttributeKey.longKey("gen_ai.response.prompt_tokens")));
+                .get(AttributeKey.longKey("gen_ai.usage.input_tokens")));
     }
 }
