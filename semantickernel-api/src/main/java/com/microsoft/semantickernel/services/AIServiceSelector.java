@@ -26,7 +26,6 @@ public interface AIServiceSelector {
      * @return An {@code AIServiceSelection} containing the selected service and associated
      * PromptExecutionSettings.
      */
-//    @Deprecated
     @Nullable
     <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
