@@ -71,7 +71,7 @@ public class ConversationSummaryPlugin {
                 // The first parameter is the input text.
                 return func.invokeAsync(kernel)
                     .withArguments(
-                        new KernelArguments.Builder()
+                        KernelArguments.builder()
                             .withInput(paragraph)
                             .build())
                     .withResultType(
