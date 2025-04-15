@@ -34,7 +34,7 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
     public static final String MAIN_KEY = "input";
 
     protected final CaseInsensitiveMap<ContextVariable<?>> variables;
-    protected final Map<String, PromptExecutionSettings> promptExecutionSettings;
+    protected final Map<String, PromptExecutionSettings> executionSettings;
 
     /**
      * Create a new instance of KernelArguments.
@@ -43,17 +43,17 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      */
     protected KernelArguments(
             @Nullable Map<String, ContextVariable<?>> variables,
-            @Nullable Map<String, PromptExecutionSettings> promptExecutionSettings) {
+            @Nullable Map<String, PromptExecutionSettings> executionSettings) {
         if (variables == null) {
             this.variables = new CaseInsensitiveMap<>();
         } else {
             this.variables = new CaseInsensitiveMap<>(variables);
         }
 
-        if (promptExecutionSettings == null) {
-            this.promptExecutionSettings = new HashMap<>();
+        if (executionSettings == null) {
+            this.executionSettings = new HashMap<>();
         } else {
-            this.promptExecutionSettings = new HashMap<>(promptExecutionSettings);
+            this.executionSettings = new HashMap<>(executionSettings);
         }
     }
 
@@ -63,10 +63,8 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      * @param content The content to use for the function invocation.
      */
     protected KernelArguments(@NonNull ContextVariable<?> content) {
-        this.variables = new CaseInsensitiveMap<>();
+        this();
         this.variables.put(MAIN_KEY, content);
-
-        this.promptExecutionSettings = new HashMap<>();
     }
 
     /**
@@ -74,7 +72,7 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      */
     protected KernelArguments() {
         this.variables = new CaseInsensitiveMap<>();
-        this.promptExecutionSettings = new HashMap<>();
+        this.executionSettings = new HashMap<>();
     }
 
     /**
@@ -84,7 +82,7 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      */
     protected KernelArguments(@NonNull KernelArguments arguments) {
         this.variables = new CaseInsensitiveMap<>(arguments.variables);
-        this.promptExecutionSettings = new HashMap<>(arguments.promptExecutionSettings);
+        this.executionSettings = new HashMap<>(arguments.executionSettings);
     }
 
     /**
@@ -93,8 +91,8 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      * @return prompt execution settings
      */
     @Nonnull
-    public Map<String, PromptExecutionSettings> getPromptExecutionSettings() {
-        return Collections.unmodifiableMap(promptExecutionSettings);
+    public Map<String, PromptExecutionSettings> getExecutionSettings() {
+        return Collections.unmodifiableMap(executionSettings);
     }
 
     /**
@@ -233,7 +231,7 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      * @return copy of the current instance
      */
     public KernelArguments copy() {
-        return new KernelArguments(variables, promptExecutionSettings);
+        return new KernelArguments(variables, executionSettings);
     }
 
     /**
@@ -253,13 +251,13 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
 
         private final Function<KernelArguments, U> constructor;
         private final Map<String, ContextVariable<?>> variables;
-        private final Map<String, PromptExecutionSettings> promptExecutionSettings;
+        private final Map<String, PromptExecutionSettings> executionSettings;
 
 
         protected Builder(Function<KernelArguments, U> constructor) {
             this.constructor = constructor;
             this.variables = new HashMap<>();
-            this.promptExecutionSettings = new HashMap<>();
+            this.executionSettings = new HashMap<>();
         }
 
         /**
@@ -365,24 +363,28 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
         /**
          * Set prompt execution settings
          *
-         *  @param promptExecutionSettings Prompt execution settings
+         *  @param executionSettings Execution settings
          *  @return {$code this} Builder for fluent coding
          */
-        public Builder<U> withPromptExecutionSettings(Map<String, PromptExecutionSettings> promptExecutionSettings) {
-            return withPromptExecutionSettings(new ArrayList<>(promptExecutionSettings.values()));
+        public Builder<U> withExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
+            return withExecutionSettings(new ArrayList<>(executionSettings.values()));
         }
 
         /**
          * Set prompt execution settings
          *
-         * @param promptExecutionSettings Prompt execution settings
+         * @param executionSettings Execution settings
          * @return {$code this} Builder for fluent coding
          */
-        public Builder<U> withPromptExecutionSettings(List<PromptExecutionSettings> promptExecutionSettings) {
-            for (PromptExecutionSettings settings : promptExecutionSettings) {
+        public Builder<U> withExecutionSettings(List<PromptExecutionSettings> executionSettings) {
+            if (executionSettings == null) {
+                return this;
+            }
+
+            for (PromptExecutionSettings settings : executionSettings) {
                 String serviceId = settings.getServiceId();
 
-                if (this.promptExecutionSettings.containsKey(serviceId)) {
+                if (this.executionSettings.containsKey(serviceId)) {
                     if (serviceId.equals(PromptExecutionSettings.DEFAULT_SERVICE_ID)) {
                         throw new SKException(
                                 String.format(
@@ -404,7 +406,7 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
 
         @Override
         public U build() {
-            KernelArguments arguments = new KernelArguments(variables, promptExecutionSettings);
+            KernelArguments arguments = new KernelArguments(variables, executionSettings);
             return constructor.apply(arguments);
         }
     }
