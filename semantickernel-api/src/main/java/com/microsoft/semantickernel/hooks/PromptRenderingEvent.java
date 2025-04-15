@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class PromptRenderingEvent implements KernelHookEvent {
 
     private final KernelFunction<?> function;
-    private final KernelFunctionArguments arguments;
+    private final KernelArguments arguments;
 
     /**
      * Creates a new instance of the {@link PromptRenderingEvent} class.
@@ -21,9 +21,9 @@ public class PromptRenderingEvent implements KernelHookEvent {
      * @param arguments the arguments
      */
     public PromptRenderingEvent(KernelFunction<?> function,
-        @Nullable KernelFunctionArguments arguments) {
+        @Nullable KernelArguments arguments) {
         this.function = function;
-        this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();
+        this.arguments = KernelArguments.builder().withVariables(arguments).build();
     }
 
     /**
@@ -41,7 +41,7 @@ public class PromptRenderingEvent implements KernelHookEvent {
      * @return the arguments
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
-    public KernelFunctionArguments getArguments() {
+    public KernelArguments getArguments() {
         return arguments;
     }
 }

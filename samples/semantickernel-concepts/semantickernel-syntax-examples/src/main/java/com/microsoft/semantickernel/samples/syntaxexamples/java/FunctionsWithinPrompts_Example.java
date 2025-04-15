@@ -12,7 +12,7 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -154,7 +154,7 @@ public class FunctionsWithinPrompts_Example {
             // Invoke handlebars prompt
             var intent = kernel.invokeAsync(getIntent)
                 .withArguments(
-                    KernelFunctionArguments.builder()
+                    KernelArguments.builder()
                         .withVariable("request", request)
                         .withVariable("choices", choices)
                         .withVariable("history", historyString)
@@ -173,7 +173,7 @@ public class FunctionsWithinPrompts_Example {
             // Get chat response
             var chatResult = kernel.invokeAsync(chat)
                 .withArguments(
-                    KernelFunctionArguments.builder()
+                    KernelArguments.builder()
                         .withVariable("request", request)
                         .withVariable("history", historyString)
                         .build())

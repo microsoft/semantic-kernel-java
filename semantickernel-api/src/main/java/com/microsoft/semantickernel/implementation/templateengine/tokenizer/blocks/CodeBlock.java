@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException.ErrorCodes;
@@ -97,7 +97,7 @@ public final class CodeBlock extends Block implements CodeRendering {
     @Override
     public Mono<String> renderCodeAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable InvocationContext context) {
         if (!this.isValid()) {
             throw new TemplateException(ErrorCodes.SYNTAX_ERROR);
@@ -136,7 +136,7 @@ public final class CodeBlock extends Block implements CodeRendering {
     private <T> Mono<ContextVariable<T>> renderFunctionCallAsync(
         FunctionIdBlock fBlock,
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         InvocationContext context,
         ContextVariableType<T> resultType) {
 
@@ -145,7 +145,7 @@ public final class CodeBlock extends Block implements CodeRendering {
         if (this.tokens.size() > 1) {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
             arguments = this.enrichFunctionArguments(kernel, fBlock,
-                KernelFunctionArguments.builder().withVariables(arguments).build(),
+                KernelArguments.builder().withVariables(arguments).build(),
                 context);
         }
 
@@ -168,10 +168,10 @@ public final class CodeBlock extends Block implements CodeRendering {
     /// <param name="arguments">The prompt rendering arguments.</param>
     /// <returns>The function arguments.</returns>
     /// <exception cref="KernelException">Occurs when any argument other than the first is not a named argument.</exception>
-    private KernelFunctionArguments enrichFunctionArguments(
+    private KernelArguments enrichFunctionArguments(
         Kernel kernel,
         FunctionIdBlock fBlock,
-        KernelFunctionArguments arguments,
+        KernelArguments arguments,
         @Nullable InvocationContext context) {
         Block firstArg = this.tokens.get(1);
 

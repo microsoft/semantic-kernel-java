@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blo
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.util.annotation.Nullable;
@@ -41,7 +41,7 @@ public final class ValBlock extends Block implements TextRendering {
 
     @Override
     @Nullable
-    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelArguments variables) {
         return value;
     }
 

@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.text.TextChunker;
@@ -71,7 +71,7 @@ public class ConversationSummaryPlugin {
                 // The first parameter is the input text.
                 return func.invokeAsync(kernel)
                     .withArguments(
-                        new KernelFunctionArguments.Builder()
+                        new KernelArguments.Builder()
                             .withInput(paragraph)
                             .build())
                     .withResultType(

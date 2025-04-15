@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.contextvariables.converters.ContextVariableJacksonConverter;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.io.IOException;
 import java.util.Arrays;
@@ -114,7 +114,7 @@ public class CustomTypes_Example {
 
         Pet updated = kernel.invokePromptAsync(
             "Change Sandy's name to Daisy:\n{{$Sandy}}",
-            KernelFunctionArguments.builder()
+            KernelArguments.builder()
                 .withVariable("Sandy", sandy, typeConverter)
                 .build())
             .withTypeConverter(typeConverter)
@@ -139,7 +139,7 @@ public class CustomTypes_Example {
         // Invoke the prompt with the custom converter
         Pet updated = kernel.invokePromptAsync(
             "Increase Sandy's age by a year:\n{{$Sandy}}",
-            KernelFunctionArguments.builder()
+            KernelArguments.builder()
                 .withVariable("Sandy", sandy, typeConverter)
                 .build())
             .withTypeConverter(typeConverter)
@@ -167,7 +167,7 @@ public class CustomTypes_Example {
         // No need to explicitly tell the invocation how to convert the type
         Pet updated = kernel.invokePromptAsync(
             "Sandy's is actually a cat correct this:\n{{$Sandy}}",
-            KernelFunctionArguments.builder()
+            KernelArguments.builder()
                 .withVariable("Sandy", sandy)
                 .build())
             .withResultType(Pet.class)

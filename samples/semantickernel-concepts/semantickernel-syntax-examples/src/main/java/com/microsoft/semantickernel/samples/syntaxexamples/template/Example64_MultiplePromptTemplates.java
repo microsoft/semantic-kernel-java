@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.semanticfunctions.AggregatorPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateFactory;
@@ -75,7 +75,7 @@ public class Example64_MultiplePromptTemplates {
             .withPromptTemplateFactory(templateFactory)
             .build();
 
-        var arguments = KernelFunctionArguments.builder()
+        var arguments = KernelArguments.builder()
             .withVariable("name", "Bob")
             .build();
 

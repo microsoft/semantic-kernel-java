@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.text.TextPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -53,7 +53,7 @@ public class Example56_TemplateMethodFunctionsWithMultipleArguments {
 
         System.out.println("======== TemplateMethodFunctionsWithMultipleArguments ========");
 
-        var arguments = KernelFunctionArguments.builder()
+        var arguments = KernelArguments.builder()
             .withVariable("word2", " Potter")
             .build();
 

@@ -12,7 +12,7 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.MathPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import java.util.Scanner;
@@ -54,7 +54,7 @@ public class CreatingFunctions {
         // Test the math plugin
         var answer = kernel
             .invokeAsync(kernel.getFunction("MathPlugin", "sqrt"))
-            .withArguments(KernelFunctionArguments
+            .withArguments(KernelArguments
                 .builder()
                 .withVariable("number1", 12.0)
                 .build())

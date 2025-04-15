@@ -176,7 +176,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
             FunctionInvokingEvent updatedState = kernelHooks
                 .executeHooks(
                     new FunctionInvokingEvent(function, arguments));
-            KernelFunctionArguments updatedArguments = updatedState != null
+            KernelArguments updatedArguments = updatedState != null
                 ? updatedState.getArguments()
                 : arguments;
 
@@ -344,11 +344,11 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     @Nullable
     private static Function<Parameter, Object> getParameters(
         Method method,
-        @Nullable KernelFunctionArguments context,
+        @Nullable KernelArguments context,
         Kernel kernel,
         InvocationContext invocationContext) {
         return parameter -> {
-            if (KernelFunctionArguments.class.isAssignableFrom(parameter.getType())) {
+            if (KernelArguments.class.isAssignableFrom(parameter.getType())) {
                 return context;
             } else if (Kernel.class.isAssignableFrom(parameter.getType())) {
                 return kernel;
@@ -361,7 +361,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     @Nullable
     private static Object getArgumentValue(
         Method method,
-        @Nullable KernelFunctionArguments context,
+        @Nullable KernelArguments context,
         Parameter parameter,
         Kernel kernel,
         InvocationContext invocationContext) {
@@ -525,15 +525,15 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     @Nullable
     private static ContextVariable<?> getVariableFromContext(
         Method method,
-        @Nullable KernelFunctionArguments context,
+        @Nullable KernelArguments context,
         String variableName) {
         ContextVariable<?> variable = context == null ? null : context.get(variableName);
 
         // If there is 1 argument use "input" or the only argument
         if (variable == null && method.getParameters().length == 1) {
             if (context != null) {
-                if (context.containsKey(KernelFunctionArguments.MAIN_KEY)) {
-                    variable = context.get(KernelFunctionArguments.MAIN_KEY);
+                if (context.containsKey(KernelArguments.MAIN_KEY)) {
+                    variable = context.get(KernelArguments.MAIN_KEY);
                 } else if (context.size() == 1) {
                     variable = context.values().iterator().next();
                 }
@@ -672,7 +672,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         boolean isRequired = true;
         Class<?> type = parameter.getType();
 
-        if (Kernel.class.isAssignableFrom(type) || KernelFunctionArguments.class.isAssignableFrom(
+        if (Kernel.class.isAssignableFrom(type) || KernelArguments.class.isAssignableFrom(
             type)) {
             return null;
         }
@@ -729,7 +729,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
     @Override
     public Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
 
@@ -770,7 +770,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         Mono<FunctionResult<T>> invokeAsync(
             Kernel kernel,
             KernelFunction<T> function,
-            @Nullable KernelFunctionArguments arguments,
+            @Nullable KernelArguments arguments,
             @Nullable ContextVariableType<T> variableType,
             @Nullable InvocationContext invocationContext);
 
@@ -787,7 +787,7 @@ public class KernelFunctionFromMethod<T> extends KernelFunction<T> {
         default FunctionResult<T> invoke(
             Kernel kernel,
             KernelFunction<T> function,
-            @Nullable KernelFunctionArguments arguments,
+            @Nullable KernelArguments arguments,
             @Nullable ContextVariableType<T> variableType,
             @Nullable InvocationContext invocationContext) {
             return invokeAsync(kernel, function, arguments, variableType,

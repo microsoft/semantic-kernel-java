@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.implementation.telemetry;
 
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
@@ -27,7 +27,7 @@ public class FunctionSpan extends SemanticKernelTelemetrySpan {
         ContextView contextView,
         String pluginName,
         String name,
-        KernelFunctionArguments arguments) {
+        KernelArguments arguments) {
 
         SpanBuilder builder = telemetry.spanBuilder(
             String.format("function_invocation %s-%s", pluginName, name))

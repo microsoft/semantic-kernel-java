@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionYaml;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class KernelFunctionYaml_Example {
         FunctionResult<String> result = function
             .invokeAsync(kernel)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("length", 5)
                     .withVariable("topic", "dogs")
                     .build())
@@ -91,7 +91,7 @@ public class KernelFunctionYaml_Example {
         FunctionResult<String> result = function
             .invokeAsync(kernel)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("length", 5)
                     .withVariable("topic", "cats")
                     .build())

@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples.java;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.exceptions.ConfigurationException;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
@@ -41,7 +41,7 @@ public class FunctionsHandlebars_Example {
 
         var renderedPrompt = promptTemplate.renderAsync(
             kernel,
-            KernelFunctionArguments.builder()
+            KernelArguments.builder()
                 .withVariable("choices", choices)
                 .build(),
             null)

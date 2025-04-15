@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import javax.annotation.Nullable;
 
 /**
@@ -15,7 +15,7 @@ public interface AIServiceSelector {
     /**
      * Resolves an {@link AIService} and associated and
      * {@link com.microsoft.semantickernel.orchestration.PromptExecutionSettings} based on the
-     * associated {@link KernelFunction} and {@link KernelFunctionArguments}.
+     * associated {@link KernelFunction} and {@link KernelArguments}.
      *
      * @param serviceType The type of service to select.  This must be the same type with which the
      *                    service was registered in the {@link AIServiceSelection}
@@ -26,9 +26,10 @@ public interface AIServiceSelector {
      * @return An {@code AIServiceSelection} containing the selected service and associated
      * PromptExecutionSettings.
      */
+//    @Deprecated
     @Nullable
     <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable KernelFunction<?> function,
-        @Nullable KernelFunctionArguments arguments);
+        @Nullable KernelArguments arguments);
 }

@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.presidio.AnonymizedText;
 import com.microsoft.semantickernel.presidio.AnonymizedTextConverter;
 import com.microsoft.semantickernel.presidio.RedactorPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -50,7 +50,7 @@ public class Main {
             .invokeAsync("redactor", "redact")
             .withResultType(AnonymizedText.class)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("input", text)
                     .build())
             .block()

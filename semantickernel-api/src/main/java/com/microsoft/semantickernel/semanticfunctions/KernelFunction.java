@@ -189,7 +189,7 @@ public abstract class KernelFunction<T> {
      */
     public abstract Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext);
 
@@ -221,7 +221,7 @@ public abstract class KernelFunction<T> {
      */
     public FunctionResult<T> invoke(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
         return invokeAsync(kernel, arguments, variableType, invocationContext).block();

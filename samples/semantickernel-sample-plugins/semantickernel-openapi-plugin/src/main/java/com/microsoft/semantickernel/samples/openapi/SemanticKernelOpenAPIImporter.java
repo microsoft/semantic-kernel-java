@@ -15,7 +15,7 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -518,7 +518,7 @@ public class SemanticKernelOpenAPIImporter {
 
         try {
             Method method = OpenAPIHttpRequestPlugin.class.getMethod("execute",
-                KernelFunctionArguments.class);
+                KernelArguments.class);
 
             return KernelFunction
                 .createFromMethod(method, plugin)

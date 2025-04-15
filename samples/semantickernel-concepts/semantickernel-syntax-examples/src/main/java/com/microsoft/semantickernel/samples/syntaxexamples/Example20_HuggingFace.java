@@ -5,7 +5,7 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.huggingface.HuggingFaceClient;
 import com.microsoft.semantickernel.aiservices.huggingface.services.HuggingFaceTextGenerationService;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 
@@ -43,7 +43,7 @@ public class Example20_HuggingFace {
 
         var result = kernel.invokeAsync(questionAnswerFunction)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("input", "What is New York?")
                     .build())
             .withResultType(String.class)

@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import java.util.Locale;
@@ -24,7 +24,7 @@ public class Example03_Arguments {
         KernelPlugin functionCollection = KernelPluginFactory
             .createFromObject(new StaticTextPlugin(), "text");
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withInput("Today is: ")
             .withVariable("day", "Monday")
             .build();

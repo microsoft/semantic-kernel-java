@@ -24,7 +24,7 @@ import com.microsoft.semantickernel.hooks.PreChatCompletionEvent;
 import com.microsoft.semantickernel.hooks.PromptRenderedEvent;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
@@ -133,7 +133,7 @@ public class Example57_KernelHooks {
         String input = "I missed the F1 final race";
         var result = kernel.invokeAsync(excuseFunction)
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("input", input)
                     .build())
@@ -189,7 +189,7 @@ public class Example57_KernelHooks {
         String input = "I missed the F1 final race";
         var result = kernel.invokeAsync(excuseFunction)
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("input", input)
                     .build())
@@ -235,7 +235,7 @@ public class Example57_KernelHooks {
         // Invoke prompt to trigger execution hooks.
         var result = kernel.invokeAsync(writerFunction)
             .withArguments(
-                KernelFunctionArguments.builder().build())
+                KernelArguments.builder().build())
             .block();
         System.out.println("Function Result: " + result.getResult());
     }
@@ -275,7 +275,7 @@ public class Example57_KernelHooks {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(writerFunction)
                 .withArguments(
-                    KernelFunctionArguments.builder().build())
+                    KernelArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -312,7 +312,7 @@ public class Example57_KernelHooks {
         // Invoke prompt to trigger execution hooks.
         try {
             var result = kernel.invokeAsync(secondFunction)
-                .withArguments(KernelFunctionArguments.builder().build())
+                .withArguments(KernelArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -359,7 +359,7 @@ public class Example57_KernelHooks {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(writerFunction)
                 .withArguments(
-                    KernelFunctionArguments.builder().build())
+                    KernelArguments.builder().build())
                 .block();
             System.out.println("Function Result: " + result.getResult());
         } catch (Exception e) {
@@ -403,7 +403,7 @@ public class Example57_KernelHooks {
         try {
             // Invoke prompt to trigger execution hooks.
             var result = kernel.invokeAsync(writerFunction)
-                .withArguments(KernelFunctionArguments.builder().build())
+                .withArguments(KernelArguments.builder().build())
                 .addKernelHooks(kernelHooks)
                 .block();
             System.out.println("Function Result: " + result.getResult());

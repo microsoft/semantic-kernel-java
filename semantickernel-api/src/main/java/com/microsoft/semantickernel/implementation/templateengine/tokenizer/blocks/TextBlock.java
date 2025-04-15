@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import javax.annotation.Nullable;
 
 public final class TextBlock extends Block implements TextRendering {
@@ -21,7 +21,7 @@ public final class TextBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelArguments variables) {
         return super.getContent();
     }
 }

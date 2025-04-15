@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example59_OpenAIFunctionCalling.PetPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.ServiceNotFoundException;
@@ -204,7 +204,7 @@ public class FunctionTelemetry_Example {
                         Analyse the following text:
                         Hello There
                         """,
-                    KernelFunctionArguments.builder().build(),
+                    KernelArguments.builder().build(),
                     InvocationContext.builder()
                         .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
                         .withReturnMode(InvocationReturnMode.NEW_MESSAGES_ONLY)

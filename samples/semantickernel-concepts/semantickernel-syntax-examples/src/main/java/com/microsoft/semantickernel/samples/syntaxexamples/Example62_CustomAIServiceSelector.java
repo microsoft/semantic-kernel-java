@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceCollection;
@@ -67,7 +67,7 @@ public class Example62_CustomAIServiceSelector {
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
+        KernelArguments arguments = KernelArguments.builder().build();
 
         KernelFunction<?> func = KernelFunctionFromPrompt
             .builder()
@@ -98,7 +98,7 @@ public class Example62_CustomAIServiceSelector {
 
             @Nullable KernelFunction<?> function,
 
-            @Nullable KernelFunctionArguments arguments,
+            @Nullable KernelArguments arguments,
             Map<Class<? extends AIService>, AIService> services) {
 
             // Just get the first one

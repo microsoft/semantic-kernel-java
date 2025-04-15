@@ -93,7 +93,7 @@ public class PromptTemplateFactoryTest {
 
         PromptTemplate promptTemplate = PromptTemplateFactory.build(config);
 
-        KernelFunctionArguments args = KernelFunctionArguments.builder()
+        KernelArguments args = KernelArguments.builder()
             .withInput(ContextVariable.of("input from args")).build();
 
         String expected = String.format("A template for testing: %s",

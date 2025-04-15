@@ -12,7 +12,7 @@ import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokedHook;
 import com.microsoft.semantickernel.hooks.KernelHook.FunctionInvokingHook;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.OutputVariable;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
@@ -90,7 +90,7 @@ public class KernelHooksTest {
         kernel.invokeAsync(
             excuseFunction)
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("input", "I missed the F1 final race")
                     .build())
