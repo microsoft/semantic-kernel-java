@@ -9,6 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -73,7 +74,7 @@ public class Example61_MultipleLLMs {
 
         var prompt = "Hello AI, what can you do for me?";
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
+        KernelArguments arguments = KernelArguments.builder().build();
 
         KernelFunction<?> func = KernelFunctionFromPrompt
             .builder()
@@ -104,7 +105,7 @@ public class Example61_MultipleLLMs {
                         .build())
                 .withOutputVariable("result", "java.lang.String")
                 .build())
-            .withArguments(KernelFunctionArguments.builder().build())
+            .withArguments(KernelArguments.builder().build())
             .block();
 
         System.out.println(result.getResult());
@@ -136,7 +137,7 @@ public class Example61_MultipleLLMs {
             .build();
 
         var result = kernel.invokeAsync(function)
-            .withArguments(KernelFunctionArguments.builder().build())
+            .withArguments(KernelArguments.builder().build())
             .block();
 
         System.out.println(result.getResult());
