@@ -133,13 +133,17 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
                 FunctionInvokingEvent updateArguments = kernelHooks
                     .executeHooks(new FunctionInvokingEvent(this, args));
-                args = updateArguments.getArguments();
+
+                args = KernelArguments.builder()
+                        .withVariables(updateArguments.getArguments())
+                        .withExecutionSettings(
+                            this.getExecutionSettings())
+                        .build();
 
                 AIServiceSelection<?> aiServiceSelection = kernel
                     .getServiceSelector()
                     .trySelectAIService(
                         TextAIService.class,
-                        this,
                         args);
 
                 AIService client = aiServiceSelection != null ? aiServiceSelection.getService()

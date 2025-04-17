@@ -20,15 +20,39 @@ public interface AIServiceSelector {
      * @param serviceType The type of service to select.  This must be the same type with which the
      *                    service was registered in the {@link AIServiceSelection}
      * @param function    The KernelFunction to use to select the service, or {@code null}.
-     * @param arguments   The KernelFunctionArguments to use to select the service, or
+     * @param arguments   The KernelArguments to use to select the service, or
+     *                    {@code null}.
+     * @param <T>         The type of service to select.
+     * @return An {@code AIServiceSelection} containing the selected service and associated
+     * PromptExecutionSettings.
+     *
+     * @deprecated Use {@link #trySelectAIService(Class, KernelArguments)} instead.
+     */
+    @Deprecated
+    @Nullable
+    <T extends AIService> AIServiceSelection<T> trySelectAIService(
+        Class<T> serviceType,
+        @Nullable KernelFunction<?> function,
+        @Nullable KernelArguments arguments);
+
+    /**
+     * Resolves an {@link AIService} and associated and
+     * {@link com.microsoft.semantickernel.orchestration.PromptExecutionSettings} based on the
+     * associated {@link KernelFunction} and {@link KernelArguments}.
+     *
+     * @param serviceType The type of service to select.  This must be the same type with which the
+     *                    service was registered in the {@link AIServiceSelection}
+     * @param arguments   The KernelArguments to use to select the service, or
      *                    {@code null}.
      * @param <T>         The type of service to select.
      * @return An {@code AIServiceSelection} containing the selected service and associated
      * PromptExecutionSettings.
      */
     @Nullable
-    <T extends AIService> AIServiceSelection<T> trySelectAIService(
+    default <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
-        @Nullable KernelFunction<?> function,
-        @Nullable KernelArguments arguments);
+        @Nullable KernelArguments arguments) {
+        throw new UnsupportedOperationException(
+            "This method is not implemented.");
+    }
 }
