@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.templateengine.handlebars;
 
-import static com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments.MAIN_KEY;
+import static com.microsoft.semantickernel.semanticfunctions.KernelArguments.MAIN_KEY;
 
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.EscapingStrategy;
@@ -19,7 +19,7 @@ import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateOption;
@@ -59,7 +59,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
     @Override
     public Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable InvocationContext context) {
         String template = promptTemplate.getTemplate();
         if (template == null) {
@@ -75,7 +75,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             template, context);
 
         if (arguments == null) {
-            arguments = KernelFunctionArguments.builder().build();
+            arguments = KernelArguments.builder().build();
         }
         return handler.render(arguments);
     }
@@ -131,8 +131,8 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         public Object resolve(Object context, String name) {
             Object value = null;
             ContextVariable<?> variable = null;
-            if (context instanceof KernelFunctionArguments) {
-                variable = ((KernelFunctionArguments) context).get(name);
+            if (context instanceof KernelArguments) {
+                variable = ((KernelArguments) context).get(name);
             } else if (context instanceof ContextVariable) {
                 variable = ((ContextVariable<?>) context);
             }
@@ -174,9 +174,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
 
         @Override
         public Set<Entry<String, Object>> propertySet(Object context) {
-            if (context instanceof KernelFunctionArguments) {
+            if (context instanceof KernelArguments) {
                 HashMap<String, Object> result = new HashMap<>();
-                result.putAll((KernelFunctionArguments) context);
+                result.putAll((KernelArguments) context);
                 return result.entrySet();
             } else if (context instanceof ContextVariable) {
                 HashMap<String, Object> result = new HashMap<>();
@@ -270,7 +270,7 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
             return null;
         }
 
-        public Mono<String> render(KernelFunctionArguments variables) {
+        public Mono<String> render(KernelArguments variables) {
             try {
                 ArrayList<ValueResolver> resolvers = new ArrayList<>();
                 resolvers.add(new MessageResolver());
@@ -319,9 +319,9 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         InvocationContext invocationContext) {
         return (context, options) -> {
 
-            KernelFunctionArguments.Builder builder = KernelFunctionArguments.builder();
-            if (context instanceof KernelFunctionArguments) {
-                builder.withVariables((KernelFunctionArguments) context);
+            KernelArguments.Builder builder = KernelArguments.builder();
+            if (context instanceof KernelArguments) {
+                builder.withVariables((KernelArguments) context);
             } else {
                 builder.withInput(context);
             }

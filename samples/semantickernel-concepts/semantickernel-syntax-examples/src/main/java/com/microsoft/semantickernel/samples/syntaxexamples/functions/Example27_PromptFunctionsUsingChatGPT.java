@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
 public class Example27_PromptFunctionsUsingChatGPT {
@@ -54,7 +54,7 @@ public class Example27_PromptFunctionsUsingChatGPT {
 
         var result = func.invokeAsync(kernel)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("input", "Jupiter")
                     .build())
             .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))

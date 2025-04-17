@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.contextvariables.converters.ContextVariableJ
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
@@ -97,7 +97,7 @@ public class HandlebarsPromptTemplateTest {
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withVariable("input", "Hello ")
             .withVariable("suffix", "World")
             .withVariable("choices", choices)
@@ -146,7 +146,7 @@ public class HandlebarsPromptTemplateTest {
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withVariable("input", new Foo("bar"),
                 ContextVariableJacksonConverter.create(Foo.class))
             .build();
@@ -171,7 +171,7 @@ public class HandlebarsPromptTemplateTest {
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withVariable("input", new ChatHistory()
                 .addAssistantMessage("foo")
                 .addUserMessage("bar\"<>&"))
@@ -196,7 +196,7 @@ public class HandlebarsPromptTemplateTest {
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withVariable("input", "bar\"<>&")
             .build();
 
@@ -220,7 +220,7 @@ public class HandlebarsPromptTemplateTest {
 
         HandlebarsPromptTemplate instance = new HandlebarsPromptTemplate(promptTemplate);
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withVariable("input", Arrays.asList(ContextVariable.of("foo\"<>&")))
             .build();
 
@@ -245,7 +245,7 @@ public class HandlebarsPromptTemplateTest {
             Foo.class)
             .toPromptString(Foo::getVal)
             .build();
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withVariable("input", ContextVariable.of(new Foo("bar\"<>&"), converter))
             .build();
 

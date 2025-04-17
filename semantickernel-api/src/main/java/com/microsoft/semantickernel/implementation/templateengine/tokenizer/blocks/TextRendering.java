@@ -2,7 +2,7 @@
 package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import javax.annotation.Nullable;
 
 /**
@@ -17,5 +17,5 @@ public interface TextRendering {
      * @return Rendered content
      */
     @Nullable
-    String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables);
+    String render(ContextVariableTypes types, @Nullable KernelArguments variables);
 }

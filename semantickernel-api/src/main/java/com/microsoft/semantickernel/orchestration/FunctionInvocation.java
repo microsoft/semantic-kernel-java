@@ -14,7 +14,7 @@ import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
@@ -41,7 +41,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     protected final ContextVariableType<T> resultType;
     protected final ContextVariableTypes contextVariableTypes = new ContextVariableTypes();
     @Nullable
-    protected KernelFunctionArguments arguments;
+    protected KernelArguments arguments;
     @Nullable
     protected UnmodifiableKernelHooks hooks;
     @Nullable
@@ -95,7 +95,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         CoreSubscriber<? super FunctionResult<T>> coreSubscriber,
         Kernel kernel,
         KernelFunction<?> function,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext context) {
         if (variableType == null) {
@@ -111,7 +111,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         function
             .invokeAsync(
                 kernel,
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariables(arguments)
                     .build(),
@@ -174,9 +174,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @return this {@code FunctionInvocation} for fluent chaining.
      */
     public FunctionInvocation<T> withArguments(
-        @Nullable KernelFunctionArguments arguments) {
+        @Nullable KernelArguments arguments) {
         logSubscribeWarning();
-        this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();
+        this.arguments = KernelArguments.builder().withVariables(arguments).build();
         return this;
     }
 

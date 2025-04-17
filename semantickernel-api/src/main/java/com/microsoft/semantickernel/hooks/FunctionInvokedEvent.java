@@ -3,7 +3,7 @@ package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -16,7 +16,7 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
 
     private final KernelFunction<T> function;
     @Nullable
-    private final KernelFunctionArguments arguments;
+    private final KernelArguments arguments;
     private final FunctionResult<T> result;
 
     /**
@@ -28,10 +28,10 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
      */
     public FunctionInvokedEvent(
         KernelFunction<T> function,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         FunctionResult<T> result) {
         this.function = function;
-        this.arguments = KernelFunctionArguments.builder().withVariables(arguments).build();
+        this.arguments = KernelArguments.builder().withVariables(arguments).build();
         this.result = result;
     }
 
@@ -51,7 +51,7 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
     @Nullable
-    public KernelFunctionArguments getArguments() {
+    public KernelArguments getArguments() {
         return arguments;
     }
 

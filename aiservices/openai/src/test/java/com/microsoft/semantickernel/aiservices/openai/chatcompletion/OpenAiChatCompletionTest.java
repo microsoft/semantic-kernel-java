@@ -13,7 +13,7 @@ import com.azure.json.JsonOptions;
 import com.azure.json.implementation.DefaultJsonReader;
 import com.microsoft.semantickernel.implementation.EmbeddedResourceLoader;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import java.nio.charset.Charset;
@@ -46,7 +46,7 @@ public class OpenAiChatCompletionTest {
                     "a-tool-id",
                     "pluginName",
                     "funcName",
-                    KernelFunctionArguments.builder()
+                    KernelArguments.builder()
                         .withVariable("id", "ca2fc6bc-1307-4da6-a009-d7bf88dec37b")
                         .build()))));
         chatHistory.addMessage(new OpenAIChatMessageContent(

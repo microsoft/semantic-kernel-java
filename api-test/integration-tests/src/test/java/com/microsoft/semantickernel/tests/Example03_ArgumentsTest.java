@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.syntaxexamples.functions.Example03_Arguments.StaticTextPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +24,7 @@ public class Example03_ArgumentsTest {
         KernelPlugin functionCollection = KernelPluginFactory
             .createFromObject(new StaticTextPlugin(), "text");
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+        KernelArguments arguments = KernelArguments.builder()
             .withInput("Today is: ")
             .withVariable("day", "Monday")
             .build();

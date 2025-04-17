@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import javax.annotation.Nullable;
 
 /**
@@ -23,7 +23,7 @@ public class OpenAIFunctionToolCall {
 
     /// <summary>Gets a name/value collection of the arguments to the function, if any.</summary>
     @Nullable
-    private final KernelFunctionArguments arguments;
+    private final KernelArguments arguments;
 
     /**
      * Creates a new instance of the {@link OpenAIFunctionToolCall} class.
@@ -37,7 +37,7 @@ public class OpenAIFunctionToolCall {
         @Nullable String id,
         @Nullable String pluginName,
         String functionName,
-        @Nullable KernelFunctionArguments arguments) {
+        @Nullable KernelArguments arguments) {
         this.id = id;
         this.pluginName = pluginName;
         this.functionName = functionName;
@@ -83,7 +83,7 @@ public class OpenAIFunctionToolCall {
      * @return A name/value collection of the arguments to the function, if any.
      */
     @Nullable
-    public KernelFunctionArguments getArguments() {
+    public KernelArguments getArguments() {
         if (arguments == null) {
             return null;
         }

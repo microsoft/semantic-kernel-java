@@ -12,7 +12,9 @@ import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments.Builder;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments.Builder;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import reactor.core.publisher.Mono;
 
@@ -163,7 +165,7 @@ public class Example13_ConversationSummaryPlugin {
                 conversationSummaryPlugin
                     .<String>get("GetConversationActionItems"))
             .withArguments(
-                new Builder()
+                KernelArguments.builder()
                     .withInput(chatTranscript)
                     .build());
         System.out.println("Generated Action Items:");
@@ -179,7 +181,7 @@ public class Example13_ConversationSummaryPlugin {
         Mono<FunctionResult<String>> summary = kernel
             .invokeAsync(conversationSummaryPlugin.<String>get("GetConversationTopics"))
             .withArguments(
-                new Builder()
+                KernelArguments.builder()
                     .withInput(chatTranscript)
                     .build());
 
@@ -201,7 +203,7 @@ public class Example13_ConversationSummaryPlugin {
                     .getFunctions()
                     .get("SummarizeConversation"))
             .withArguments(
-                new Builder()
+                KernelArguments.builder()
                     .withInput(chatTranscript)
                     .build())
             .block();

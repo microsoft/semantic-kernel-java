@@ -11,7 +11,7 @@ import com.microsoft.semantickernel.contextvariables.converters.CollectionVariab
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.HandlebarsPromptTemplateFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionYaml;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
@@ -119,7 +119,7 @@ public class SerializingPrompts {
 
             // <InvokePromptFromYaml>
             var intent = kernel.invokeAsync(getIntent)
-                .withArguments(KernelFunctionArguments.builder()
+                .withArguments(KernelArguments.builder()
                     .withVariable("request", userInput)
                     .withVariable("choices", choices)
                     .withVariable("history", historyString)
@@ -134,7 +134,7 @@ public class SerializingPrompts {
             }
 
             var reply = kernel.invokeAsync(prompts.get("Chat"))
-                .withArguments(KernelFunctionArguments.builder()
+                .withArguments(KernelArguments.builder()
                     .withVariable("request", userInput)
                     .withVariable("history",
                         String.join("\n",

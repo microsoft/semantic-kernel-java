@@ -2,16 +2,16 @@
 package com.microsoft.semantickernel.services;
 
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import java.util.Map;
 import javax.annotation.Nullable;
 
 /**
  * Base class for {@link AIServiceSelector} implementations which provides a {@code Map} based
  * collection from which an {@link AIService} can be selected. The
- * {@link #trySelectAIService(Class, KernelFunction, KernelFunctionArguments)} method has been
+ * {@link #trySelectAIService(Class, KernelFunction, KernelArguments)} method has been
  * implemented. Child classes must implement the method
- * {@link #trySelectAIService(Class, KernelFunction, KernelFunctionArguments, Map)}.
+ * {@link #trySelectAIService(Class, KernelFunction, KernelArguments, Map)}.
  */
 public abstract class BaseAIServiceSelector implements AIServiceSelector {
 
@@ -31,7 +31,7 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable KernelFunction<?> function,
-        @Nullable KernelFunctionArguments arguments) {
+        @Nullable KernelArguments arguments) {
         return trySelectAIService(serviceType, function, arguments, services);
     }
 
@@ -52,6 +52,6 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
     protected abstract <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable KernelFunction<?> function,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services);
 }

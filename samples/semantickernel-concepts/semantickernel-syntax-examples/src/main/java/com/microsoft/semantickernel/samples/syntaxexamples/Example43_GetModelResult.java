@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
@@ -61,7 +61,7 @@ public class Example43_GetModelResult {
         FunctionResult<String> result = kernel.invokeAsync(
             myFunction)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("input", "travel")
                     .build())
             .block();

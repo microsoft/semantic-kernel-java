@@ -16,7 +16,7 @@ import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.ConversationSummaryPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -139,7 +139,7 @@ public class FunctionsWithinPrompts {
             System.console().printf("User > ");
             String request = System.console().readLine();
 
-            KernelFunctionArguments arguments = KernelFunctionArguments.builder()
+            KernelArguments arguments = KernelArguments.builder()
                 .withVariable("request", request)
                 .withVariable("choices", choices)
                 .withVariable("history", history)
@@ -162,7 +162,7 @@ public class FunctionsWithinPrompts {
             // Get chat response
             FunctionResult<String> chatResult = chat.invokeAsync(kernel)
                 .withArguments(
-                    KernelFunctionArguments.builder()
+                    KernelArguments.builder()
                         .withVariable("request", request)
                         .withVariable("history", history)
                         .build())

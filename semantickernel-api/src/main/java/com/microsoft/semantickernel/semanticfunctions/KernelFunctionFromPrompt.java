@@ -98,7 +98,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
     private Flux<FunctionResult<T>> invokeInternalAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments argumentsIn,
+        @Nullable KernelArguments argumentsIn,
         @Nullable ContextVariableType<T> contextVariableType,
         @Nullable InvocationContext invocationContext) {
 
@@ -113,7 +113,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
         PromptRenderingEvent preRenderingHookResult = kernelHooks
             .executeHooks(new PromptRenderingEvent(this, argumentsIn));
 
-        KernelFunctionArguments arguments = preRenderingHookResult.getArguments();
+        KernelArguments arguments = preRenderingHookResult.getArguments();
 
         // TODO: put in method, add catch for classcastexception, fallback to noopconverter
         ContextVariableType<T> variableType = contextVariableType != null
@@ -127,7 +127,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                 PromptRenderedEvent promptHookResult = kernelHooks
                     .executeHooks(new PromptRenderedEvent(this, arguments, prompt));
                 prompt = promptHookResult.getPrompt();
-                KernelFunctionArguments args = promptHookResult.getArguments();
+                KernelArguments args = promptHookResult.getArguments();
 
                 LOGGER.info(SemanticKernelResources.getString("rendered.prompt"), prompt);
 
@@ -273,7 +273,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
     @Override
     public Mono<FunctionResult<T>> invokeAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable ContextVariableType<T> variableType,
         @Nullable InvocationContext invocationContext) {
         return Mono.deferContextual(contextView -> {

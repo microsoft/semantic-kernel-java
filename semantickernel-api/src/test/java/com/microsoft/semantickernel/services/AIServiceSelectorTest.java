@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import org.junit.jupiter.api.Test;
 
@@ -185,7 +185,7 @@ public class AIServiceSelectorTest {
 
         AIServiceSelection<?> expected = new AIServiceSelection<>(aService, null);
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
+        KernelArguments arguments = KernelArguments.builder().build();
 
         Kernel kernel = Kernel.builder()
             .withAIService((Class<AIService>) aService.getClass(), aService)

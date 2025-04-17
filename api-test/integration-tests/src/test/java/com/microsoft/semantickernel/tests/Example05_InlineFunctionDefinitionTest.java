@@ -10,9 +10,9 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
-import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
+
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -68,7 +68,7 @@ public class Example05_InlineFunctionDefinitionTest {
 
         var result = kernel.invokeAsync(excuseFunction)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withInput("I missed the F1 final race")
                     .build())
             .block();
@@ -79,7 +79,7 @@ public class Example05_InlineFunctionDefinitionTest {
 
         result = kernel.invokeAsync(excuseFunction)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withInput("sorry I forgot your birthday")
                     .build())
             .block();

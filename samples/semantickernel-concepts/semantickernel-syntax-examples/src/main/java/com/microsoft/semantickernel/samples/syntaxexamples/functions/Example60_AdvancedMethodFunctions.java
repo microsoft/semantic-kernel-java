@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import reactor.core.publisher.Mono;
 
@@ -37,7 +37,7 @@ public class Example60_AdvancedMethodFunctions {
         var result = kernel
             .invokeAsync(FunctionsChainingPlugin.PluginName, "Function1")
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .build())
             .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(MyCustomType.class))
@@ -82,7 +82,7 @@ public class Example60_AdvancedMethodFunctions {
             // Execute another function
             return kernel
                 .invokeAsync(PluginName, "Function2")
-                .withArguments(KernelFunctionArguments.builder().build())
+                .withArguments(KernelArguments.builder().build())
                 .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(
                     Example60_AdvancedMethodFunctions.MyCustomType.class))
                 .flatMap(value -> {

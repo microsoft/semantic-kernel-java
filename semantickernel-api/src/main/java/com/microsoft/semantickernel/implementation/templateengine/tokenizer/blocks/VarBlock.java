@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.implementation.templateengine.tokenizer.blo
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.templateengine.semantickernel.TemplateException;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public final class VarBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelArguments variables) {
         if (variables == null) {
             return "";
         }

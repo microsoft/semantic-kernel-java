@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
@@ -140,7 +140,7 @@ public class Example98_GeminiFunctionCalling {
                         var fn = kernel.getFunction(geminiFunction.getPluginName(),
                             geminiFunction.getFunctionName());
 
-                        var arguments = KernelFunctionArguments.builder();
+                        var arguments = KernelArguments.builder();
                         geminiFunction.getFunctionCall().getArgs().getFieldsMap()
                             .forEach((key, value) -> {
                                 arguments.withVariable(key, value.getStringValue());

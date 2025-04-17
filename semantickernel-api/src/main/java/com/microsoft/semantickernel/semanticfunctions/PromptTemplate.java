@@ -24,7 +24,7 @@ public interface PromptTemplate {
      */
     Mono<String> renderAsync(
         Kernel kernel,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         @Nullable InvocationContext context);
 
 }

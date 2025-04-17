@@ -13,7 +13,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.web.WebSearchEnginePlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionFromPrompt;
 import com.microsoft.semantickernel.semanticfunctions.KernelPromptTemplateFactory;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -84,7 +84,7 @@ public class Example07_BingAndGooglePlugins {
 
         // Run
         var question = "What's the largest building in the world?";
-        var kernelArguments = KernelFunctionArguments.builder()
+        var kernelArguments = KernelArguments.builder()
             .withVariable("query", question)
             .build();
 
@@ -166,7 +166,7 @@ public class Example07_BingAndGooglePlugins {
             .withDefaultExecutionSettings(promptExecutionSettings)
             .build();
 
-        var kernelArguments = KernelFunctionArguments.builder()
+        var kernelArguments = KernelArguments.builder()
             .withVariable("question", question)
             .withVariable("externalInformation", "")
             .build();
@@ -187,7 +187,7 @@ public class Example07_BingAndGooglePlugins {
             System.out.println("Information found:");
             System.out.println(information);
 
-            kernelArguments = KernelFunctionArguments.builder()
+            kernelArguments = KernelArguments.builder()
                 .withVariable("question", question)
                 .withVariable("externalInformation", information)
                 .build();

@@ -9,7 +9,6 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
-import com.microsoft.semantickernel.aiservices.openai.textcompletion.OpenAITextGenerationService;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
@@ -17,11 +16,11 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.KernelFunctionParameter;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
-import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
+
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -119,7 +118,7 @@ public class Example09_FunctionTypes {
         result = kernel
             .invokeAsync(plugin.<String>get("InputDateTimeWithStringResult"))
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("currentDate",
                         ContextVariable.of(
@@ -135,7 +134,7 @@ public class Example09_FunctionTypes {
 
         result = kernel.invokeAsync(plugin.<String>get("MultipleInputsWithVoidResult"))
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("x", "x string")
                     .withVariable("y", 100)
@@ -146,7 +145,7 @@ public class Example09_FunctionTypes {
         result = kernel
             .invokeAsync(plugin.<String>get("ComplexInputWithStringResult"))
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable(
                         "complexObject",
@@ -165,7 +164,7 @@ public class Example09_FunctionTypes {
         result = kernel
             .invokeAsync(plugin.<String>get("InputStringTaskWithStringResult"))
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("echoInput", "return this")
                     .build())
@@ -175,7 +174,7 @@ public class Example09_FunctionTypes {
         result = kernel
             .invokeAsync(plugin.<String>get("InputStringTaskWithVoidResult"))
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("x", "x input")
                     .build())
@@ -258,7 +257,7 @@ public class Example09_FunctionTypes {
 
         result = kernel.invokeAsync(plugin.get("MultipleComplexInputsWithVoidResult"))
             .withArguments(
-                KernelFunctionArguments
+                KernelArguments
                     .builder()
                     .withVariable("x", OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))
                     .withVariable("y", OffsetDateTime.of(1, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC))

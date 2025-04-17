@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -66,7 +66,7 @@ public class OpenAPIHttpRequestPlugin {
      * @param arguments The arguments to the http request.
      * @return The body of the response.
      */
-    public Mono<String> execute(KernelFunctionArguments arguments) {
+    public Mono<String> execute(KernelArguments arguments) {
         String body = getBody(arguments);
         String query = buildQueryString(arguments);
         String path = buildQueryPath(arguments);
@@ -113,7 +113,7 @@ public class OpenAPIHttpRequestPlugin {
             .doOnNext(response -> LOGGER.debug("Request response: {}", response));
     }
 
-    private static @Nullable String getBody(KernelFunctionArguments arguments) {
+    private static @Nullable String getBody(KernelArguments arguments) {
         String body = null;
         if (arguments.containsKey("requestbody")) {
             ContextVariable<?> requestBody = arguments.get("requestbody");
@@ -130,7 +130,7 @@ public class OpenAPIHttpRequestPlugin {
         return body;
     }
 
-    private String buildQueryPath(KernelFunctionArguments arguments) {
+    private String buildQueryPath(KernelArguments arguments) {
         return getParameterStreamOfArguments(arguments)
             .filter(p -> p instanceof PathParameter)
             .reduce(path, (path, parameter) -> {
@@ -142,7 +142,7 @@ public class OpenAPIHttpRequestPlugin {
     }
 
     private static String getRenderedParameter(
-        KernelFunctionArguments arguments, String name) {
+            KernelArguments arguments, String name) {
         ContextVariable<?> value = arguments.get(name);
 
         if (value == null) {
@@ -156,7 +156,7 @@ public class OpenAPIHttpRequestPlugin {
         return URLEncoder.encode(rendered, StandardCharsets.US_ASCII);
     }
 
-    private String buildQueryString(KernelFunctionArguments arguments) {
+    private String buildQueryString(KernelArguments arguments) {
         return getParameterStreamOfArguments(arguments)
             .filter(p -> p instanceof QueryParameter)
             .map(parameter -> {
@@ -168,7 +168,7 @@ public class OpenAPIHttpRequestPlugin {
     }
 
     private Stream<Parameter> getParameterStreamOfArguments(
-        KernelFunctionArguments arguments) {
+        KernelArguments arguments) {
         if (operation.getParameters() == null) {
             return Stream.empty();
         }

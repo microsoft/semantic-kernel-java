@@ -9,7 +9,7 @@ import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.AIService;
 import com.microsoft.semantickernel.services.AIServiceCollection;
 import com.microsoft.semantickernel.services.AIServiceSelection;
@@ -173,7 +173,7 @@ public class Kernel {
      * @see KernelFunction#invokeAsync(Kernel)
      */
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
-        @Nonnull KernelFunctionArguments arguments) {
+        @Nonnull KernelArguments arguments) {
         KernelFunction<T> function = KernelFunction.<T>createFromPrompt(prompt).build();
 
         return function.invokeAsync(this)
@@ -192,7 +192,7 @@ public class Kernel {
      */
 
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
-        @Nonnull KernelFunctionArguments arguments, @Nonnull InvocationContext invocationContext) {
+                                                       @Nonnull KernelArguments arguments, @Nonnull InvocationContext invocationContext) {
 
         KernelFunction<T> function = KernelFunction.<T>createFromPrompt(prompt).build();
 
@@ -278,7 +278,7 @@ public class Kernel {
      * addition to any hooks provided to a function.
      *
      * @return The {@code KernelHooks} used throughout the kernel.
-     * @see KernelFunction#invokeAsync(Kernel, KernelFunctionArguments, ContextVariableType,
+     * @see KernelFunction#invokeAsync(Kernel, KernelArguments, ContextVariableType,
      * InvocationContext)
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")
@@ -303,7 +303,7 @@ public class Kernel {
      * @return The service of the specified type from the kernel.
      * @throws ServiceNotFoundException if the service is not found.
      * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class,
-     * KernelFunction, com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments)
+     * KernelFunction, KernelArguments)
      */
     public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
         AIServiceSelection<T> selector = serviceSelector

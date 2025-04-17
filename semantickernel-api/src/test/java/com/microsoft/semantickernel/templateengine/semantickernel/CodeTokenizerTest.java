@@ -6,7 +6,7 @@ import com.microsoft.semantickernel.implementation.templateengine.tokenizer.Code
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.Block;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.FunctionIdBlock;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.blocks.NamedArgBlock;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ public class CodeTokenizerTest {
         Assertions.assertEquals("street", namedArgBlock.getName());
         Assertions.assertEquals("123 Main St", namedArgBlock.getValue(
             new ContextVariableTypes(),
-            new KernelFunctionArguments.Builder()
+            KernelArguments.builder()
                 .withVariable("street", "123 Main St")
                 .build()));
 
@@ -36,13 +36,13 @@ public class CodeTokenizerTest {
         Assertions.assertEquals("zip", namedArgBlock.getName());
         Assertions.assertEquals("98123", namedArgBlock.getValue(
             new ContextVariableTypes(),
-            new KernelFunctionArguments.Builder().build()));
+            KernelArguments.builder().build()));
 
         namedArgBlock = (NamedArgBlock) tokens.get(3);
         Assertions.assertEquals("city", namedArgBlock.getName());
         Assertions.assertEquals("Seattle", namedArgBlock.getValue(
             new ContextVariableTypes(),
-            new KernelFunctionArguments.Builder().build()));
+            KernelArguments.builder().build()));
     }
 
     @Test
@@ -60,7 +60,6 @@ public class CodeTokenizerTest {
         Assertions.assertEquals("recall", namedArgBlock.getName());
         Assertions.assertEquals("where did I grow up?", namedArgBlock.getValue(
             new ContextVariableTypes(),
-            new KernelFunctionArguments.Builder()
-                .build()));
+            KernelArguments.builder().build()));
     }
 }

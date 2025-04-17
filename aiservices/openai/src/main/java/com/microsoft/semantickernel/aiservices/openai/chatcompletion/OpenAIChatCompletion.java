@@ -61,7 +61,7 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.responseformat.JsonResponseSchema;
 import com.microsoft.semantickernel.orchestration.responseformat.JsonSchemaResponseFormat;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -629,7 +629,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     contextVariableTypes));
 
             function = hookResult.getFunction();
-            KernelFunctionArguments arguments = hookResult.getArguments();
+            KernelArguments arguments = hookResult.getArguments();
 
             return function
                 .invokeAsync(kernel)
@@ -673,7 +673,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         String pluginName = parts.length > 1 ? parts[0] : "";
         String fnName = parts.length > 1 ? parts[1] : parts[0];
 
-        KernelFunctionArguments arguments = KernelFunctionArguments.builder().build();
+        KernelArguments arguments = KernelArguments.builder().build();
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonToolCallArguments = mapper.readTree(toolCall.getFunction().getArguments());
@@ -1144,7 +1144,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             asstMessage.setToolCalls(
                 toolCalls.stream()
                     .map(toolCall -> {
-                        KernelFunctionArguments arguments = toolCall.getArguments();
+                        KernelArguments arguments = toolCall.getArguments();
 
                         String args = arguments != null && !arguments.isEmpty()
                             ? arguments.entrySet().stream()

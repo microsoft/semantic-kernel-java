@@ -10,7 +10,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.MathPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 
 public class UsingTheKernel {
@@ -76,7 +76,7 @@ public class UsingTheKernel {
         var result = poemPlugin.get("ShortPoem")
             .invokeAsync(kernel)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withInput("The cat sat on a mat")
                     .build())
             .withResultType(String.class)
@@ -88,7 +88,7 @@ public class UsingTheKernel {
         var root = mathPlugin.get("sqrt")
             .invokeAsync(kernel)
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withInput(12)
                     .build())
             .withResultType(Double.class)

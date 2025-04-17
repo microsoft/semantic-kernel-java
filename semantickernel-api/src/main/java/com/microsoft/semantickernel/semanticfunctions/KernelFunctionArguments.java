@@ -17,15 +17,16 @@ import reactor.util.annotation.NonNull;
 
 /**
  * Arguments to a kernel function.
+ *
+ * @deprecated Use {@link KernelArguments} instead.
  */
-public class KernelFunctionArguments implements Map<String, ContextVariable<?>> {
+@Deprecated
+public class KernelFunctionArguments extends KernelArguments {
 
     /**
      * Default key for the main input.
      */
     public static final String MAIN_KEY = "input";
-
-    private final CaseInsensitiveMap<ContextVariable<?>> variables;
 
     /**
      * Create a new instance of KernelFunctionArguments.
@@ -34,11 +35,7 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
      */
     protected KernelFunctionArguments(
         @Nullable Map<String, ContextVariable<?>> variables) {
-        if (variables == null) {
-            this.variables = new CaseInsensitiveMap<>();
-        } else {
-            this.variables = new CaseInsensitiveMap<>(variables);
-        }
+        super(variables, null);
     }
 
     /**
@@ -47,15 +44,23 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
      * @param content The content to use for the function invocation.
      */
     protected KernelFunctionArguments(@NonNull ContextVariable<?> content) {
-        this.variables = new CaseInsensitiveMap<>();
-        this.variables.put(MAIN_KEY, content);
+        super(content);
+    }
+
+    /**
+     * Create a new instance of KernelArguments.
+     *
+     * @param arguments The arguments to copy.
+     */
+    protected KernelFunctionArguments(@NonNull KernelArguments arguments) {
+        super(arguments);
     }
 
     /**
      * Create a new instance of KernelFunctionArguments.
      */
     protected KernelFunctionArguments() {
-        this.variables = new CaseInsensitiveMap<>();
+        super();
     }
 
     /**
@@ -208,121 +213,18 @@ public class KernelFunctionArguments implements Map<String, ContextVariable<?>> 
 
     /**
      * Builder for ContextVariables
+     *
+     * @deprecated Use {@link KernelArguments} builder instead.
      */
-    public static class Builder implements SemanticKernelBuilder<KernelFunctionArguments> {
-
-        private final Map<String, ContextVariable<?>> variables;
+    @Deprecated
+    public static class Builder extends KernelArguments.Builder<KernelFunctionArguments> {
 
         /**
          * Create a new instance of Builder.
          */
+        @Deprecated
         public Builder() {
-            variables = new HashMap<>();
-        }
-
-        /**
-         * Builds an instance with the given content in the default main key
-         *
-         * @param content Entry to place in the "input" slot
-         * @param <T>     Type of the value
-         * @return {$code this} Builder for fluent coding
-         */
-        public <T> Builder withInput(ContextVariable<T> content) {
-            return withVariable(MAIN_KEY, content);
-        }
-
-        /**
-         * Builds an instance with the given content in the default main key
-         *
-         * @param content Entry to place in the "input" slot
-         * @return {$code this} Builder for fluent coding
-         * @throws SKException if the content cannot be converted to a ContextVariable
-         */
-        public Builder withInput(Object content) {
-            return withInput(ContextVariable.ofGlobalType(content));
-        }
-
-        /**
-         * Builds an instance with the given content in the default main key
-         *
-         * @param content       Entry to place in the "input" slot
-         * @param typeConverter Type converter for the content
-         * @param <T>           Type of the value
-         * @return {$code this} Builder for fluent coding
-         * @throws SKException if the content cannot be converted to a ContextVariable
-         */
-        public <T> Builder withInput(T content, ContextVariableTypeConverter<T> typeConverter) {
-            return withInput(new ContextVariable<>(
-                new ContextVariableType<>(
-                    typeConverter,
-                    typeConverter.getType()),
-                content));
-        }
-
-        /**
-         * Builds an instance with the given variables
-         *
-         * @param map Existing variables
-         * @return {$code this} Builder for fluent coding
-         */
-        public Builder withVariables(@Nullable Map<String, ContextVariable<?>> map) {
-            if (map == null) {
-                return this;
-            }
-            variables.putAll(map);
-            return this;
-        }
-
-        /**
-         * Set variable
-         *
-         * @param key   variable name
-         * @param value variable value
-         * @param <T>   Type of the value
-         * @return {$code this} Builder for fluent coding
-         */
-        public <T> Builder withVariable(String key, ContextVariable<T> value) {
-            variables.put(key, value);
-            return this;
-        }
-
-        /**
-         * Set variable, uses the default type converters
-         *
-         * @param key   variable name
-         * @param value variable value
-         * @return {$code this} Builder for fluent coding
-         * @throws SKException if the value cannot be converted to a ContextVariable
-         */
-        public Builder withVariable(String key, Object value) {
-            if (value instanceof ContextVariable) {
-                return withVariable(key, (ContextVariable<?>) value);
-            }
-            return withVariable(key, ContextVariable.ofGlobalType(value));
-        }
-
-        /**
-         * Set variable
-         *
-         * @param key           variable name
-         * @param value         variable value
-         * @param typeConverter Type converter for the value
-         * @param <T>           Type of the value
-         * @return {$code this} Builder for fluent coding
-         * @throws SKException if the value cannot be converted to a ContextVariable
-         */
-        public <T> Builder withVariable(String key, T value,
-            ContextVariableTypeConverter<T> typeConverter) {
-            return withVariable(key, new ContextVariable<>(
-                new ContextVariableType<>(
-                    typeConverter,
-                    typeConverter.getType()),
-                value));
-        }
-
-        @Override
-        public KernelFunctionArguments build() {
-            return new KernelFunctionArguments(variables);
+            super(KernelFunctionArguments::new);
         }
     }
 }

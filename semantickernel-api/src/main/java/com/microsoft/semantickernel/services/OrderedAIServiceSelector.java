@@ -5,7 +5,7 @@ import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.textcompletion.TextGenerationService;
 import java.util.List;
@@ -66,17 +66,33 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         return null;
     }
 
+//    @Nullable
+//    @Override
+//    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+//            Class<T> serviceType,
+//            @Nullable KernelArguments arguments) {
+//        return selectAIService(serviceType, arguments.getPromptExecutionSettings());
+//    }
+
     @Nullable
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable KernelFunction<?> function,
-        @Nullable KernelFunctionArguments arguments,
+        @Nullable KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
 
         // Allow the execution settings from the kernel arguments to take precedence
         Map<String, PromptExecutionSettings> executionSettings = settingsFromFunctionSettings(
             function);
+
+        return selectAIService(serviceType, executionSettings);
+    }
+
+
+    private <T extends AIService> AIServiceSelection<T> selectAIService(
+            Class<T> serviceType,
+            @Nullable Map<String, PromptExecutionSettings> executionSettings) {
 
         if (executionSettings == null || executionSettings.isEmpty()) {
             AIService service = getAnyService(serviceType);
@@ -85,50 +101,50 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             }
         } else {
             AIServiceSelection<?> selection = executionSettings
-                .entrySet()
-                .stream()
-                .map(keyValue -> {
+                    .entrySet()
+                    .stream()
+                    .map(keyValue -> {
 
-                    PromptExecutionSettings settings = keyValue.getValue();
-                    String serviceId = keyValue.getKey();
+                        PromptExecutionSettings settings = keyValue.getValue();
+                        String serviceId = keyValue.getKey();
 
-                    if (!Verify.isNullOrEmpty(serviceId)) {
-                        AIService service = getService(serviceId);
-                        if (service != null) {
-                            return castServiceSelection(
-                                new AIServiceSelection<>(service, settings));
+                        if (!Verify.isNullOrEmpty(serviceId)) {
+                            AIService service = getService(serviceId);
+                            if (service != null) {
+                                return castServiceSelection(
+                                        new AIServiceSelection<>(service, settings));
+                            }
                         }
-                    }
 
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseGet(() -> null);
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElseGet(() -> null);
 
             if (selection != null) {
                 return castServiceSelection(selection);
             }
 
             selection = executionSettings
-                .entrySet()
-                .stream()
-                .map(keyValue -> {
-                    PromptExecutionSettings settings = keyValue.getValue();
+                    .entrySet()
+                    .stream()
+                    .map(keyValue -> {
+                        PromptExecutionSettings settings = keyValue.getValue();
 
-                    if (!Verify.isNullOrEmpty(settings.getModelId())) {
-                        AIService service = getServiceByModelId(settings.getModelId());
-                        if (service != null) {
-                            return castServiceSelection(
-                                new AIServiceSelection<>(service, settings));
+                        if (!Verify.isNullOrEmpty(settings.getModelId())) {
+                            AIService service = getServiceByModelId(settings.getModelId());
+                            if (service != null) {
+                                return castServiceSelection(
+                                        new AIServiceSelection<>(service, settings));
+                            }
                         }
-                    }
 
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseGet(() -> null);
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElseGet(() -> null);
 
             if (selection != null) {
                 return castServiceSelection(selection);

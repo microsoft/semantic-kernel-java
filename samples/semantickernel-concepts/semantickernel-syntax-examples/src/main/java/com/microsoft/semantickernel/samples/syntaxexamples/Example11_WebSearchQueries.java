@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.web.SearchUrlPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 
 public class Example11_WebSearchQueries {
 
@@ -19,7 +19,7 @@ public class Example11_WebSearchQueries {
 
         // Run
         var ask = "What's the largest building in Europe?";
-        var kernelArguments = KernelFunctionArguments.builder()
+        var kernelArguments = KernelArguments.builder()
             .withVariable("query", ask)
             .build();
 

@@ -7,7 +7,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.implementation.Verify;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +132,7 @@ public class NamedArgBlock extends Block implements TextRendering {
     }
 
     @Override
-    public String render(ContextVariableTypes types, @Nullable KernelFunctionArguments variables) {
+    public String render(ContextVariableTypes types, @Nullable KernelArguments variables) {
         return getContent();
     }
 
@@ -155,7 +155,7 @@ public class NamedArgBlock extends Block implements TextRendering {
     }
 
     @SuppressWarnings("NullAway")
-    public String getValue(ContextVariableTypes types, KernelFunctionArguments arguments) {
+    public String getValue(ContextVariableTypes types, KernelArguments arguments) {
         boolean valueIsValidValBlock = this.valBlock != null && this.valBlock.isValid();
         if (valueIsValidValBlock) {
             return this.valBlock.render(types, arguments);

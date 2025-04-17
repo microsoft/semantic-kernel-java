@@ -52,7 +52,7 @@ public class KernelFunctionFromMethodTest {
             .invokeAsync(kernel)
             .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
             .withArguments(
-                KernelFunctionArguments.builder()
+                KernelArguments.builder()
                     .withVariable("number1", "12.0")
                     .build())
             .block();
@@ -182,7 +182,7 @@ public class KernelFunctionFromMethodTest {
 
         Method getMethod() throws NoSuchMethodException;
 
-        KernelFunctionArguments getArguments();
+        KernelArguments getArguments();
 
         void assertCalled();
     }
@@ -203,8 +203,8 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
-            return KernelFunctionArguments.builder()
+        public KernelArguments getArguments() {
+            return KernelArguments.builder()
                 .withVariable("i", 123)
                 .build();
         }
@@ -232,8 +232,8 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
-            return KernelFunctionArguments.builder()
+        public KernelArguments getArguments() {
+            return KernelArguments.builder()
                 .withVariable("i", 123)
                 .build();
         }
@@ -261,8 +261,8 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
-            return KernelFunctionArguments.builder()
+        public KernelArguments getArguments() {
+            return KernelArguments.builder()
                 .withVariable("i", 123)
                 .build();
         }
@@ -290,8 +290,8 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
-            return KernelFunctionArguments.builder()
+        public KernelArguments getArguments() {
+            return KernelArguments.builder()
                 .withVariable("i", Arrays.asList(1, 2, 3))
                 .build();
         }
@@ -319,8 +319,8 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
-            return KernelFunctionArguments.builder()
+        public KernelArguments getArguments() {
+            return KernelArguments.builder()
                 .build();
         }
 
@@ -347,7 +347,7 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
+        public KernelArguments getArguments() {
 
             ContextVariableTypeConverter<BigDecimal> dbConverter = ContextVariableTypeConverter
                 .builder(BigDecimal.class)
@@ -355,7 +355,7 @@ public class KernelFunctionFromMethodTest {
                 .toPromptString(i -> null)
                 .build();
 
-            return KernelFunctionArguments.builder()
+            return KernelArguments.builder()
                 .withVariable("i", new BigDecimal(123), dbConverter)
                 .build();
         }
@@ -401,14 +401,14 @@ public class KernelFunctionFromMethodTest {
         }
 
         @Override
-        public KernelFunctionArguments getArguments() {
+        public KernelArguments getArguments() {
 
             ContextVariableTypeConverter<SourceClass> sourceConverter = ContextVariableTypeConverter
                 .builder(SourceClass.class)
                 .fromObject(i -> (SourceClass) i)
                 .toPromptString(i -> null)
                 .build();
-            return KernelFunctionArguments.builder()
+            return KernelArguments.builder()
                 .withVariable("i", new SourceClass(123), sourceConverter)
                 .build();
         }

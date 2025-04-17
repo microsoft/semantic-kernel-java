@@ -32,7 +32,7 @@ import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunctionArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -436,7 +436,7 @@ public class GeminiChatCompletion extends GeminiService implements ChatCompletio
             ? new ContextVariableTypes()
             : invocationContext.getContextVariableTypes();
 
-        KernelFunctionArguments.Builder arguments = KernelFunctionArguments.builder();
+        KernelArguments.Builder arguments = KernelArguments.builder();
         geminiFunction.getFunctionCall().getArgs().getFieldsMap().forEach((key, value) -> {
             arguments.withVariable(key, value.getStringValue());
         });
