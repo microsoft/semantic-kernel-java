@@ -35,6 +35,14 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
         return trySelectAIService(serviceType, function, arguments, services);
     }
 
+    @Override
+    @Nullable
+    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+            Class<T> serviceType,
+            @Nullable KernelArguments arguments) {
+        return trySelectAIService(serviceType, arguments, services);
+    }
+
     /**
      * Resolves an {@link AIService} from the {@code services} argument using the specified
      * {@code function} and {@code arguments} for selection.
@@ -47,11 +55,36 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
      * @param services    The services to select from.
      * @param <T>         The type of service to select.
      * @return The selected service, or {@code null} if no service could be selected.
+     *
+     * @deprecated Implement {@link #trySelectAIService(Class, KernelArguments)}
      */
+    @Deprecated
     @Nullable
     protected abstract <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
         @Nullable KernelFunction<?> function,
         @Nullable KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services);
+
+
+    /**
+     * Resolves an {@link AIService} from the {@code services} argument using the specified
+     * {@code function} and {@code arguments} for selection.
+     *
+     * @param serviceType The type of service to select.  This must be the same type with which the
+     *                    service was registered in the {@link AIServiceSelection}
+     * @param arguments   The KernelArguments to use to select the service, or
+     *                    {@code null}.
+     * @param services    The services to select from.
+     * @param <T>         The type of service to select.
+     * @return The selected service, or {@code null} if no service could be selected.
+     */
+    @Nullable
+    protected <T extends AIService> AIServiceSelection<T> trySelectAIService(
+            Class<T> serviceType,
+            @Nullable KernelArguments arguments,
+            Map<Class<? extends AIService>, AIService> services) {
+        throw  new UnsupportedOperationException(
+            "This method is not implemented.");
+    }
 }

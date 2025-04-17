@@ -366,6 +366,16 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
          *  @param executionSettings Execution settings
          *  @return {$code this} Builder for fluent coding
          */
+        public Builder<U> withExecutionSettings(PromptExecutionSettings executionSettings) {
+            return withExecutionSettings(Collections.singletonList(executionSettings));
+        }
+
+        /**
+         * Set prompt execution settings
+         *
+         *  @param executionSettings Execution settings
+         *  @return {$code this} Builder for fluent coding
+         */
         public Builder<U> withExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
             return withExecutionSettings(new ArrayList<>(executionSettings.values()));
         }

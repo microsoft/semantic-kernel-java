@@ -66,13 +66,15 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         return null;
     }
 
-//    @Nullable
-//    @Override
-//    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
-//            Class<T> serviceType,
-//            @Nullable KernelArguments arguments) {
-//        return selectAIService(serviceType, arguments.getPromptExecutionSettings());
-//    }
+    @Nullable
+    @Override
+    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
+            Class<T> serviceType,
+            @Nullable KernelArguments arguments,
+            Map<Class<? extends AIService>, AIService> services) {
+
+        return selectAIService(serviceType, arguments != null ? arguments.getExecutionSettings() : null);
+    }
 
     @Nullable
     @Override
