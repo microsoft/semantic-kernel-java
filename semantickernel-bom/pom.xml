@@ -113,6 +113,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-agents-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
                 <version>1.0.0-beta.14</version>
