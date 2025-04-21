@@ -103,7 +103,7 @@ public class GitHubPlugin {
                 });
     }
 
-    @DefineKernelFunction(name = "get_issue_detail_info", description = "Get issue detail information from GitHub",
+    @DefineKernelFunction(name = "get_issue_detail_info", description = "Get detail information of a single issue from GitHub",
             returnType = "com.microsoft.semantickernel.samples.plugins.github.GitHubModel$IssueDetail")
     public GitHubModel.IssueDetail getIssueDetailAsync(
             @KernelFunctionParameter(

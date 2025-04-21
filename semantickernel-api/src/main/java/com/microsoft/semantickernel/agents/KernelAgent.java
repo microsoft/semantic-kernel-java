@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.agents;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
+import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
@@ -18,16 +19,12 @@ import java.util.function.Supplier;
 public abstract class KernelAgent implements Agent {
 
     protected final String id;
-
     protected final String name;
-
     protected final String description;
-
     protected final Kernel kernel;
     protected final KernelArguments kernelArguments;
     protected final InvocationContext invocationContext;
     protected final String instructions;
-
     protected final PromptTemplate template;
 
     protected KernelAgent(
@@ -45,7 +42,8 @@ public abstract class KernelAgent implements Agent {
         this.description = description;
         this.kernel = kernel;
         this.kernelArguments = kernelArguments;
-        this.invocationContext = invocationContext;
+        this.invocationContext = invocationContext != null
+                ? invocationContext : InvocationContext.builder().withReturnMode(InvocationReturnMode.FULL_HISTORY).build();
         this.instructions = instructions;
         this.template = template;
     }

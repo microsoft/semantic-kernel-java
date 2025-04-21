@@ -110,7 +110,7 @@ public class ChatCompletionAgent extends KernelAgent {
                     ? invocationContext.getPromptExecutionSettings()
                     : kernelArguments.getExecutionSettings().get(chatCompletionService.getServiceId());
 
-            final InvocationContext newMessagesContext = InvocationContext.builder()
+            final InvocationContext updatedInvocationContext = InvocationContext.builder()
                     .withPromptExecutionSettings(executionSettings)
                     .withToolCallBehavior(invocationContext.getToolCallBehavior())
                     .withTelemetry(invocationContext.getTelemetry())
@@ -119,7 +119,7 @@ public class ChatCompletionAgent extends KernelAgent {
                     .withReturnMode(InvocationReturnMode.FULL_HISTORY)
                     .build();
 
-            return formatInstructionsAsync(kernel, arguments, newMessagesContext).flatMap(
+            return formatInstructionsAsync(kernel, arguments, updatedInvocationContext).flatMap(
                 instructions -> {
                     // Create a new chat history with the instructions
                     ChatHistory chat = new ChatHistory(
@@ -137,7 +137,7 @@ public class ChatCompletionAgent extends KernelAgent {
                     chat.addAll(history);
                     int previousHistorySize = chat.getMessages().size();
 
-                    return chatCompletionService.getChatMessageContentsAsync(chat, kernel, newMessagesContext)
+                    return chatCompletionService.getChatMessageContentsAsync(chat, kernel, updatedInvocationContext)
                             .map(chatMessageContents -> {
                                 return chatMessageContents.subList(
                                         previousHistorySize,

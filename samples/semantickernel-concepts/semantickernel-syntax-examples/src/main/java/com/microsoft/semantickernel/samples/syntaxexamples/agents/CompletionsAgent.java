@@ -34,7 +34,7 @@ public class CompletionsAgent {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-            .getOrDefault("MODEL_ID", "gpt-35-turbo");
+            .getOrDefault("MODEL_ID", "gpt-4o");
 
     private static final String GITHUB_PAT = System.getenv("GITHUB_PAT");
     public static void main(String[] args) {
@@ -77,7 +77,7 @@ public class CompletionsAgent {
                 .build();
 
         InvocationContext invocationContext = InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
                 .build();
 
         ChatCompletionAgent agent = ChatCompletionAgent.builder()
@@ -127,7 +127,7 @@ public class CompletionsAgent {
                     .withVariable("now", System.currentTimeMillis())
                     .build();
 
-            var responses = agent.invokeAsync(
+            var response = agent.invokeAsync(
                     List.of(message),
                     agentThread,
                     AgentInvokeOptions.builder()
@@ -136,10 +136,7 @@ public class CompletionsAgent {
                             .build()
             ).block();
 
-            for (var response : responses) {
-                System.out.println("> " + response.getMessage());
-            }
+            System.out.println("> " + response.get(response.size() - 1).getMessage());
         }
     }
-
 }
