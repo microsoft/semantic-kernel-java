@@ -53,8 +53,10 @@ public interface Agent {
      */
     Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(List<ChatMessageContent<?>> messages, AgentThread thread, AgentInvokeOptions options);
 
-
-
-
+    /**
+     * Notifies the agent of a new message.
+     *
+     * @param thread The agent thread to use
+     */
     Mono<Void> notifyThreadOfNewMessageAsync(AgentThread thread, ChatMessageContent<?> newMessage);
 }
