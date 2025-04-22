@@ -27,7 +27,7 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.util.List;
 import java.util.Scanner;
 
-public class CompletionsAgent {
+public class CompletionAgent {
     private static final String CLIENT_KEY = System.getenv("CLIENT_KEY");
     private static final String AZURE_CLIENT_KEY = System.getenv("AZURE_CLIENT_KEY");
 
@@ -77,7 +77,7 @@ public class CompletionsAgent {
                 .build();
 
         InvocationContext invocationContext = InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
+                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
                 .build();
 
         ChatCompletionAgent agent = ChatCompletionAgent.builder()
