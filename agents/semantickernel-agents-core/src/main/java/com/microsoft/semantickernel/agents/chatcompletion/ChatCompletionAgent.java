@@ -106,20 +106,30 @@ public class ChatCompletionAgent extends KernelAgent {
         try {
             ChatCompletionService chatCompletionService = kernel.getService(ChatCompletionService.class, arguments);
 
-            PromptExecutionSettings executionSettings = invocationContext.getPromptExecutionSettings() != null
+            PromptExecutionSettings executionSettings = invocationContext != null && invocationContext.getPromptExecutionSettings() != null
                     ? invocationContext.getPromptExecutionSettings()
                     : kernelArguments.getExecutionSettings().get(chatCompletionService.getServiceId());
 
-            final InvocationContext updatedInvocationContext = InvocationContext.builder()
-                    .withPromptExecutionSettings(executionSettings)
-                    .withToolCallBehavior(invocationContext.getToolCallBehavior())
-                    .withTelemetry(invocationContext.getTelemetry())
-                    .withContextVariableConverter(invocationContext.getContextVariableTypes())
-                    .withKernelHooks(invocationContext.getKernelHooks())
-                    .withReturnMode(InvocationReturnMode.FULL_HISTORY)
-                    .build();
+            ToolCallBehavior toolCallBehavior = invocationContext != null
+                    ? invocationContext.getToolCallBehavior()
+                    : ToolCallBehavior.allowAllKernelFunctions(false);
 
-            return formatInstructionsAsync(kernel, arguments, updatedInvocationContext).flatMap(
+            // Build base invocation context
+            InvocationContext.Builder builder = InvocationContext.builder()
+                    .withPromptExecutionSettings(executionSettings)
+                    .withToolCallBehavior(toolCallBehavior)
+                    .withReturnMode(InvocationReturnMode.FULL_HISTORY);
+
+            if (invocationContext != null) {
+                builder = builder
+                        .withTelemetry(invocationContext.getTelemetry())
+                        .withContextVariableConverter(invocationContext.getContextVariableTypes())
+                        .withKernelHooks(invocationContext.getKernelHooks());
+            }
+
+            InvocationContext agentInvocationContext = builder.build();
+
+            return formatInstructionsAsync(kernel, arguments, agentInvocationContext).flatMap(
                 instructions -> {
                     // Create a new chat history with the instructions
                     ChatHistory chat = new ChatHistory(
@@ -137,7 +147,7 @@ public class ChatCompletionAgent extends KernelAgent {
                     chat.addAll(history);
                     int previousHistorySize = chat.getMessages().size();
 
-                    return chatCompletionService.getChatMessageContentsAsync(chat, kernel, updatedInvocationContext)
+                    return chatCompletionService.getChatMessageContentsAsync(chat, kernel, agentInvocationContext)
                             .map(chatMessageContents -> {
                                 return chatMessageContents.subList(
                                         previousHistorySize,
