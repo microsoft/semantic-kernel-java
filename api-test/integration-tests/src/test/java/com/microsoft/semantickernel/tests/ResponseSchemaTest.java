@@ -160,8 +160,6 @@ public class ResponseSchemaTest {
                                 writer,
                                 new JsonOptions()
                             );
-                            JsonWriter format = chatCompletionsOptions.getResponseFormat()
-                                .toJson(jsonWriter);
                             jsonWriter.flush();
                             writer.flush();
 
