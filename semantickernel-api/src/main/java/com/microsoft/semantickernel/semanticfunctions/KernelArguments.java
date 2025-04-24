@@ -409,6 +409,8 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
                                     serviceId)
                     );
                 }
+
+                this.executionSettings.put(serviceId, settings);
             }
 
             return this;
