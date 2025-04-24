@@ -58,23 +58,6 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @Nullable
-    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
-        @Nullable KernelFunction function) {
-        if (function != null) {
-            return function.getExecutionSettings();
-        }
-        return null;
-    }
-
-//    @Nullable
-//    @Override
-//    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
-//            Class<T> serviceType,
-//            @Nullable KernelArguments arguments) {
-//        return selectAIService(serviceType, arguments.getPromptExecutionSettings());
-//    }
-
-    @Nullable
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
@@ -82,11 +65,11 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         @Nullable KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
 
-        // Allow the execution settings from the kernel arguments to take precedence
-        Map<String, PromptExecutionSettings> executionSettings = settingsFromFunctionSettings(
-            function);
+        if (function == null) {
+            return selectAIService(serviceType, arguments != null ? arguments.getExecutionSettings() : null);
+        }
 
-        return selectAIService(serviceType, executionSettings);
+        return selectAIService(serviceType, function.getExecutionSettings());
     }
 
 

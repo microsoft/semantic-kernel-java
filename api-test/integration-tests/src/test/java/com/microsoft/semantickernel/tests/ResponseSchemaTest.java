@@ -161,16 +161,18 @@ public class ResponseSchemaTest {
                                 new JsonOptions()
                             );
                             JsonWriter format = chatCompletionsOptions.getResponseFormat()
-                                .toJson(jsonWriter);
+                                    .toJson(jsonWriter);
                             jsonWriter.flush();
                             writer.flush();
 
                             String json = String.valueOf(writer.getBuffer())
                                 .replaceAll("\n", "")
+                                .replaceAll("\r", "")
                                 .replaceAll(" +", "");
                             String expectedClean = expected
                                 .stripIndent()
                                 .replaceAll("\n", "")
+                                .replaceAll("\r", "")
                                 .replaceAll(" +", "");
 
                             return json.equals(expectedClean);
