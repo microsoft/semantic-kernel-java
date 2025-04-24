@@ -56,9 +56,7 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
      * @param <T>         The type of service to select.
      * @return The selected service, or {@code null} if no service could be selected.
      *
-     * @deprecated Implement {@link #trySelectAIService(Class, KernelArguments)}
      */
-    @Deprecated
     @Nullable
     protected abstract <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
@@ -84,7 +82,6 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
             Class<T> serviceType,
             @Nullable KernelArguments arguments,
             Map<Class<? extends AIService>, AIService> services) {
-        throw  new UnsupportedOperationException(
-            "This method is not implemented.");
+        return trySelectAIService(serviceType, null, arguments, services);
     }
 }

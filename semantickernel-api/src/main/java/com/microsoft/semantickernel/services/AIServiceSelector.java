@@ -25,10 +25,7 @@ public interface AIServiceSelector {
      * @param <T>         The type of service to select.
      * @return An {@code AIServiceSelection} containing the selected service and associated
      * PromptExecutionSettings.
-     *
-     * @deprecated Use {@link #trySelectAIService(Class, KernelArguments)} instead.
      */
-    @Deprecated
     @Nullable
     <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
