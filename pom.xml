@@ -77,7 +77,6 @@
         <module>data/semantickernel-data-azureaisearch</module>
         <module>data/semantickernel-data-jdbc</module>
         <module>data/semantickernel-data-redis</module>
-        <module>agents/semantickernel-agents-openai</module>
         <module>agents/semantickernel-agents-core</module>
     </modules>
 
