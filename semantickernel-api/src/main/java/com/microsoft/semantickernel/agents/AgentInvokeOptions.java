@@ -4,6 +4,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
 
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
  */
 public class AgentInvokeOptions {
 
-    private final KernelArguments KernelArguments;
+    private final KernelArguments kernelArguments;
     private final Kernel kernel;
     private final String additionalInstructions;
     private final InvocationContext invocationContext;
@@ -27,33 +28,53 @@ public class AgentInvokeOptions {
     /**
      * Constructor for AgentInvokeOptions.
      *
-     * @param KernelArguments The arguments for the kernel function.
+     * @param kernelArguments The arguments for the kernel function.
      * @param kernel The kernel to use.
      * @param additionalInstructions Additional instructions for the agent.
      * @param invocationContext The invocation context.
      */
-    public AgentInvokeOptions(@Nullable KernelArguments KernelArguments,
+    public AgentInvokeOptions(@Nullable KernelArguments kernelArguments,
                               @Nullable Kernel kernel,
                               @Nullable String additionalInstructions,
                               @Nullable InvocationContext invocationContext) {
-        this.KernelArguments = KernelArguments;
+        this.kernelArguments = kernelArguments != null ? kernelArguments.copy() : null;
         this.kernel = kernel;
         this.additionalInstructions = additionalInstructions;
         this.invocationContext = invocationContext;
     }
 
+    /**
+     * Get the kernel arguments.
+     *
+     * @return The kernel arguments.
+     */
     public KernelArguments getKernelArguments() {
-        return KernelArguments;
+        return kernelArguments;
     }
 
+    /**
+     * Get the kernel.
+     *
+     * @return The kernel.
+     */
     public Kernel getKernel() {
         return kernel;
     }
 
+    /**
+     * Get additional instructions.
+     *
+     * @return The additional instructions.
+     */
     public String getAdditionalInstructions() {
         return additionalInstructions;
     }
 
+    /**
+     * Get the invocation context.
+     *
+     * @return The invocation context.
+     */
     public InvocationContext getInvocationContext() {
         return invocationContext;
     }
@@ -80,6 +101,7 @@ public class AgentInvokeOptions {
          * @param kernelArguments The kernel arguments.
          * @return The builder.
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withKernelArguments(KernelArguments kernelArguments) {
             this.kernelArguments = kernelArguments;
             return this;
