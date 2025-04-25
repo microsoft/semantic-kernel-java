@@ -19,6 +19,7 @@ import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -230,6 +231,7 @@ public class ChatCompletionAgent extends KernelAgent {
          *
          * @param KernelArguments The kernel arguments to use.
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withKernelArguments(KernelArguments KernelArguments) {
             this.kernelArguments = KernelArguments;
             return this;

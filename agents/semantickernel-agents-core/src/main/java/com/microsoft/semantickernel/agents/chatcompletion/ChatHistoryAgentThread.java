@@ -5,6 +5,7 @@ import com.microsoft.semantickernel.agents.BaseAgentThread;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nonnull;
@@ -35,6 +36,7 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
      *
      * @return The chat history.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public ChatHistory getChatHistory() {
         return chatHistory;
     }
@@ -100,6 +102,7 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
          * @param chatHistory The chat history.
          * @return The builder instance.
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withChatHistory(ChatHistory chatHistory) {
             this.chatHistory = chatHistory;
             return this;
