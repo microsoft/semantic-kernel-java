@@ -1,6 +1,9 @@
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.jdbc.postgres.PostgreSQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
@@ -18,9 +21,14 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
     // This could be removed if super.collectionTable made protected
     private final String collectionsTable;
 
-    private OracleVectorStoreQueryProvider(@Nonnull DataSource dataSource, @Nonnull String collectionsTable, @Nonnull String prefixForCollectionTables) {
+    // This could be common to all query providers
+    private final ObjectMapper objectMapper;
+
+    private OracleVectorStoreQueryProvider(@Nonnull DataSource dataSource, @Nonnull String collectionsTable, @Nonnull String prefixForCollectionTables,
+        ObjectMapper objectMapper) {
         super(dataSource, collectionsTable, prefixForCollectionTables);
         this.collectionsTable = collectionsTable;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -38,12 +46,49 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
     }
 
     @Override
+    public void createCollection(String collectionName,
+        VectorStoreRecordDefinition recordDefinition) {
+        // TODO Override implementation. Eg: mapping TEXT to VARCHAR
+        super.createCollection(collectionName, recordDefinition);
+    }
+
+    @Override
     public void upsertRecords(String collectionName, List<?> records, VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
 
-        // Using hsqldb impl
+        // TODO look for public void createCollection(String collectionName, VectorStoreRecordDefinition recordDefinition) {
 
+        // TODO Make this a MERGE query
 
-        super.upsertRecords(collectionName, records, recordDefinition, options);
+//        String upsertStatemente = formatQuery("""
+//            MERGE INTO %s EXIST_REC USING (SELECT ? AS ID) NEW_REC ON (EXIST_REC.%s = NEW_REC.ID)
+//            WHEN MATACHED THEN UPDATE SET EXISTING REC
+//            """,
+//                getCollectionTableName(collectionName),
+//                recordDefinition.getKeyField().getName(),
+//                getQueryColumnsFromFields(fields),
+//                getWildcardString(fields.size()),
+//                onDuplicateKeyUpdate);super.upsertRecords(collectionName, records, recordDefinition, options);
+
+        String query = formatQuery("INSERT INTO %s (%s, %s, %s) values (?, ?, ?)",
+            getCollectionTableName(collectionName),
+            recordDefinition.getAllFields().get(0).getStorageName(),
+            recordDefinition.getAllFields().get(1).getStorageName(),
+            recordDefinition.getAllFields().get(2).getStorageName());
+
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(query)) {
+            for (Object record : records) {
+                JsonNode jsonNode = objectMapper.valueToTree(record);
+                for (int i = 0; i < 3; i++) {
+                    statement.setObject(i + 1, jsonNode
+                        .get(recordDefinition.getAllFields().get(i).getStorageName()).asText());
+                }
+                statement.addBatch();
+            }
+            statement.executeBatch();
+        } catch (SQLException e) {
+            throw new SKException("Failed to upsert records", e);
+        }
     }
 
     public static Builder builder() {
@@ -56,6 +101,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         private DataSource dataSource;
         private String collectionsTable = DEFAULT_COLLECTIONS_TABLE;
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
+        private ObjectMapper objectMapper = new ObjectMapper();
 
         @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withDataSource(DataSource dataSource) {
@@ -83,9 +129,16 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             return this;
         }
 
+        public Builder withObjectMapper(
+            ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
         @Override
         public OracleVectorStoreQueryProvider build() {
-            return new OracleVectorStoreQueryProvider(dataSource, collectionsTable, prefixForCollectionTables);
+            return new OracleVectorStoreQueryProvider(dataSource, collectionsTable,
+                prefixForCollectionTables, objectMapper);
         }
     }
 }
