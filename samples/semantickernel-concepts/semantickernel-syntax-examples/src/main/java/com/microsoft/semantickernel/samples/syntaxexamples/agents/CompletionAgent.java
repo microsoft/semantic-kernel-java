@@ -54,21 +54,12 @@ public class CompletionAgent {
                     .buildAsyncClient();
         }
 
+        System.out.println("------------------------");
+
         ChatCompletionService chatCompletion = OpenAIChatCompletion.builder()
                 .withModelId(MODEL_ID)
                 .withOpenAIAsyncClient(client)
                 .build();
-
-        System.out.println("------------------------");
-
-        ContextVariableTypes.addGlobalConverter(
-                new ContextVariableTypeConverter<>(
-                        GitHubModel.Issue.class,
-                        o -> (GitHubModel.Issue) o,
-                        o -> o.toString(),
-                        s -> null
-                )
-        );
 
         Kernel kernel = Kernel.builder()
                 .withAIService(ChatCompletionService.class, chatCompletion)
@@ -78,6 +69,12 @@ public class CompletionAgent {
 
         InvocationContext invocationContext = InvocationContext.builder()
                 .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withContextVariableConverter(new ContextVariableTypeConverter<>(
+                        GitHubModel.Issue.class,
+                        o -> (GitHubModel.Issue) o,
+                        o -> o.toString(),
+                        s -> null
+                ))
                 .build();
 
         ChatCompletionAgent agent = ChatCompletionAgent.builder()
@@ -110,8 +107,6 @@ public class CompletionAgent {
                 ).build();
 
         ChatHistoryAgentThread agentThread = new ChatHistoryAgentThread();
-        agentThread.createAsync().block();
-
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -136,7 +131,10 @@ public class CompletionAgent {
                             .build()
             ).block();
 
-            System.out.println("> " + response.get(response.size() - 1).getMessage());
+            var lastResponse = response.get(response.size() - 1);
+
+            System.out.println("> " + lastResponse.getMessage());
+            agentThread = (ChatHistoryAgentThread) lastResponse.getThread();
         }
     }
 }

@@ -36,6 +36,13 @@ public interface AgentThread {
     boolean isDeleted();
 
     /**
+     * Create a copy of the thread.
+     *
+     * @return A new instance of the thread.
+     */
+    AgentThread copy();
+
+    /**
      * Handle a new message in the thread.
      *
      * @param newMessage The new message to handle.

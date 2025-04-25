@@ -5,6 +5,8 @@ import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 
+import javax.annotation.Nullable;
+
 /**
  * Options for invoking an agent.
  */
@@ -15,6 +17,12 @@ public class AgentInvokeOptions {
     private final String additionalInstructions;
     private final InvocationContext invocationContext;
 
+    /**
+     * Default constructor for AgentInvokeOptions.
+     */
+    public AgentInvokeOptions() {
+        this(null, null, null, null);
+    }
 
     /**
      * Constructor for AgentInvokeOptions.
@@ -24,8 +32,10 @@ public class AgentInvokeOptions {
      * @param additionalInstructions Additional instructions for the agent.
      * @param invocationContext The invocation context.
      */
-    public AgentInvokeOptions(KernelArguments KernelArguments, Kernel kernel, String additionalInstructions,
-                              InvocationContext invocationContext) {
+    public AgentInvokeOptions(@Nullable KernelArguments KernelArguments,
+                              @Nullable Kernel kernel,
+                              @Nullable String additionalInstructions,
+                              @Nullable InvocationContext invocationContext) {
         this.KernelArguments = KernelArguments;
         this.kernel = kernel;
         this.additionalInstructions = additionalInstructions;
@@ -116,10 +126,10 @@ public class AgentInvokeOptions {
         @Override
         public AgentInvokeOptions build() {
             return new AgentInvokeOptions(
-                kernelArguments != null ? kernelArguments : com.microsoft.semantickernel.semanticfunctions.KernelArguments.builder().build(),
-                kernel != null ? kernel : Kernel.builder().build(),
+                kernelArguments,
+                kernel,
                 additionalInstructions,
-                    invocationContext
+                invocationContext
             );
         }
     }

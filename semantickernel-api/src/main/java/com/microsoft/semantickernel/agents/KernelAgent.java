@@ -48,53 +48,67 @@ public abstract class KernelAgent implements Agent {
         this.template = template;
     }
 
+    /**
+     * Gets the agent's ID.
+     *
+     * @return The agent's ID
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Gets the agent's name.
+     *
+     * @return The agent's name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the agent's description.
+     *
+     * @return The agent's description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * Gets the kernel used by the agent.
+     *
+     * @return The kernel used by the agent
+     */
     public Kernel getKernel() {
         return kernel;
     }
 
+    /**
+     * Gets the invocation context used by the agent.
+     *
+     * @return The invocation context used by the agent
+     */
     public KernelArguments getKernelArguments() {
         return kernelArguments;
     }
 
+    /**
+     * Gets the invocation context used by the agent.
+     *
+     * @return The invocation context used by the agent
+     */
     public String getInstructions() {
         return instructions;
     }
 
+    /**
+     * Gets the invocation context used by the agent.
+     *
+     * @return The invocation context used by the agent
+     */
     public PromptTemplate getTemplate() {
         return template;
-    }
-
-    protected <T extends AgentThread> Mono<T> ensureThreadExistsAsync(List<ChatMessageContent<?>> messages, AgentThread thread, Supplier<T> constructor) {
-        return Mono.defer(() -> {
-            T newThread = thread != null ? (T) thread : constructor.get();
-
-            return  newThread.createAsync()
-                    .thenMany(Flux.fromIterable(messages))
-                    .concatMap(message -> {
-                        return notifyThreadOfNewMessageAsync(newThread, message)
-                                .then(Mono.just(message));
-                    })
-                    .then(Mono.just(newThread));
-        });
-    }
-
-    @Override
-    public Mono<Void> notifyThreadOfNewMessageAsync(AgentThread thread, ChatMessageContent<?> message) {
-        return Mono.defer(() -> {
-            return thread.onNewMessageAsync(message);
-        });
     }
 
 
@@ -127,11 +141,27 @@ public abstract class KernelAgent implements Agent {
      * @param context   The context to use for formatting.
      * @return A Mono that resolves to the formatted instructions.
      */
-    protected Mono<String> formatInstructionsAsync(Kernel kernel, KernelArguments arguments, InvocationContext context) {
+    protected Mono<String> renderInstructionsAsync(Kernel kernel, KernelArguments arguments, InvocationContext context) {
         if (template != null) {
             return template.renderAsync(kernel, arguments, context);
         } else {
             return Mono.just(instructions);
         }
+    }
+
+    protected <T extends AgentThread> Mono<T> ensureThreadExistsWithMessagesAsync(List<ChatMessageContent<?>> messages, AgentThread thread, Supplier<T> threadSupplier) {
+        return Mono.defer(() -> {
+            // Check if the thread already exists
+            // If it does, we can work with a copy of it
+            AgentThread newThread = thread == null ? threadSupplier.get() : thread.copy();
+
+            return  newThread.createAsync()
+                    .thenMany(Flux.fromIterable(messages))
+                    .concatMap(message -> {
+                        return notifyThreadOfNewMessageAsync(newThread, message)
+                                .then(Mono.just(message));
+                    })
+                    .then(Mono.just((T) newThread));
+        });
     }
 }

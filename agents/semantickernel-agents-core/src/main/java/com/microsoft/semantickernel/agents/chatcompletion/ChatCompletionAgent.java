@@ -6,7 +6,6 @@ import com.microsoft.semantickernel.agents.AgentResponseItem;
 import com.microsoft.semantickernel.agents.AgentThread;
 import com.microsoft.semantickernel.agents.KernelAgent;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -23,14 +22,13 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ChatCompletionAgent extends KernelAgent {
 
-    ChatCompletionAgent(
+    private ChatCompletionAgent(
         String id,
         String name,
         String description,
@@ -61,43 +59,49 @@ public class ChatCompletionAgent extends KernelAgent {
      * @return A Mono containing the agent response
      */
     @Override
-    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(List<ChatMessageContent<?>> messages, AgentThread thread, AgentInvokeOptions options) {
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+            List<ChatMessageContent<?>> messages,
+            AgentThread thread,
+            @Nullable AgentInvokeOptions options
+    ) {
+        return ensureThreadExistsWithMessagesAsync(messages, thread, ChatHistoryAgentThread::new)
+                .cast(ChatHistoryAgentThread.class)
+                .flatMap(agentThread -> {
+                    // Extract the chat history from the thread
+                    ChatHistory history = new ChatHistory(
+                        agentThread.getChatHistory().getMessages()
+                    );
 
-        Mono<ChatHistory> chatHistoryFromThread = this.<ChatHistoryAgentThread>ensureThreadExistsAsync(messages, thread, ChatHistoryAgentThread::new)
-            .cast(ChatHistoryAgentThread.class)
-            .map(ChatHistoryAgentThread::getChatHistory)
-            .flatMap(threadChatHistory -> {
-                return Mono.just(new ChatHistory(threadChatHistory.getMessages()));
-        });
+                    // Invoke the agent with the chat history
+                    return internalInvokeAsync(
+                            history,
+                            options
+                    )
+                    .flatMapMany(Flux::fromIterable)
+                    // notify on the new thread instance
+                    .concatMap(agentMessage -> {
+                        // Set the author name for the message
+                        agentMessage.setAuthorName(this.name);
 
-
-        Mono<List<ChatMessageContent<?>>> updatedChatHistory = chatHistoryFromThread.flatMap(
-            chatHistory -> internalInvokeAsync(
-                this.getName(),
-                chatHistory,
-                options
-            )
-        );
-
-        return updatedChatHistory.flatMap(chatMessageContents -> {
-            return Flux.fromIterable(chatMessageContents)
-                        .concatMap(chatMessageContent -> this.notifyThreadOfNewMessageAsync(thread, chatMessageContent))
-                        .then(Mono.just(chatMessageContents)); // return the original list
-        }).flatMap(chatMessageContents -> {
-            return Mono.just(chatMessageContents.stream()
-                .map(chatMessageContent -> {
-                    return new AgentResponseItem<ChatMessageContent<?>>(
-                            chatMessageContent,
-                            thread);
-                }).collect(Collectors.toList()));
-        });
+                        return this.notifyThreadOfNewMessageAsync(agentThread, agentMessage).thenReturn(agentMessage);
+                    })
+                    .collectList()
+                    .map(chatMessageContents ->
+                            chatMessageContents.stream()
+                                    .map(message -> new AgentResponseItem<ChatMessageContent<?>>(message, agentThread))
+                                    .collect(Collectors.toList())
+                    );
+                });
     }
 
     private Mono<List<ChatMessageContent<?>>> internalInvokeAsync(
-        String agentName,
         ChatHistory history,
-        AgentInvokeOptions options
+        @Nullable AgentInvokeOptions options
     ) {
+        if (options == null) {
+            options = new AgentInvokeOptions();
+        }
+
         final Kernel kernel = options.getKernel() != null ? options.getKernel() : this.kernel;
         final KernelArguments arguments = mergeArguments(options.getKernelArguments());
         final String additionalInstructions = options.getAdditionalInstructions();
@@ -112,13 +116,13 @@ public class ChatCompletionAgent extends KernelAgent {
 
             ToolCallBehavior toolCallBehavior = invocationContext != null
                     ? invocationContext.getToolCallBehavior()
-                    : ToolCallBehavior.allowAllKernelFunctions(false);
+                    : ToolCallBehavior.allowAllKernelFunctions(true);
 
             // Build base invocation context
             InvocationContext.Builder builder = InvocationContext.builder()
                     .withPromptExecutionSettings(executionSettings)
                     .withToolCallBehavior(toolCallBehavior)
-                    .withReturnMode(InvocationReturnMode.FULL_HISTORY);
+                    .withReturnMode(InvocationReturnMode.NEW_MESSAGES_ONLY);
 
             if (invocationContext != null) {
                 builder = builder
@@ -129,7 +133,7 @@ public class ChatCompletionAgent extends KernelAgent {
 
             InvocationContext agentInvocationContext = builder.build();
 
-            return formatInstructionsAsync(kernel, arguments, agentInvocationContext).flatMap(
+            return renderInstructionsAsync(kernel, arguments, agentInvocationContext).flatMap(
                 instructions -> {
                     // Create a new chat history with the instructions
                     ChatHistory chat = new ChatHistory(
@@ -144,22 +148,24 @@ public class ChatCompletionAgent extends KernelAgent {
                         ));
                     }
 
+                    // Add the chat history to the new chat
                     chat.addAll(history);
-                    int previousHistorySize = chat.getMessages().size();
 
-                    return chatCompletionService.getChatMessageContentsAsync(chat, kernel, agentInvocationContext)
-                            .map(chatMessageContents -> {
-                                return chatMessageContents.subList(
-                                        previousHistorySize,
-                                        chatMessageContents.size());
-                            });
+                    return chatCompletionService.getChatMessageContentsAsync(chat, kernel, agentInvocationContext);
                 }
             );
-
 
         } catch (ServiceNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    @Override
+    public Mono<Void> notifyThreadOfNewMessageAsync(AgentThread thread, ChatMessageContent<?> message) {
+        return Mono.defer(() -> {
+            return thread.onNewMessageAsync(message);
+        });
     }
 
     /**
@@ -174,71 +180,123 @@ public class ChatCompletionAgent extends KernelAgent {
         private String name;
         private String description;
         private Kernel kernel;
-        private KernelArguments KernelArguments;
+        private KernelArguments kernelArguments;
         private InvocationContext invocationContext;
         private String instructions;
         private PromptTemplate template;
 
+        /**
+         * Set the ID of the agent.
+         *
+         * @param id The ID of the agent.
+         */
         public Builder withId(String id) {
             this.id = id;
             return this;
         }
 
+        /**
+         * Set the name of the agent.
+         *
+         * @param name The name of the agent.
+         */
         public Builder withName(String name) {
             this.name = name;
             return this;
         }
 
+        /**
+         * Set the description of the agent.
+         *
+         * @param description The description of the agent.
+         */
         public Builder withDescription(String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Set the kernel to use for the agent.
+         *
+         * @param kernel The kernel to use.
+         */
         public Builder withKernel(Kernel kernel) {
             this.kernel = kernel;
             return this;
         }
 
+        /**
+         * Set the kernel arguments to use for the agent.
+         *
+         * @param KernelArguments The kernel arguments to use.
+         */
         public Builder withKernelArguments(KernelArguments KernelArguments) {
-            this.KernelArguments = KernelArguments;
+            this.kernelArguments = KernelArguments;
             return this;
         }
 
+        /**
+         * Set the instructions for the agent.
+         *
+         * @param instructions The instructions for the agent.
+         */
         public Builder withInstructions(String instructions) {
             this.instructions = instructions;
             return this;
         }
 
+        /**
+         * Set the invocation context for the agent.
+         *
+         * @param invocationContext The invocation context to use.
+         */
         public Builder withInvocationContext(InvocationContext invocationContext) {
             this.invocationContext = invocationContext;
             return this;
         }
 
+        /**
+         * Set the template for the agent.
+         *
+         * @param template The template to use.
+         */
         public Builder withTemplate(PromptTemplate template) {
             this.template = template;
             return this;
         }
 
+        /**
+         * Build the ChatCompletionAgent instance.
+         *
+         * @return The ChatCompletionAgent instance.
+         */
         public ChatCompletionAgent build() {
             return new ChatCompletionAgent(
                 id,
                 name,
                 description,
                 kernel,
-                KernelArguments,
+                    kernelArguments,
                 invocationContext,
                 instructions,
                 template
             );
         }
 
+        /**
+         * Build the ChatCompletionAgent instance with the given prompt template config and factory.
+         *
+         * @param promptTemplateConfig The prompt template config to use.
+         * @param promptTemplateFactory The prompt template factory to use.
+         * @return The ChatCompletionAgent instance.
+         */
         public ChatCompletionAgent build(PromptTemplateConfig promptTemplateConfig, PromptTemplateFactory promptTemplateFactory) {
             return new ChatCompletionAgent(
                 id,
                 name,
                 description,
                 kernel,
-                KernelArguments,
+                    kernelArguments,
                 invocationContext,
                 promptTemplateConfig.getTemplate(),
                 promptTemplateFactory.tryCreate(promptTemplateConfig)

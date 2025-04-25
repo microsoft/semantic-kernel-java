@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.agents.chatcompletion;
 
 import com.microsoft.semantickernel.agents.AgentThread;
 import com.microsoft.semantickernel.agents.BaseAgentThread;
+import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import reactor.core.publisher.Mono;
@@ -15,6 +16,7 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
     private ChatHistory chatHistory;
 
     public ChatHistoryAgentThread() {
+        this(UUID.randomUUID().toString(), new ChatHistory());
     }
 
     /**
@@ -25,7 +27,7 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
      */
     public ChatHistoryAgentThread(String id, @Nullable ChatHistory chatHistory) {
         super(id);
-        this.chatHistory = chatHistory;
+        this.chatHistory = chatHistory != null ? chatHistory : new ChatHistory();
     }
 
     /**
@@ -51,6 +53,16 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
         return Mono.fromRunnable(chatHistory::clear);
     }
 
+    /**
+     * Create a copy of the thread.
+     *
+     * @return A new instance of the thread.
+     */
+    @Override
+    public ChatHistoryAgentThread copy() {
+        return new ChatHistoryAgentThread(this.id, new ChatHistory(chatHistory.getMessages()));
+    }
+
     @Override
     public Mono<Void> onNewMessageAsync(ChatMessageContent<?> newMessage) {
         return Mono.fromRunnable(() -> {
@@ -60,5 +72,42 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
 
     public List<ChatMessageContent<?>> getMessages() {
         return chatHistory.getMessages();
+    }
+
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder implements SemanticKernelBuilder<ChatHistoryAgentThread> {
+        private String id;
+        private ChatHistory chatHistory;
+
+        /**
+         * Set the ID of the thread.
+         *
+         * @param id The ID of the thread.
+         * @return The builder instance.
+         */
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        /**
+         * Set the chat history.
+         *
+         * @param chatHistory The chat history.
+         * @return The builder instance.
+         */
+        public Builder withChatHistory(ChatHistory chatHistory) {
+            this.chatHistory = chatHistory;
+            return this;
+        }
+
+        @Override
+        public ChatHistoryAgentThread build() {
+            return new ChatHistoryAgentThread(id, chatHistory);
+        }
     }
 }

@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
  */
 public class ChatMessageContent<T> extends KernelContentImpl<T> {
 
+    private String authorName;
     private final AuthorRole authorRole;
     @Nullable
     private final String content;
@@ -50,6 +51,28 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
             null,
             null,
             null);
+    }
+
+    /**
+     * Creates a new instance of the {@link ChatMessageContent} class. Defaults to
+     * {@link ChatMessageContentType#TEXT} content type.
+     *
+     * @param authorRole the author role that generated the content
+     * @param authorName the author name
+     * @param content    the content
+     */
+    public ChatMessageContent(
+            AuthorRole authorRole,
+            String authorName,
+            String content) {
+        this(
+                authorRole,
+                authorName,
+                content,
+                null,
+                null,
+                null,
+                null);
     }
 
     /**
@@ -131,6 +154,27 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
         }
         this.contentType = contentType;
     }
+
+
+    /**
+     * Gets the author name that generated the content
+     *
+     * @return the author name that generated the content
+     */
+    @Nullable
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    /**
+     * Sets the author name that generated the content
+     *
+     *  @param authorName the author name that generated the content
+     */
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
 
     /**
      * Gets the author role that generated the content
