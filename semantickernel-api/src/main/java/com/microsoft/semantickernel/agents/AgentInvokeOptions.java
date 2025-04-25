@@ -48,6 +48,7 @@ public class AgentInvokeOptions {
      *
      * @return The kernel arguments.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KernelArguments getKernelArguments() {
         return kernelArguments;
     }

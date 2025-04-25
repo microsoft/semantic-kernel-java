@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -89,6 +90,7 @@ public abstract class KernelAgent implements Agent {
      *
      * @return The invocation context used by the agent
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public KernelArguments getKernelArguments() {
         return kernelArguments;
     }
