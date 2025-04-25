@@ -42,9 +42,10 @@ public abstract class KernelAgent implements Agent {
         this.name = name;
         this.description = description;
         this.kernel = kernel;
-        this.kernelArguments = kernelArguments != null ? kernelArguments.copy() : null;
+        this.kernelArguments = kernelArguments != null
+                ? kernelArguments.copy() : KernelArguments.builder().build();
         this.invocationContext = invocationContext != null
-                ? invocationContext : InvocationContext.builder().withReturnMode(InvocationReturnMode.FULL_HISTORY).build();
+                ? invocationContext : InvocationContext.builder().build();
         this.instructions = instructions;
         this.template = template;
     }
