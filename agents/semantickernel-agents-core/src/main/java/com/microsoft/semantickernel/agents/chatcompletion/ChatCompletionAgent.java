@@ -80,12 +80,7 @@ public class ChatCompletionAgent extends KernelAgent {
                     )
                     .flatMapMany(Flux::fromIterable)
                     // notify on the new thread instance
-                    .concatMap(agentMessage -> {
-                        // Set the author name for the message
-                        agentMessage.setAuthorName(this.name);
-
-                        return this.notifyThreadOfNewMessageAsync(agentThread, agentMessage).thenReturn(agentMessage);
-                    })
+                    .concatMap(agentMessage -> this.notifyThreadOfNewMessageAsync(agentThread, agentMessage).thenReturn(agentMessage))
                     .collectList()
                     .map(chatMessageContents ->
                             chatMessageContents.stream()

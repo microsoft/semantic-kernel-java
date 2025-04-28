@@ -23,8 +23,6 @@ import javax.annotation.Nullable;
  * @param <T> the type of the inner content within the messages
  */
 public class ChatMessageContent<T> extends KernelContentImpl<T> {
-
-    private String authorName;
     private final AuthorRole authorRole;
     @Nullable
     private final String content;
@@ -154,27 +152,6 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
         }
         this.contentType = contentType;
     }
-
-
-    /**
-     * Gets the author name that generated the content
-     *
-     * @return the author name that generated the content
-     */
-    @Nullable
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    /**
-     * Sets the author name that generated the content
-     *
-     *  @param authorName the author name that generated the content
-     */
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
-
 
     /**
      * Gets the author role that generated the content
