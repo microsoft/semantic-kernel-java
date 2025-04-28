@@ -157,7 +157,7 @@ public class ChatCompletionAgent extends KernelAgent {
             );
 
         } catch (ServiceNotFoundException e) {
-            throw new RuntimeException(e);
+            return Mono.error(e);
         }
     }
 
