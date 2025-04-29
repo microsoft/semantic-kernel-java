@@ -19,7 +19,7 @@ public abstract class FunctionChoiceBehavior {
     protected final List<KernelFunction<?>> functions;
     protected final FunctionChoiceBehaviorOptions options;
 
-    protected FunctionChoiceBehavior(List<KernelFunction<?>> functions,
+    protected FunctionChoiceBehavior(@Nullable List<KernelFunction<?>> functions,
                                      @Nullable FunctionChoiceBehaviorOptions options) {
         this.functions = functions != null ? Collections.unmodifiableList(functions) : null;
         this.fullFunctionNames = new HashSet<>();

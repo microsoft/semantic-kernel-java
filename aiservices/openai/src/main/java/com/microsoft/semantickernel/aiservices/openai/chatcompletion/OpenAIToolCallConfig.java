@@ -3,8 +3,10 @@ package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
 import com.azure.ai.openai.models.ChatCompletionsToolSelection;
 import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehaviorOptions;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 
 public class OpenAIToolCallConfig {
@@ -21,6 +23,7 @@ public class OpenAIToolCallConfig {
      * @param autoInvoke  Indicates whether to automatically invoke the tool.
      * @param options     Additional options for function choice behavior.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public OpenAIToolCallConfig(
             List<ChatCompletionsToolDefinition> tools,
             ChatCompletionsToolSelection toolChoice,
@@ -38,7 +41,7 @@ public class OpenAIToolCallConfig {
      * @return The list of tools.
      */
     public List<ChatCompletionsToolDefinition> getTools() {
-        return tools;
+        return Collections.unmodifiableList(tools);
     }
 
     /**
