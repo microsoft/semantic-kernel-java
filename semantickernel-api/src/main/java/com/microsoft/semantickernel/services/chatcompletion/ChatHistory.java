@@ -188,6 +188,13 @@ public class ChatHistory implements Iterable<ChatMessageContent<?>> {
     }
 
     /**
+     * Clear the chat history
+     */
+    public void clear() {
+        chatMessageContents.clear();
+    }
+
+    /**
      * Add all messages to the chat history
      * @param messages The messages to add to the chat history
      * @return {@code this} ChatHistory

@@ -51,6 +51,11 @@
 
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-agents-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-experimental</artifactId>
         </dependency>
 

@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
  * @param <T> the type of the inner content within the messages
  */
 public class ChatMessageContent<T> extends KernelContentImpl<T> {
-
     private final AuthorRole authorRole;
     @Nullable
     private final String content;
@@ -50,6 +49,28 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
             null,
             null,
             null);
+    }
+
+    /**
+     * Creates a new instance of the {@link ChatMessageContent} class. Defaults to
+     * {@link ChatMessageContentType#TEXT} content type.
+     *
+     * @param authorRole the author role that generated the content
+     * @param authorName the author name
+     * @param content    the content
+     */
+    public ChatMessageContent(
+            AuthorRole authorRole,
+            String authorName,
+            String content) {
+        this(
+                authorRole,
+                authorName,
+                content,
+                null,
+                null,
+                null,
+                null);
     }
 
     /**
