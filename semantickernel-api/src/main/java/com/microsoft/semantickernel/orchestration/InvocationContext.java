@@ -4,6 +4,8 @@ package com.microsoft.semantickernel.orchestration;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehavior;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
@@ -23,6 +25,8 @@ public class InvocationContext {
     private final PromptExecutionSettings promptExecutionSettings;
     @Nullable
     private final ToolCallBehavior toolCallBehavior;
+    @Nullable
+    private final FunctionChoiceBehavior functionChoiceBehavior;
     private final ContextVariableTypes contextVariableTypes;
     private final InvocationReturnMode invocationReturnMode;
     private final SemanticKernelTelemetry telemetry;
@@ -39,12 +43,14 @@ public class InvocationContext {
         @Nullable KernelHooks hooks,
         @Nullable PromptExecutionSettings promptExecutionSettings,
         @Nullable ToolCallBehavior toolCallBehavior,
+        @Nullable FunctionChoiceBehavior functionChoiceBehavior,
         @Nullable ContextVariableTypes contextVariableTypes,
         InvocationReturnMode invocationReturnMode,
         SemanticKernelTelemetry telemetry) {
         this.hooks = unmodifiableClone(hooks);
         this.promptExecutionSettings = promptExecutionSettings;
         this.toolCallBehavior = toolCallBehavior;
+        this.functionChoiceBehavior = functionChoiceBehavior;
         this.invocationReturnMode = invocationReturnMode;
         if (contextVariableTypes == null) {
             this.contextVariableTypes = new ContextVariableTypes();
@@ -61,6 +67,7 @@ public class InvocationContext {
         this.hooks = null;
         this.promptExecutionSettings = null;
         this.toolCallBehavior = null;
+        this.functionChoiceBehavior = null;
         this.contextVariableTypes = new ContextVariableTypes();
         this.invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
         this.telemetry = null;
@@ -76,6 +83,7 @@ public class InvocationContext {
             this.hooks = null;
             this.promptExecutionSettings = null;
             this.toolCallBehavior = null;
+            this.functionChoiceBehavior = null;
             this.contextVariableTypes = new ContextVariableTypes();
             this.invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
             this.telemetry = null;
@@ -83,6 +91,7 @@ public class InvocationContext {
             this.hooks = context.hooks;
             this.promptExecutionSettings = context.promptExecutionSettings;
             this.toolCallBehavior = context.toolCallBehavior;
+            this.functionChoiceBehavior = context.functionChoiceBehavior;
             this.contextVariableTypes = context.contextVariableTypes;
             this.invocationReturnMode = context.invocationReturnMode;
             this.telemetry = context.telemetry;
@@ -157,6 +166,16 @@ public class InvocationContext {
     }
 
     /**
+     * Get the behavior for function choice.
+     *
+     * @return The behavior for function choice.
+     */
+    @Nullable
+    public FunctionChoiceBehavior getFunctionChoiceBehavior() {
+        return functionChoiceBehavior;
+    }
+
+    /**
      * Get the types of context variables.
      *
      * @return The types of context variables.
@@ -190,6 +209,8 @@ public class InvocationContext {
         private PromptExecutionSettings promptExecutionSettings;
         @Nullable
         private ToolCallBehavior toolCallBehavior;
+        @Nullable
+        private FunctionChoiceBehavior functionChoiceBehavior;
         private InvocationReturnMode invocationReturnMode = InvocationReturnMode.NEW_MESSAGES_ONLY;
         @Nullable
         private SemanticKernelTelemetry telemetry;
@@ -226,7 +247,27 @@ public class InvocationContext {
          */
         public Builder withToolCallBehavior(
             @Nullable ToolCallBehavior toolCallBehavior) {
+            if (toolCallBehavior != null && functionChoiceBehavior != null) {
+                throw new SKException(
+                    "ToolCallBehavior cannot be set when FunctionChoiceBehavior is set.");
+            }
             this.toolCallBehavior = toolCallBehavior;
+            return this;
+        }
+
+        /**
+         * Add function choice behavior to the builder.
+         *
+         * @param functionChoiceBehavior the behavior to add.
+         * @return this {@link Builder}
+         */
+        public Builder withFunctionChoiceBehavior(
+            @Nullable FunctionChoiceBehavior functionChoiceBehavior) {
+            if (functionChoiceBehavior != null && toolCallBehavior != null) {
+                throw new SKException(
+                    "FunctionChoiceBehavior cannot be set when ToolCallBehavior is set.");
+            }
+            this.functionChoiceBehavior = functionChoiceBehavior;
             return this;
         }
 
@@ -269,7 +310,7 @@ public class InvocationContext {
         /**
          * Add a tracer to the builder.
          *
-         * @param tracer the tracer to add.
+         * @param telemetry the tracer to add.
          * @return this {@link Builder}
          */
         public Builder withTelemetry(@Nullable SemanticKernelTelemetry telemetry) {
@@ -282,7 +323,7 @@ public class InvocationContext {
             if (telemetry == null) {
                 telemetry = new SemanticKernelTelemetry();
             }
-            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
+            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior, functionChoiceBehavior,
                 contextVariableTypes, invocationReturnMode, telemetry);
         }
     }

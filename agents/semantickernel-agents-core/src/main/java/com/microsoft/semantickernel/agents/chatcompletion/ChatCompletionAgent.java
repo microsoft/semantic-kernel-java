@@ -110,19 +110,16 @@ public class ChatCompletionAgent extends KernelAgent {
                     ? invocationContext.getPromptExecutionSettings()
                     : kernelArguments.getExecutionSettings().get(chatCompletionService.getServiceId());
 
-            ToolCallBehavior toolCallBehavior = invocationContext != null
-                    ? invocationContext.getToolCallBehavior()
-                    : ToolCallBehavior.allowAllKernelFunctions(true);
-
             // Build base invocation context
             InvocationContext.Builder builder = InvocationContext.builder()
                     .withPromptExecutionSettings(executionSettings)
-                    .withToolCallBehavior(toolCallBehavior)
                     .withReturnMode(InvocationReturnMode.NEW_MESSAGES_ONLY);
 
             if (invocationContext != null) {
                 builder = builder
                         .withTelemetry(invocationContext.getTelemetry())
+                        .withFunctionChoiceBehavior(invocationContext.getFunctionChoiceBehavior())
+                        .withToolCallBehavior(invocationContext.getToolCallBehavior())
                         .withContextVariableConverter(invocationContext.getContextVariableTypes())
                         .withKernelHooks(invocationContext.getKernelHooks());
             }

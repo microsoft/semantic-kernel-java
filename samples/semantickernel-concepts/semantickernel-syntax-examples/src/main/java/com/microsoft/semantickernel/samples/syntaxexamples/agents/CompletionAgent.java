@@ -10,11 +10,10 @@ import com.microsoft.semantickernel.agents.chatcompletion.ChatCompletionAgent;
 import com.microsoft.semantickernel.agents.chatcompletion.ChatHistoryAgentThread;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
-import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehavior;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.DefaultPromptTemplate;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.github.GitHubModel;
 import com.microsoft.semantickernel.samples.plugins.github.GitHubPlugin;
@@ -68,7 +67,7 @@ public class CompletionAgent {
                 .build();
 
         InvocationContext invocationContext = InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
                 .withContextVariableConverter(new ContextVariableTypeConverter<>(
                         GitHubModel.Issue.class,
                         o -> (GitHubModel.Issue) o,
