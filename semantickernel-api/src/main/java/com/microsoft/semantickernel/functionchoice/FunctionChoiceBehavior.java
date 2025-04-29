@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.functionchoice;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +21,7 @@ public abstract class FunctionChoiceBehavior {
 
     protected FunctionChoiceBehavior(List<KernelFunction<?>> functions,
                                      @Nullable FunctionChoiceBehaviorOptions options) {
-        this.functions = functions;
+        this.functions = functions != null ? Collections.unmodifiableList(functions) : null;
         this.fullFunctionNames = new HashSet<>();
 
         if (functions != null) {
@@ -42,7 +43,7 @@ public abstract class FunctionChoiceBehavior {
      * @return The functions that are allowed.
      */
     public List<KernelFunction<?>> getFunctions() {
-        return functions;
+        return Collections.unmodifiableList(functions);
     }
 
     /**
