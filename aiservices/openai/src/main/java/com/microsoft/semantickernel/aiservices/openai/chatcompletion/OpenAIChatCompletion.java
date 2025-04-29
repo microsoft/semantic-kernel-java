@@ -526,7 +526,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                         LOGGER.warn("Tool invocation attempt failed: ", e);
 
                         // If FunctionInvocationError occurred and there are still attempts left, retry, else exit
-                        if (requestIndex > 0) {
+                        if (requestIndex < MAXIMUM_INFLIGHT_AUTO_INVOKES) {
                             ChatMessages currentMessages = messages;
                             if (e instanceof FunctionInvocationError) {
                                 currentMessages.assertCommonHistory(
