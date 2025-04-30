@@ -13,6 +13,7 @@ public class OpenAIToolCallConfig {
     private final List<ChatCompletionsToolDefinition> tools;
     private final ChatCompletionsToolSelection toolChoice;
     private final boolean autoInvoke;
+    @Nullable
     private final FunctionChoiceBehaviorOptions options;
 
     /**

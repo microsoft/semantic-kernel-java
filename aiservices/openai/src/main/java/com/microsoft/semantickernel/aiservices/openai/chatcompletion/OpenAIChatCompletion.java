@@ -969,6 +969,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         return options;
     }
 
+    @Nullable
     private static OpenAIToolCallConfig getToolCallConfig(
         @Nullable InvocationContext invocationContext,
         @Nullable List<OpenAIFunction> functions,
@@ -998,6 +999,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         }
     }
 
+    @Nullable
     private static OpenAIToolCallConfig getFunctionChoiceBehaviorConfig(
         @Nullable FunctionChoiceBehavior functionChoiceBehavior,
         @Nullable List<OpenAIFunction> functions,
@@ -1049,6 +1051,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             functionChoiceBehavior.getOptions());
     }
 
+    @Nullable
     private static OpenAIToolCallConfig getToolCallBehaviorConfig(
         @Nullable ToolCallBehavior toolCallBehavior,
         @Nullable List<OpenAIFunction> functions,

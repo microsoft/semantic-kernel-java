@@ -143,6 +143,7 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
                     .getServiceSelector()
                     .trySelectAIService(
                         TextAIService.class,
+                        this,
                         args);
 
                 AIService client = aiServiceSelection != null ? aiServiceSelection.getService()
