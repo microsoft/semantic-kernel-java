@@ -6,14 +6,17 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.agents.AgentInvokeOptions;
+import com.microsoft.semantickernel.agents.AgentThread;
 import com.microsoft.semantickernel.agents.chatcompletion.ChatCompletionAgent;
 import com.microsoft.semantickernel.agents.chatcompletion.ChatHistoryAgentThread;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
+import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehavior;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.DefaultPromptTemplate;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
+import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.samples.plugins.github.GitHubModel;
 import com.microsoft.semantickernel.samples.plugins.github.GitHubPlugin;
@@ -105,7 +108,7 @@ public class CompletionAgent {
                     )
                 ).build();
 
-        ChatHistoryAgentThread agentThread = new ChatHistoryAgentThread();
+        AgentThread agentThread = new ChatHistoryAgentThread();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -118,22 +121,19 @@ public class CompletionAgent {
 
             var message = new ChatMessageContent<>(AuthorRole.USER, input);
             KernelArguments arguments = KernelArguments.builder()
-                    .withVariable("now", System.currentTimeMillis())
-                    .build();
+                .withVariable("now", System.currentTimeMillis())
+                .build();
 
             var response = agent.invokeAsync(
-                    List.of(message),
-                    agentThread,
-                    AgentInvokeOptions.builder()
-                            .withKernel(kernel)
-                            .withKernelArguments(arguments)
-                            .build()
-            ).block();
+                message,
+                agentThread,
+                AgentInvokeOptions.builder()
+                        .withKernelArguments(arguments)
+                        .build()
+            ).block().get(0);
 
-            var lastResponse = response.get(response.size() - 1);
-
-            System.out.println("> " + lastResponse.getMessage());
-            agentThread = (ChatHistoryAgentThread) lastResponse.getThread();
+            System.out.println("> " + response.getMessage());
+            agentThread = response.getThread();
         }
     }
 }

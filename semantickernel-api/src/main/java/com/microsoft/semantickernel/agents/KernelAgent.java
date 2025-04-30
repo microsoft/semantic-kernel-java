@@ -11,6 +11,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,6 @@ public abstract class KernelAgent implements Agent {
         return template;
     }
 
-
     /**
      * Merges the provided arguments with the current arguments.
      * Provided arguments will override the current arguments.
@@ -166,5 +166,22 @@ public abstract class KernelAgent implements Agent {
                     })
                     .then(Mono.just((T) newThread));
         });
+    }
+
+    @Override
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(ChatMessageContent<?> message) {
+        return invokeAsync(message, null);
+    }
+
+    @Override
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(ChatMessageContent<?> message, AgentThread thread) {
+        return invokeAsync(message, thread, AgentInvokeOptions.builder().build());
+    }
+
+    @Override
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(ChatMessageContent<?> message, AgentThread thread, AgentInvokeOptions options) {
+        ArrayList<ChatMessageContent<?>> messages = new ArrayList<>();
+        messages.add(message);
+        return invokeAsync(messages, thread, options);
     }
 }

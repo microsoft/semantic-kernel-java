@@ -6,10 +6,10 @@ import com.microsoft.semantickernel.agents.AgentResponseItem;
 import com.microsoft.semantickernel.agents.AgentThread;
 import com.microsoft.semantickernel.agents.KernelAgent;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
+import com.microsoft.semantickernel.functionchoice.AutoFunctionChoiceBehavior;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.InvocationReturnMode;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
-import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
@@ -76,22 +76,20 @@ public class ChatCompletionAgent extends KernelAgent {
                     // Invoke the agent with the chat history
                     return internalInvokeAsync(
                             history,
+                            agentThread,
                             options
                     )
-                    .flatMapMany(Flux::fromIterable)
-                    // notify on the new thread instance
-                    .concatMap(agentMessage -> this.notifyThreadOfNewMessageAsync(agentThread, agentMessage).thenReturn(agentMessage))
-                    .collectList()
                     .map(chatMessageContents ->
                             chatMessageContents.stream()
-                                    .map(message -> new AgentResponseItem<ChatMessageContent<?>>(message, agentThread))
-                                    .collect(Collectors.toList())
+                            .map(message -> new AgentResponseItem<ChatMessageContent<?>>(message, agentThread))
+                            .collect(Collectors.toList())
                     );
                 });
     }
 
     private Mono<List<ChatMessageContent<?>>> internalInvokeAsync(
         ChatHistory history,
+        AgentThread thread,
         @Nullable AgentInvokeOptions options
     ) {
         if (options == null) {
@@ -144,6 +142,20 @@ public class ChatCompletionAgent extends KernelAgent {
                     // Add the chat history to the new chat
                     chat.addAll(history);
 
+                    // Retrieve the chat message contents asynchronously and notify the thread
+                    if (shouldNotifyFunctionCalls(agentInvocationContext)) {
+                        // Notify all messages including function calls
+                        return chatCompletionService.getChatMessageContentsAsync(chat, kernel, agentInvocationContext)
+                            .flatMapMany(Flux::fromIterable)
+                            .concatMap(message -> notifyThreadOfNewMessageAsync(thread, message).thenReturn(message))
+                            // Filter out function calls and their results
+                            .filter(message -> message.getContent() != null && message.getAuthorRole() != AuthorRole.TOOL)
+                            .collect(Collectors.toList());
+                    }
+
+                    // Return chat completion messages without notifying the thread
+                    // We shouldn't add the function call content to the thread, since
+                    // we don't know if the user will execute the call. They should add it themselves.
                     return chatCompletionService.getChatMessageContentsAsync(chat, kernel, agentInvocationContext);
                 }
             );
@@ -151,6 +163,22 @@ public class ChatCompletionAgent extends KernelAgent {
         } catch (ServiceNotFoundException e) {
             return Mono.error(e);
         }
+    }
+
+    boolean shouldNotifyFunctionCalls(InvocationContext invocationContext) {
+        if (invocationContext == null) {
+            return false;
+        }
+
+        if (invocationContext.getFunctionChoiceBehavior() != null && invocationContext.getFunctionChoiceBehavior() instanceof AutoFunctionChoiceBehavior) {
+            return ((AutoFunctionChoiceBehavior) invocationContext.getFunctionChoiceBehavior()).isAutoInvoke();
+        }
+
+        if (invocationContext.getToolCallBehavior() != null) {
+            return invocationContext.getToolCallBehavior().isAutoInvokeAllowed();
+        }
+
+        return false;
     }
 
 
