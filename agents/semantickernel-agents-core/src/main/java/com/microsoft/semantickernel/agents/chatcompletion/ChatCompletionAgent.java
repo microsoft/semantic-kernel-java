@@ -104,7 +104,7 @@ public class ChatCompletionAgent extends KernelAgent {
             PromptExecutionSettings executionSettings = invocationContext != null
                 && invocationContext.getPromptExecutionSettings() != null
                     ? invocationContext.getPromptExecutionSettings()
-                    : kernelArguments.getExecutionSettings()
+                    : arguments.getExecutionSettings()
                         .get(chatCompletionService.getServiceId());
 
             // Build base invocation context
