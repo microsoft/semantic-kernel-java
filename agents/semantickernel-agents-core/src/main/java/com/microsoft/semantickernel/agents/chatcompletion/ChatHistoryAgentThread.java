@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents.chatcompletion;
 
 import com.microsoft.semantickernel.agents.AgentThread;
@@ -44,8 +45,6 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
         this.chatHistory = chatHistory != null ? chatHistory : new ChatHistory();
     }
 
-
-
     /**
      * Get the chat history.
      *
@@ -90,7 +89,6 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
     public List<ChatMessageContent<?>> getMessages() {
         return chatHistory.getMessages();
     }
-
 
     public static Builder builder() {
         return new Builder();

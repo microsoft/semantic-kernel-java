@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents;
 
 public abstract class BaseAgentThread implements AgentThread {
@@ -16,6 +17,7 @@ public abstract class BaseAgentThread implements AgentThread {
     public String getId() {
         return id;
     }
+
     @Override
     public boolean isDeleted() {
         return isDeleted;

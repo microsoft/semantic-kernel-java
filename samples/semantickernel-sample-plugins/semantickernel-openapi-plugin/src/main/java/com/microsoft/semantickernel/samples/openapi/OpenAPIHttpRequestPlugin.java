@@ -142,7 +142,7 @@ public class OpenAPIHttpRequestPlugin {
     }
 
     private static String getRenderedParameter(
-            KernelArguments arguments, String name) {
+        KernelArguments arguments, String name) {
         ContextVariable<?> value = arguments.get(name);
 
         if (value == null) {

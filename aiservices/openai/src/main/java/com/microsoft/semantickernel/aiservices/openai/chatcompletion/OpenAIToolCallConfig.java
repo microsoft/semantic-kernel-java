@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
 import com.azure.ai.openai.models.ChatCompletionsToolDefinition;
@@ -26,10 +27,10 @@ public class OpenAIToolCallConfig {
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public OpenAIToolCallConfig(
-            List<ChatCompletionsToolDefinition> tools,
-            ChatCompletionsToolSelection toolChoice,
-            boolean autoInvoke,
-            @Nullable FunctionChoiceBehaviorOptions options) {
+        List<ChatCompletionsToolDefinition> tools,
+        ChatCompletionsToolSelection toolChoice,
+        boolean autoInvoke,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         this.tools = tools;
         this.toolChoice = toolChoice;
         this.autoInvoke = autoInvoke;

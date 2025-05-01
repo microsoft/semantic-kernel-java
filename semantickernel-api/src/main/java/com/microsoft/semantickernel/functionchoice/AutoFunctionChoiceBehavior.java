@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.functionchoice;
 
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
@@ -22,8 +23,8 @@ public class AutoFunctionChoiceBehavior extends FunctionChoiceBehavior {
      * @param options    Options for the function choice behavior.
      */
     public AutoFunctionChoiceBehavior(boolean autoInvoke,
-                                      @Nullable List<KernelFunction<?>> functions,
-                                      @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable List<KernelFunction<?>> functions,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         super(functions, options);
         this.autoInvoke = autoInvoke;
     }

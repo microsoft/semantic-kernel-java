@@ -210,8 +210,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         if (invocationContext != null &&
             invocationContext.getFunctionChoiceBehavior() != null &&
             invocationContext.getFunctionChoiceBehavior() instanceof AutoFunctionChoiceBehavior &&
-            ((AutoFunctionChoiceBehavior) invocationContext.getFunctionChoiceBehavior()).isAutoInvoke()
-        ) {
+            ((AutoFunctionChoiceBehavior) invocationContext.getFunctionChoiceBehavior())
+                .isAutoInvoke()) {
             throw new SKException(
                 "FunctionChoiceBehavior auto-invoke is not supported for streaming chat message contents");
         }
@@ -482,7 +482,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 // Just return the result:
                 // If auto-invoking is not enabled
                 // Or if we are auto-invoking, but we somehow end up with other than 1 choice even though only 1 was requested
-                if (toolCallConfig == null || !toolCallConfig.isAutoInvoke() || responseMessages.size() != 1) {
+                if (toolCallConfig == null || !toolCallConfig.isAutoInvoke()
+                    || responseMessages.size() != 1) {
                     List<OpenAIChatMessageContent<?>> chatMessageContents = getChatMessageContentsAsync(
                         completions);
                     return Mono.just(messages.addChatMessage(chatMessageContents));
@@ -980,10 +981,10 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             return null;
         }
 
-        if (invocationContext.getFunctionChoiceBehavior() == null && invocationContext.getToolCallBehavior() == null) {
+        if (invocationContext.getFunctionChoiceBehavior() == null
+            && invocationContext.getToolCallBehavior() == null) {
             return null;
         }
-
 
         if (invocationContext.getFunctionChoiceBehavior() != null) {
             return getFunctionChoiceBehaviorConfig(
@@ -1015,18 +1016,20 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         ChatCompletionsToolSelection toolChoice;
         boolean autoInvoke;
 
-         if (functionChoiceBehavior instanceof RequiredFunctionChoiceBehavior) {
+        if (functionChoiceBehavior instanceof RequiredFunctionChoiceBehavior) {
             // After first request a required function must have been called already
             if (requestIndex >= 1) {
                 return null;
             }
 
-            toolChoice = new ChatCompletionsToolSelection(ChatCompletionsToolSelectionPreset.REQUIRED);
+            toolChoice = new ChatCompletionsToolSelection(
+                ChatCompletionsToolSelectionPreset.REQUIRED);
             autoInvoke = ((RequiredFunctionChoiceBehavior) functionChoiceBehavior).isAutoInvoke();
         } else if (functionChoiceBehavior instanceof AutoFunctionChoiceBehavior) {
-             toolChoice = new ChatCompletionsToolSelection(ChatCompletionsToolSelectionPreset.AUTO);
-             autoInvoke = ((AutoFunctionChoiceBehavior) functionChoiceBehavior).isAutoInvoke() && requestIndex < MAXIMUM_INFLIGHT_AUTO_INVOKES;
-         } else if (functionChoiceBehavior instanceof NoneFunctionChoiceBehavior) {
+            toolChoice = new ChatCompletionsToolSelection(ChatCompletionsToolSelectionPreset.AUTO);
+            autoInvoke = ((AutoFunctionChoiceBehavior) functionChoiceBehavior).isAutoInvoke()
+                && requestIndex < MAXIMUM_INFLIGHT_AUTO_INVOKES;
+        } else if (functionChoiceBehavior instanceof NoneFunctionChoiceBehavior) {
             toolChoice = new ChatCompletionsToolSelection(ChatCompletionsToolSelectionPreset.NONE);
             autoInvoke = false;
         } else {
@@ -1036,13 +1039,14 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
         // List of functions advertised to the model
         List<ChatCompletionsToolDefinition> toolDefinitions = functions.stream()
-                .filter(function -> functionChoiceBehavior.isFunctionAllowed(function.getPluginName(), function.getName()))
-                .map(OpenAIFunction::getFunctionDefinition)
-                .map(it -> new ChatCompletionsFunctionToolDefinitionFunction(it.getName())
-                        .setDescription(it.getDescription())
-                        .setParameters(it.getParameters()))
-                .map(ChatCompletionsFunctionToolDefinition::new)
-                .collect(Collectors.toList());
+            .filter(function -> functionChoiceBehavior.isFunctionAllowed(function.getPluginName(),
+                function.getName()))
+            .map(OpenAIFunction::getFunctionDefinition)
+            .map(it -> new ChatCompletionsFunctionToolDefinitionFunction(it.getName())
+                .setDescription(it.getDescription())
+                .setParameters(it.getParameters()))
+            .map(ChatCompletionsFunctionToolDefinition::new)
+            .collect(Collectors.toList());
 
         return new OpenAIToolCallConfig(
             toolDefinitions,
@@ -1100,10 +1104,10 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                     "{\"type\":\"function\",\"function\":{\"name\":\"%s\"}}", toolChoiceName);
 
                 toolChoice = new ChatCompletionsToolSelection(
-                        ChatCompletionsNamedToolSelection.fromJson(
-                            DefaultJsonReader.fromString(
-                                json,
-                                new JsonOptions())));
+                    ChatCompletionsNamedToolSelection.fromJson(
+                        DefaultJsonReader.fromString(
+                            json,
+                            new JsonOptions())));
             } catch (JsonProcessingException e) {
                 throw SKException.build("Failed to parse tool choice", e);
             } catch (IOException e) {
@@ -1116,21 +1120,21 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
             ToolCallBehavior.AllowedKernelFunctions enabledKernelFunctions = (ToolCallBehavior.AllowedKernelFunctions) toolCallBehavior;
             toolDefinitions = functions.stream()
-                    .filter(function -> {
-                        // check if all kernel functions are enabled
-                        if (enabledKernelFunctions.isAllKernelFunctionsAllowed()) {
-                            return true;
-                        }
-                        // otherwise, check for the specific function
-                        return enabledKernelFunctions.isFunctionAllowed(function.getPluginName(),
-                                function.getName());
-                    })
-                    .map(OpenAIFunction::getFunctionDefinition)
-                    .map(it -> new ChatCompletionsFunctionToolDefinitionFunction(it.getName())
-                            .setDescription(it.getDescription())
-                            .setParameters(it.getParameters()))
-                    .map(ChatCompletionsFunctionToolDefinition::new)
-                    .collect(Collectors.toList());
+                .filter(function -> {
+                    // check if all kernel functions are enabled
+                    if (enabledKernelFunctions.isAllKernelFunctionsAllowed()) {
+                        return true;
+                    }
+                    // otherwise, check for the specific function
+                    return enabledKernelFunctions.isFunctionAllowed(function.getPluginName(),
+                        function.getName());
+                })
+                .map(OpenAIFunction::getFunctionDefinition)
+                .map(it -> new ChatCompletionsFunctionToolDefinitionFunction(it.getName())
+                    .setDescription(it.getDescription())
+                    .setParameters(it.getParameters()))
+                .map(ChatCompletionsFunctionToolDefinition::new)
+                .collect(Collectors.toList());
 
             if (toolDefinitions.isEmpty()) {
                 return null;
@@ -1138,10 +1142,12 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         }
 
         return new OpenAIToolCallConfig(
-                toolDefinitions,
-                toolChoice,
-                toolCallBehavior.isAutoInvokeAllowed() && requestIndex < Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES, toolCallBehavior.getMaximumAutoInvokeAttempts()),
-                null);
+            toolDefinitions,
+            toolChoice,
+            toolCallBehavior.isAutoInvokeAllowed()
+                && requestIndex < Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
+                    toolCallBehavior.getMaximumAutoInvokeAttempts()),
+            null);
     }
 
     private static boolean hasToolCallBeenExecuted(List<ChatRequestMessage> chatRequestMessages,

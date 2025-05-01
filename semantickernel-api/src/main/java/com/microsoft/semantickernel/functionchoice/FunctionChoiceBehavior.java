@@ -20,14 +20,14 @@ public abstract class FunctionChoiceBehavior {
     protected final FunctionChoiceBehaviorOptions options;
 
     protected FunctionChoiceBehavior(@Nullable List<KernelFunction<?>> functions,
-                                     @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable FunctionChoiceBehaviorOptions options) {
         this.functions = functions != null ? Collections.unmodifiableList(functions) : null;
         this.fullFunctionNames = new HashSet<>();
 
         if (functions != null) {
             functions.stream().filter(Objects::nonNull).forEach(
-                    f -> this.fullFunctionNames
-                            .add(formFullFunctionName(f.getPluginName(), f.getName())));
+                f -> this.fullFunctionNames
+                    .add(formFullFunctionName(f.getPluginName(), f.getName())));
         }
 
         if (options != null) {
@@ -79,8 +79,8 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with all kernel functions allowed.
      */
     public static FunctionChoiceBehavior auto(boolean autoInvoke,
-                                              List<KernelFunction<?>> functions,
-                                              @Nullable FunctionChoiceBehaviorOptions options) {
+        List<KernelFunction<?>> functions,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         return new AutoFunctionChoiceBehavior(autoInvoke, functions, options);
     }
 
@@ -96,8 +96,8 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with the required function.
      */
     public static FunctionChoiceBehavior required(boolean autoInvoke,
-                                                  List<KernelFunction<?>> functions,
-                                                  @Nullable FunctionChoiceBehaviorOptions options) {
+        List<KernelFunction<?>> functions,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         return new RequiredFunctionChoiceBehavior(autoInvoke, functions, options);
     }
 
@@ -110,10 +110,9 @@ public abstract class FunctionChoiceBehavior {
      *                  If empty, no functions are provided to the model, which is equivalent to disabling function calling.
      */
     public static FunctionChoiceBehavior none(List<KernelFunction<?>> functions,
-                                              @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable FunctionChoiceBehaviorOptions options) {
         return new NoneFunctionChoiceBehavior(functions, options);
     }
-
 
     /**
      * The separator between the plugin name and the function name.

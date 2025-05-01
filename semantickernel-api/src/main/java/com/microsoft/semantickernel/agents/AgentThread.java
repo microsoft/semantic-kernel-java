@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents;
 
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;

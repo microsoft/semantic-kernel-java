@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents;
 
 import com.microsoft.semantickernel.Kernel;
@@ -31,23 +32,24 @@ public abstract class KernelAgent implements Agent {
     protected final PromptTemplate template;
 
     protected KernelAgent(
-            String id,
-            String name,
-            String description,
-            Kernel kernel,
-            KernelArguments kernelArguments,
-            InvocationContext invocationContext,
-            String instructions,
-            PromptTemplate template
-    ) {
+        String id,
+        String name,
+        String description,
+        Kernel kernel,
+        KernelArguments kernelArguments,
+        InvocationContext invocationContext,
+        String instructions,
+        PromptTemplate template) {
         this.id = id != null ? id : UUID.randomUUID().toString();
         this.name = name;
         this.description = description;
         this.kernel = kernel;
         this.kernelArguments = kernelArguments != null
-                ? kernelArguments.copy() : KernelArguments.builder().build();
+            ? kernelArguments.copy()
+            : KernelArguments.builder().build();
         this.invocationContext = invocationContext != null
-                ? invocationContext : InvocationContext.builder().build();
+            ? invocationContext
+            : InvocationContext.builder().build();
         this.instructions = instructions;
         this.template = template;
     }
@@ -127,14 +129,15 @@ public abstract class KernelAgent implements Agent {
             return kernelArguments;
         }
 
-        Map<String, PromptExecutionSettings> executionSettings = new HashMap<>(kernelArguments.getExecutionSettings());
+        Map<String, PromptExecutionSettings> executionSettings = new HashMap<>(
+            kernelArguments.getExecutionSettings());
         executionSettings.putAll(arguments.getExecutionSettings());
 
         return KernelArguments.builder()
-                .withVariables(kernelArguments)
-                .withVariables(arguments)
-                .withExecutionSettings(executionSettings)
-                .build();
+            .withVariables(kernelArguments)
+            .withVariables(arguments)
+            .withExecutionSettings(executionSettings)
+            .build();
     }
 
     /**
@@ -145,7 +148,8 @@ public abstract class KernelAgent implements Agent {
      * @param context   The context to use for formatting.
      * @return A Mono that resolves to the formatted instructions.
      */
-    protected Mono<String> renderInstructionsAsync(Kernel kernel, KernelArguments arguments, InvocationContext context) {
+    protected Mono<String> renderInstructionsAsync(Kernel kernel, KernelArguments arguments,
+        InvocationContext context) {
         if (template != null) {
             return template.renderAsync(kernel, arguments, context);
         } else {
@@ -153,38 +157,41 @@ public abstract class KernelAgent implements Agent {
         }
     }
 
-    protected <T extends AgentThread> Mono<T> ensureThreadExistsWithMessagesAsync(List<ChatMessageContent<?>> messages, AgentThread thread, Supplier<T> threadSupplier) {
+    protected <T extends AgentThread> Mono<T> ensureThreadExistsWithMessagesAsync(
+        List<ChatMessageContent<?>> messages, AgentThread thread, Supplier<T> threadSupplier) {
         return Mono.defer(() -> {
             // Check if the thread already exists
             // If it does, we can work with a copy of it
             AgentThread newThread = thread == null ? threadSupplier.get() : thread.copy();
 
-            return  newThread.createAsync()
-                    .thenMany(Flux.fromIterable(messages))
-                    .concatMap(message -> {
-                        return notifyThreadOfNewMessageAsync(newThread, message)
-                                .then(Mono.just(message));
-                    })
-                    .then(Mono.just((T) newThread));
+            return newThread.createAsync()
+                .thenMany(Flux.fromIterable(messages))
+                .concatMap(message -> {
+                    return notifyThreadOfNewMessageAsync(newThread, message)
+                        .then(Mono.just(message));
+                })
+                .then(Mono.just((T) newThread));
         });
     }
 
     @Override
-    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message) {
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+        @Nullable ChatMessageContent<?> message) {
         return invokeAsync(message, null, null);
     }
 
     @Override
-    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message,
-                                                                            @Nullable AgentThread thread) {
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+        @Nullable ChatMessageContent<?> message,
+        @Nullable AgentThread thread) {
         return invokeAsync(message, thread, null);
     }
 
     @Override
     public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
-            @Nullable ChatMessageContent<?> message,
-            @Nullable AgentThread thread,
-            @Nullable AgentInvokeOptions options) {
+        @Nullable ChatMessageContent<?> message,
+        @Nullable AgentThread thread,
+        @Nullable AgentInvokeOptions options) {
         ArrayList<ChatMessageContent<?>> messages = new ArrayList<>();
         if (message != null) {
             messages.add(message);

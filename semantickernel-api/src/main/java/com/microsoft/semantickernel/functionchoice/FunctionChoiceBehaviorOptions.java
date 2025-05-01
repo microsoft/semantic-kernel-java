@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.functionchoice;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;

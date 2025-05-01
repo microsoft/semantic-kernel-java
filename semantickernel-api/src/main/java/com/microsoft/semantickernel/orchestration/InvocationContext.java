@@ -323,7 +323,8 @@ public class InvocationContext {
             if (telemetry == null) {
                 telemetry = new SemanticKernelTelemetry();
             }
-            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior, functionChoiceBehavior,
+            return new InvocationContext(hooks, promptExecutionSettings, toolCallBehavior,
+                functionChoiceBehavior,
                 contextVariableTypes, invocationReturnMode, telemetry);
         }
     }

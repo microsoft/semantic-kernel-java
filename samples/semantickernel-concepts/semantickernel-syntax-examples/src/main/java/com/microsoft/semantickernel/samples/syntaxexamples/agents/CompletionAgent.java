@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples.agents;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -36,9 +37,10 @@ public class CompletionAgent {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-            .getOrDefault("MODEL_ID", "gpt-4o");
+        .getOrDefault("MODEL_ID", "gpt-4o");
 
     private static final String GITHUB_PAT = System.getenv("GITHUB_PAT");
+
     public static void main(String[] args) {
         System.out.println("======== ChatCompletion Agent ========");
 
@@ -46,67 +48,63 @@ public class CompletionAgent {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
 
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         System.out.println("------------------------");
 
         ChatCompletionService chatCompletion = OpenAIChatCompletion.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build();
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         Kernel kernel = Kernel.builder()
-                .withAIService(ChatCompletionService.class, chatCompletion)
-                .withPlugin(KernelPluginFactory.createFromObject(new GitHubPlugin(GITHUB_PAT),
-                        "GitHubPlugin"))
-                .build();
+            .withAIService(ChatCompletionService.class, chatCompletion)
+            .withPlugin(KernelPluginFactory.createFromObject(new GitHubPlugin(GITHUB_PAT),
+                "GitHubPlugin"))
+            .build();
 
         InvocationContext invocationContext = InvocationContext.builder()
-                .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
-                .withContextVariableConverter(new ContextVariableTypeConverter<>(
-                        GitHubModel.Issue.class,
-                        o -> (GitHubModel.Issue) o,
-                        o -> o.toString(),
-                        s -> null
-                ))
-                .build();
+            .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
+            .withContextVariableConverter(new ContextVariableTypeConverter<>(
+                GitHubModel.Issue.class,
+                o -> (GitHubModel.Issue) o,
+                o -> o.toString(),
+                s -> null))
+            .build();
 
         ChatCompletionAgent agent = ChatCompletionAgent.builder()
-                .withKernel(kernel)
-                .withKernelArguments(
-                    KernelArguments.builder()
-                        .withVariable("repository", "microsoft/semantic-kernel-java")
-                        .withExecutionSettings(PromptExecutionSettings.builder()
-                                .build())
-                        .build()
-                )
-                .withInvocationContext(invocationContext)
-                .withTemplate(
-                    DefaultPromptTemplate.build(
-                        PromptTemplateConfig.builder()
-                            .withTemplate(
-                                """
+            .withKernel(kernel)
+            .withKernelArguments(
+                KernelArguments.builder()
+                    .withVariable("repository", "microsoft/semantic-kernel-java")
+                    .withExecutionSettings(PromptExecutionSettings.builder()
+                        .build())
+                    .build())
+            .withInvocationContext(invocationContext)
+            .withTemplate(
+                DefaultPromptTemplate.build(
+                    PromptTemplateConfig.builder()
+                        .withTemplate(
+                            """
                                 You are an agent designed to query and retrieve information from a single GitHub repository in a read-only manner.
                                 You are also able to access the profile of the active user.
-                
+
                                 Use the current date and time to provide up-to-date details or time-sensitive responses.
-                
+
                                 The repository you are querying is a public repository with the following name: {{$repository}}
-                
+
                                 The current date and time is: {{$now}}.
-                                """
-                            )
-                            .build()
-                    )
-                ).build();
+                                """)
+                        .build()))
+            .build();
 
         AgentThread agentThread = new ChatHistoryAgentThread();
         Scanner scanner = new Scanner(System.in);
@@ -128,9 +126,9 @@ public class CompletionAgent {
                 message,
                 agentThread,
                 AgentInvokeOptions.builder()
-                        .withKernelArguments(arguments)
-                        .build()
-            ).block().get(0);
+                    .withKernelArguments(arguments)
+                    .build())
+                .block().get(0);
 
             System.out.println("> " + response.getMessage());
             agentThread = response.getThread();

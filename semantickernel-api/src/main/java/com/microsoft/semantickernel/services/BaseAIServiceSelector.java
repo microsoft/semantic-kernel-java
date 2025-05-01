@@ -38,8 +38,8 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
     @Override
     @Nullable
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
-            Class<T> serviceType,
-            @Nullable KernelArguments arguments) {
+        Class<T> serviceType,
+        @Nullable KernelArguments arguments) {
         return trySelectAIService(serviceType, arguments, services);
     }
 
@@ -64,7 +64,6 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
         @Nullable KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services);
 
-
     /**
      * Resolves an {@link AIService} from the {@code services} argument using the specified
      * {@code function} and {@code arguments} for selection.
@@ -79,9 +78,9 @@ public abstract class BaseAIServiceSelector implements AIServiceSelector {
      */
     @Nullable
     protected <T extends AIService> AIServiceSelection<T> trySelectAIService(
-            Class<T> serviceType,
-            @Nullable KernelArguments arguments,
-            Map<Class<? extends AIService>, AIService> services) {
+        Class<T> serviceType,
+        @Nullable KernelArguments arguments,
+        Map<Class<? extends AIService>, AIService> services) {
         return trySelectAIService(serviceType, null, arguments, services);
     }
 }

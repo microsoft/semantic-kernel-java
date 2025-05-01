@@ -47,11 +47,11 @@ public class JsonSchemaTest {
             testFunction.getMetadata(),
             plugin.getName());
 
-       String parameters = "{\"type\":\"object\",\"required\":[\"person\",\"input\"],\"properties\":{\"input\":{\"type\":\"string\",\"description\":\"input string\"},\"person\":{\"type\":\"object\",\"properties\":{\"age\":{\"type\":\"integer\",\"description\":\"The age of the person.\"},\"name\":{\"type\":\"string\",\"description\":\"The name of the person.\"},\"title\":{\"type\":\"string\",\"enum\":[\"MS\",\"MRS\",\"MR\"],\"description\":\"The title of the person.\"}},\"required\":[\"age\",\"name\",\"title\"],\"additionalProperties\":false,\"description\":\"input person\"}}}";
-       Assertions.assertEquals(parameters, openAIFunction.getFunctionDefinition().getParameters().toString());
+        String parameters = "{\"type\":\"object\",\"required\":[\"person\",\"input\"],\"properties\":{\"input\":{\"type\":\"string\",\"description\":\"input string\"},\"person\":{\"type\":\"object\",\"properties\":{\"age\":{\"type\":\"integer\",\"description\":\"The age of the person.\"},\"name\":{\"type\":\"string\",\"description\":\"The name of the person.\"},\"title\":{\"type\":\"string\",\"enum\":[\"MS\",\"MRS\",\"MR\"],\"description\":\"The title of the person.\"}},\"required\":[\"age\",\"name\",\"title\"],\"additionalProperties\":false,\"description\":\"input person\"}}}";
+        Assertions.assertEquals(parameters,
+            openAIFunction.getFunctionDefinition().getParameters().toString());
 
     }
-
 
     public static class TestPlugin {
 
@@ -67,19 +67,16 @@ public class JsonSchemaTest {
             return Mono.just(1);
         }
 
-        @DefineKernelFunction(returnType = "int", description = "test function description",
-            name = "asyncPersonFunction", returnDescription = "test return description")
+        @DefineKernelFunction(returnType = "int", description = "test function description", name = "asyncPersonFunction", returnDescription = "test return description")
         public Mono<Integer> asyncPersonFunction(
-            @KernelFunctionParameter(name = "person",description = "input person", type = Person.class) Person person,
+            @KernelFunctionParameter(name = "person", description = "input person", type = Person.class) Person person,
             @KernelFunctionParameter(name = "input", description = "input string") String input) {
             return Mono.just(1);
         }
     }
 
     private static enum Title {
-        MS,
-        MRS,
-        MR
+        MS, MRS, MR
     }
 
     public static class Person {
@@ -89,7 +86,6 @@ public class JsonSchemaTest {
         private int age;
         @JsonPropertyDescription("The title of the person.")
         private Title title;
-
 
         public Person(String name, int age) {
             this.name = name;

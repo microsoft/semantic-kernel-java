@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents;
 
 import com.microsoft.semantickernel.Kernel;
@@ -38,9 +39,9 @@ public class AgentInvokeOptions {
      * @param invocationContext The invocation context.
      */
     public AgentInvokeOptions(@Nullable KernelArguments kernelArguments,
-                              @Nullable Kernel kernel,
-                              @Nullable String additionalInstructions,
-                              @Nullable InvocationContext invocationContext) {
+        @Nullable Kernel kernel,
+        @Nullable String additionalInstructions,
+        @Nullable InvocationContext invocationContext) {
         this.kernelArguments = kernelArguments != null ? kernelArguments.copy() : null;
         this.kernel = kernel;
         this.additionalInstructions = additionalInstructions;
@@ -83,8 +84,6 @@ public class AgentInvokeOptions {
     public InvocationContext getInvocationContext() {
         return invocationContext;
     }
-
-
 
     /**
      * Builder for AgentInvokeOptions.
@@ -156,8 +155,7 @@ public class AgentInvokeOptions {
                 kernelArguments,
                 kernel,
                 additionalInstructions,
-                invocationContext
-            );
+                invocationContext);
         }
     }
 }

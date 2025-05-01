@@ -60,17 +60,17 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
      * @param content    the content
      */
     public ChatMessageContent(
-            AuthorRole authorRole,
-            String authorName,
-            String content) {
+        AuthorRole authorRole,
+        String authorName,
+        String content) {
         this(
-                authorRole,
-                authorName,
-                content,
-                null,
-                null,
-                null,
-                null);
+            authorRole,
+            authorName,
+            content,
+            null,
+            null,
+            null,
+            null);
     }
 
     /**

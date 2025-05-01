@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents;
 
 import java.util.HashMap;
@@ -51,7 +52,8 @@ public interface Agent {
      * @param message The message to process
      * @return A Mono containing the agent response
      */
-    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message);
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+        @Nullable ChatMessageContent<?> message);
 
     /**
      * Invokes the agent with the given message and thread.
@@ -60,8 +62,9 @@ public interface Agent {
      * @param thread The agent thread to use
      * @return A Mono containing the agent response
      */
-    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message,
-                                                                     @Nullable AgentThread thread);
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+        @Nullable ChatMessageContent<?> message,
+        @Nullable AgentThread thread);
 
     /**
      * Invokes the agent with the given message, thread, and options.
@@ -71,9 +74,10 @@ public interface Agent {
      * @param options The options for invoking the agent
      * @return A Mono containing the agent response
      */
-    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message,
-                                                                     @Nullable AgentThread thread,
-                                                                     @Nullable AgentInvokeOptions options);
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+        @Nullable ChatMessageContent<?> message,
+        @Nullable AgentThread thread,
+        @Nullable AgentInvokeOptions options);
 
     /**
      * Invoke the agent with the given chat history.
@@ -83,9 +87,10 @@ public interface Agent {
      * @param options The options for invoking the agent
      * @return A Mono containing the agent response
      */
-    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(List<ChatMessageContent<?>> messages,
-                                                                     @Nullable AgentThread thread,
-                                                                     @Nullable AgentInvokeOptions options);
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+        List<ChatMessageContent<?>> messages,
+        @Nullable AgentThread thread,
+        @Nullable AgentInvokeOptions options);
 
     /**
      * Notifies the agent of a new message.

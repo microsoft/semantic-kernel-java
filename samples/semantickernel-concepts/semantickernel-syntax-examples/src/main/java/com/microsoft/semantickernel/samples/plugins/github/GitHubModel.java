@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.plugins.github;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -8,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class GitHubModel {
     public final static ObjectMapper objectMapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     @Override
     public String toString() {
@@ -30,12 +31,13 @@ public abstract class GitHubModel {
         private String company;
         @JsonProperty("html_url")
         private String url;
+
         @JsonCreator
         public User(@JsonProperty("login") String login,
-                    @JsonProperty("id") long id,
-                    @JsonProperty("name") String name,
-                    @JsonProperty("company") String company,
-                    @JsonProperty("html_url") String url) {
+            @JsonProperty("id") long id,
+            @JsonProperty("name") String name,
+            @JsonProperty("company") String company,
+            @JsonProperty("html_url") String url) {
             this.login = login;
             this.id = id;
             this.name = name;
@@ -46,15 +48,19 @@ public abstract class GitHubModel {
         public String getLogin() {
             return login;
         }
+
         public long getId() {
             return id;
         }
+
         public String getName() {
             return name;
         }
+
         public String getCompany() {
             return company;
         }
+
         public String getUrl() {
             return url;
         }
@@ -69,11 +75,12 @@ public abstract class GitHubModel {
         private String description;
         @JsonProperty("html_url")
         private String url;
+
         @JsonCreator
         public Repository(@JsonProperty("id") long id,
-                          @JsonProperty("full_name") String name,
-                          @JsonProperty("description") String description,
-                          @JsonProperty("html_url") String url) {
+            @JsonProperty("full_name") String name,
+            @JsonProperty("description") String description,
+            @JsonProperty("html_url") String url) {
             this.id = id;
             this.name = name;
             this.description = description;
@@ -83,12 +90,15 @@ public abstract class GitHubModel {
         public long getId() {
             return id;
         }
+
         public String getName() {
             return name;
         }
+
         public String getDescription() {
             return description;
         }
+
         public String getUrl() {
             return url;
         }
@@ -123,13 +133,13 @@ public abstract class GitHubModel {
 
         @JsonCreator
         public Issue(@JsonProperty("id") long id,
-                     @JsonProperty("number") long number,
-                     @JsonProperty("title") String title,
-                     @JsonProperty("state") String state,
-                     @JsonProperty("html_url") String url,
-                     @JsonProperty("labels") Label[] labels,
-                     @JsonProperty("created_at") String createdAt,
-                     @JsonProperty("closed_at") String closedAt) {
+            @JsonProperty("number") long number,
+            @JsonProperty("title") String title,
+            @JsonProperty("state") String state,
+            @JsonProperty("html_url") String url,
+            @JsonProperty("labels") Label[] labels,
+            @JsonProperty("created_at") String createdAt,
+            @JsonProperty("closed_at") String closedAt) {
             this.id = id;
             this.number = number;
             this.title = title;
@@ -143,24 +153,31 @@ public abstract class GitHubModel {
         public long getId() {
             return id;
         }
+
         public long getNumber() {
             return number;
         }
+
         public String getTitle() {
             return title;
         }
+
         public String getState() {
             return state;
         }
+
         public String getUrl() {
             return url;
         }
+
         public Label[] getLabels() {
             return labels;
         }
+
         public String getCreatedAt() {
             return createdAt;
         }
+
         public String getClosedAt() {
             return closedAt;
         }
@@ -172,14 +189,14 @@ public abstract class GitHubModel {
 
         @JsonCreator
         public IssueDetail(@JsonProperty("id") long id,
-                           @JsonProperty("number") long number,
-                           @JsonProperty("title") String title,
-                           @JsonProperty("state") String state,
-                           @JsonProperty("html_url") String url,
-                           @JsonProperty("labels") Label[] labels,
-                           @JsonProperty("created_at") String createdAt,
-                           @JsonProperty("closed_at") String closedAt,
-                           @JsonProperty("body") String body) {
+            @JsonProperty("number") long number,
+            @JsonProperty("title") String title,
+            @JsonProperty("state") String state,
+            @JsonProperty("html_url") String url,
+            @JsonProperty("labels") Label[] labels,
+            @JsonProperty("created_at") String createdAt,
+            @JsonProperty("closed_at") String closedAt,
+            @JsonProperty("body") String body) {
             super(id, number, title, state, url, labels, createdAt, closedAt);
             this.body = body;
         }
@@ -199,8 +216,8 @@ public abstract class GitHubModel {
 
         @JsonCreator
         public Label(@JsonProperty("id") long id,
-                     @JsonProperty("name") String name,
-                     @JsonProperty("description") String description) {
+            @JsonProperty("name") String name,
+            @JsonProperty("description") String description) {
             this.id = id;
             this.name = name;
             this.description = description;
@@ -209,9 +226,11 @@ public abstract class GitHubModel {
         public long getId() {
             return id;
         }
+
         public String getName() {
             return name;
         }
+
         public String getDescription() {
             return description;
         }
