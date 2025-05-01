@@ -377,7 +377,12 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
          *  @return {$code this} Builder for fluent coding
          */
         public Builder<U> withExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
-            return withExecutionSettings(new ArrayList<>(executionSettings.values()));
+            if (executionSettings == null) {
+                return this;
+            }
+
+            this.executionSettings.putAll(executionSettings);
+            return this;
         }
 
         /**
