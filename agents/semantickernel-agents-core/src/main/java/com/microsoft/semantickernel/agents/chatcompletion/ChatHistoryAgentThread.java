@@ -16,12 +16,25 @@ import java.util.UUID;
 public class ChatHistoryAgentThread extends BaseAgentThread {
     private ChatHistory chatHistory;
 
+    /**
+     * Constructor for ChatHistoryAgentThread.
+     *
+     */
     public ChatHistoryAgentThread() {
         this(UUID.randomUUID().toString(), new ChatHistory());
     }
 
     /**
-     * Constructor for com.microsoft.semantickernel.agents.chatcompletion.ChatHistoryAgentThread.
+     * Constructor for ChatHistoryAgentThread.
+     *
+     * @param chatHistory The chat history.
+     */
+    public ChatHistoryAgentThread(@Nullable ChatHistory chatHistory) {
+        this(UUID.randomUUID().toString(), chatHistory);
+    }
+
+    /**
+     * Constructor for ChatHistoryAgentThread.
      *
      * @param id The ID of the thread.
      * @param chatHistory The chat history.
@@ -30,6 +43,8 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
         super(id);
         this.chatHistory = chatHistory != null ? chatHistory : new ChatHistory();
     }
+
+
 
     /**
      * Get the chat history.
