@@ -62,7 +62,7 @@ public class ChatCompletionAgent extends KernelAgent {
     @Override
     public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
             List<ChatMessageContent<?>> messages,
-            AgentThread thread,
+            @Nullable AgentThread thread,
             @Nullable AgentInvokeOptions options
     ) {
         return ensureThreadExistsWithMessagesAsync(messages, thread, ChatHistoryAgentThread::new)

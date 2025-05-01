@@ -11,6 +11,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -169,19 +170,25 @@ public abstract class KernelAgent implements Agent {
     }
 
     @Override
-    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(ChatMessageContent<?> message) {
-        return invokeAsync(message, null);
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message) {
+        return invokeAsync(message, null, null);
     }
 
     @Override
-    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(ChatMessageContent<?> message, AgentThread thread) {
-        return invokeAsync(message, thread, AgentInvokeOptions.builder().build());
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message,
+                                                                            @Nullable AgentThread thread) {
+        return invokeAsync(message, thread, null);
     }
 
     @Override
-    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(ChatMessageContent<?> message, AgentThread thread, AgentInvokeOptions options) {
+    public Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(
+            @Nullable ChatMessageContent<?> message,
+            @Nullable AgentThread thread,
+            @Nullable AgentInvokeOptions options) {
         ArrayList<ChatMessageContent<?>> messages = new ArrayList<>();
-        messages.add(message);
+        if (message != null) {
+            messages.add(message);
+        }
         return invokeAsync(messages, thread, options);
     }
 }
