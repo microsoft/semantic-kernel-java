@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents.chatcompletion;
 
 import com.microsoft.semantickernel.agents.AgentThread;
@@ -16,12 +17,25 @@ import java.util.UUID;
 public class ChatHistoryAgentThread extends BaseAgentThread {
     private ChatHistory chatHistory;
 
+    /**
+     * Constructor for ChatHistoryAgentThread.
+     *
+     */
     public ChatHistoryAgentThread() {
         this(UUID.randomUUID().toString(), new ChatHistory());
     }
 
     /**
-     * Constructor for com.microsoft.semantickernel.agents.chatcompletion.ChatHistoryAgentThread.
+     * Constructor for ChatHistoryAgentThread.
+     *
+     * @param chatHistory The chat history.
+     */
+    public ChatHistoryAgentThread(@Nullable ChatHistory chatHistory) {
+        this(UUID.randomUUID().toString(), chatHistory);
+    }
+
+    /**
+     * Constructor for ChatHistoryAgentThread.
      *
      * @param id The ID of the thread.
      * @param chatHistory The chat history.
@@ -75,7 +89,6 @@ public class ChatHistoryAgentThread extends BaseAgentThread {
     public List<ChatMessageContent<?>> getMessages() {
         return chatHistory.getMessages();
     }
-
 
     public static Builder builder() {
         return new Builder();

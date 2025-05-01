@@ -27,7 +27,7 @@ public class LightsPlugin {
     @DefineKernelFunction(name = "add_light", description = "Adds a new light")
     public String addLight(
         @KernelFunctionParameter(name = "newLight", description = "new Light Details", type = LightModel.class) LightModel light) {
-        if( light != null) {
+        if (light != null) {
             System.out.println("Adding light " + light.getName());
             lights.add(light);
             return "Light added";

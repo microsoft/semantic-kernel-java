@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.demos.lights;
 
 import com.google.gson.Gson;
@@ -10,14 +11,13 @@ public class LightModelTypeConverter extends ContextVariableTypeConverter<LightM
         super(
             LightModel.class,
             obj -> {
-                if(obj instanceof String) {
-                    return gson.fromJson((String)obj, LightModel.class);
+                if (obj instanceof String) {
+                    return gson.fromJson((String) obj, LightModel.class);
                 } else {
                     return gson.fromJson(gson.toJson(obj), LightModel.class);
                 }
             },
             (types, lightModel) -> gson.toJson(lightModel),
-            json -> gson.fromJson(json, LightModel.class)
-        );
+            json -> gson.fromJson(json, LightModel.class));
     }
 }

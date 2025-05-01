@@ -10,6 +10,7 @@ import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatC
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatMessageContent;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIFunctionToolCall;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehavior;
 import com.microsoft.semantickernel.implementation.CollectionUtil;
 import com.microsoft.semantickernel.orchestration.FunctionResult;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
@@ -38,7 +39,7 @@ public class Example59_OpenAIFunctionCalling {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "gpt-35-turbo-2");
+        .getOrDefault("MODEL_ID", "gpt-4o");
 
     // Define functions that can be called by the model
     public static class HelperFunctions {
@@ -118,7 +119,7 @@ public class Example59_OpenAIFunctionCalling {
 
         var result = kernel
             .invokeAsync(function)
-            .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+            .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
             .withResultType(ContextVariableTypes.getGlobalVariableTypeForClass(String.class))
             .block();
         System.out.println(result.getResult());
@@ -134,7 +135,7 @@ public class Example59_OpenAIFunctionCalling {
                 chatHistory,
                 kernel,
                 InvocationContext.builder()
-                    .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(false))
+                    .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(false))
                     .withReturnMode(InvocationReturnMode.FULL_HISTORY)
                     .build())
                 .block();
@@ -243,7 +244,7 @@ public class Example59_OpenAIFunctionCalling {
             chatHistory,
             kernel,
             InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
                 .withReturnMode(InvocationReturnMode.FULL_HISTORY)
                 .build())
             .block();
@@ -258,7 +259,7 @@ public class Example59_OpenAIFunctionCalling {
             chatHistory,
             kernel,
             InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
+                .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
                 .withReturnMode(InvocationReturnMode.FULL_HISTORY)
                 .build())
             .block();

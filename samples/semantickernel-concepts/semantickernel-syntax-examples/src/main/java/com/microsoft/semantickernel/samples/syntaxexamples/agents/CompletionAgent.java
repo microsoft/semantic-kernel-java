@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.samples.syntaxexamples.agents;
 
 import com.azure.ai.openai.OpenAIAsyncClient;
@@ -6,11 +7,13 @@ import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.credential.KeyCredential;
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.agents.AgentInvokeOptions;
+import com.microsoft.semantickernel.agents.AgentThread;
 import com.microsoft.semantickernel.agents.chatcompletion.ChatCompletionAgent;
 import com.microsoft.semantickernel.agents.chatcompletion.ChatHistoryAgentThread;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.OpenAIChatCompletion;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
+import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehavior;
 import com.microsoft.semantickernel.implementation.templateengine.tokenizer.DefaultPromptTemplate;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
@@ -34,9 +37,10 @@ public class CompletionAgent {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-            .getOrDefault("MODEL_ID", "gpt-4o");
+        .getOrDefault("MODEL_ID", "gpt-4o");
 
     private static final String GITHUB_PAT = System.getenv("GITHUB_PAT");
+
     public static void main(String[] args) {
         System.out.println("======== ChatCompletion Agent ========");
 
@@ -44,69 +48,65 @@ public class CompletionAgent {
 
         if (AZURE_CLIENT_KEY != null) {
             client = new OpenAIClientBuilder()
-                    .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
-                    .endpoint(CLIENT_ENDPOINT)
-                    .buildAsyncClient();
+                .credential(new AzureKeyCredential(AZURE_CLIENT_KEY))
+                .endpoint(CLIENT_ENDPOINT)
+                .buildAsyncClient();
 
         } else {
             client = new OpenAIClientBuilder()
-                    .credential(new KeyCredential(CLIENT_KEY))
-                    .buildAsyncClient();
+                .credential(new KeyCredential(CLIENT_KEY))
+                .buildAsyncClient();
         }
 
         System.out.println("------------------------");
 
         ChatCompletionService chatCompletion = OpenAIChatCompletion.builder()
-                .withModelId(MODEL_ID)
-                .withOpenAIAsyncClient(client)
-                .build();
+            .withModelId(MODEL_ID)
+            .withOpenAIAsyncClient(client)
+            .build();
 
         Kernel kernel = Kernel.builder()
-                .withAIService(ChatCompletionService.class, chatCompletion)
-                .withPlugin(KernelPluginFactory.createFromObject(new GitHubPlugin(GITHUB_PAT),
-                        "GitHubPlugin"))
-                .build();
+            .withAIService(ChatCompletionService.class, chatCompletion)
+            .withPlugin(KernelPluginFactory.createFromObject(new GitHubPlugin(GITHUB_PAT),
+                "GitHubPlugin"))
+            .build();
 
         InvocationContext invocationContext = InvocationContext.builder()
-                .withToolCallBehavior(ToolCallBehavior.allowAllKernelFunctions(true))
-                .withContextVariableConverter(new ContextVariableTypeConverter<>(
-                        GitHubModel.Issue.class,
-                        o -> (GitHubModel.Issue) o,
-                        o -> o.toString(),
-                        s -> null
-                ))
-                .build();
+            .withFunctionChoiceBehavior(FunctionChoiceBehavior.auto(true))
+            .withContextVariableConverter(new ContextVariableTypeConverter<>(
+                GitHubModel.Issue.class,
+                o -> (GitHubModel.Issue) o,
+                o -> o.toString(),
+                s -> null))
+            .build();
 
         ChatCompletionAgent agent = ChatCompletionAgent.builder()
-                .withKernel(kernel)
-                .withKernelArguments(
-                    KernelArguments.builder()
-                        .withVariable("repository", "microsoft/semantic-kernel-java")
-                        .withExecutionSettings(PromptExecutionSettings.builder()
-                                .build())
-                        .build()
-                )
-                .withInvocationContext(invocationContext)
-                .withTemplate(
-                    DefaultPromptTemplate.build(
-                        PromptTemplateConfig.builder()
-                            .withTemplate(
-                                """
+            .withKernel(kernel)
+            .withKernelArguments(
+                KernelArguments.builder()
+                    .withVariable("repository", "microsoft/semantic-kernel-java")
+                    .withExecutionSettings(PromptExecutionSettings.builder()
+                        .build())
+                    .build())
+            .withInvocationContext(invocationContext)
+            .withTemplate(
+                DefaultPromptTemplate.build(
+                    PromptTemplateConfig.builder()
+                        .withTemplate(
+                            """
                                 You are an agent designed to query and retrieve information from a single GitHub repository in a read-only manner.
                                 You are also able to access the profile of the active user.
-                
-                                Use the current date and time to provide up-to-date details or time-sensitive responses.
-                
-                                The repository you are querying is a public repository with the following name: {{$repository}}
-                
-                                The current date and time is: {{$now}}.
-                                """
-                            )
-                            .build()
-                    )
-                ).build();
 
-        ChatHistoryAgentThread agentThread = new ChatHistoryAgentThread();
+                                Use the current date and time to provide up-to-date details or time-sensitive responses.
+
+                                The repository you are querying is a public repository with the following name: {{$repository}}
+
+                                The current date and time is: {{$now}}.
+                                """)
+                        .build()))
+            .build();
+
+        AgentThread agentThread = new ChatHistoryAgentThread();
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -119,22 +119,19 @@ public class CompletionAgent {
 
             var message = new ChatMessageContent<>(AuthorRole.USER, input);
             KernelArguments arguments = KernelArguments.builder()
-                    .withVariable("now", System.currentTimeMillis())
-                    .build();
+                .withVariable("now", System.currentTimeMillis())
+                .build();
 
             var response = agent.invokeAsync(
-                    List.of(message),
-                    agentThread,
-                    AgentInvokeOptions.builder()
-                            .withKernel(kernel)
-                            .withKernelArguments(arguments)
-                            .build()
-            ).block();
+                message,
+                agentThread,
+                AgentInvokeOptions.builder()
+                    .withKernelArguments(arguments)
+                    .build())
+                .block().get(0);
 
-            var lastResponse = response.get(response.size() - 1);
-
-            System.out.println("> " + lastResponse.getMessage());
-            agentThread = (ChatHistoryAgentThread) lastResponse.getThread();
+            System.out.println("> " + response.getMessage());
+            agentThread = response.getThread();
         }
     }
 }

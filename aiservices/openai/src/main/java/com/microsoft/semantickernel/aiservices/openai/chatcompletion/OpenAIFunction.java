@@ -164,7 +164,7 @@ class OpenAIFunction {
         entries.add("\"type\":\"" + type + "\"");
 
         // Add description if present
-        String description =null;
+        String description = null;
         if (parameter != null && parameter.getDescription() != null && !parameter.getDescription()
             .isEmpty()) {
             description = parameter.getDescription();
@@ -173,7 +173,7 @@ class OpenAIFunction {
             entries.add(String.format("\"description\":\"%s\"", description));
         }
         // If custom type, generate schema
-        if("object".equalsIgnoreCase(type)) {
+        if ("object".equalsIgnoreCase(type)) {
             return getObjectSchema(parameter.getType(), description);
         }
 
@@ -228,17 +228,17 @@ class OpenAIFunction {
         }
     }
 
-    private static String getObjectSchema(String type, String description){
-        String schema= "{ \"type\" : \"object\" }";
+    private static String getObjectSchema(String type, String description) {
+        String schema = "{ \"type\" : \"object\" }";
         try {
-                Class<?> clazz = Class.forName(type);
-                schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
+            Class<?> clazz = Class.forName(type);
+            schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
 
         } catch (ClassNotFoundException | SKException ignored) {
 
         }
         Map<String, Object> properties = BinaryData.fromString(schema).toObject(Map.class);
-        if(StringUtils.isNotBlank(description)) {
+        if (StringUtils.isNotBlank(description)) {
             properties.put("description", description);
         }
         return BinaryData.fromObject(properties).toString();

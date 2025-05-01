@@ -42,8 +42,8 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      * @param variables The variables to use for the function invocation.
      */
     protected KernelArguments(
-            @Nullable Map<String, ContextVariable<?>> variables,
-            @Nullable Map<String, PromptExecutionSettings> executionSettings) {
+        @Nullable Map<String, ContextVariable<?>> variables,
+        @Nullable Map<String, PromptExecutionSettings> executionSettings) {
         if (variables == null) {
             this.variables = new CaseInsensitiveMap<>();
         } else {
@@ -112,14 +112,14 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
      */
     public String prettyPrint() {
         return variables.entrySet().stream()
-                .reduce(
-                        "",
-                        (str, entry) -> str
-                                + System.lineSeparator()
-                                + entry.getKey()
-                                + ": "
-                                + entry.getValue().toPromptString(ContextVariableTypes.getGlobalTypes()),
-                        (a, b) -> a + b);
+            .reduce(
+                "",
+                (str, entry) -> str
+                    + System.lineSeparator()
+                    + entry.getKey()
+                    + ": "
+                    + entry.getValue().toPromptString(ContextVariableTypes.getGlobalTypes()),
+                (a, b) -> a + b);
     }
 
     /**
@@ -149,9 +149,9 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
         }
 
         throw new SKException(
-                String.format(
-                        "Variable %s is of type %s, but requested type is %s",
-                        key, value.getType().getClazz(), clazz));
+            String.format(
+                "Variable %s is of type %s, but requested type is %s",
+                key, value.getType().getClazz(), clazz));
     }
 
     /**
@@ -243,7 +243,6 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
         return new Builder<>(KernelArguments::new);
     }
 
-
     /**
      * Builder for ContextVariables
      */
@@ -252,7 +251,6 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
         private final Function<KernelArguments, U> constructor;
         private final Map<String, ContextVariable<?>> variables;
         private final Map<String, PromptExecutionSettings> executionSettings;
-
 
         protected Builder(Function<KernelArguments, U> constructor) {
             this.constructor = constructor;
@@ -293,10 +291,10 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
          */
         public <T> Builder<U> withInput(T content, ContextVariableTypeConverter<T> typeConverter) {
             return withInput(new ContextVariable<>(
-                    new ContextVariableType<>(
-                            typeConverter,
-                            typeConverter.getType()),
-                    content));
+                new ContextVariableType<>(
+                    typeConverter,
+                    typeConverter.getType()),
+                content));
         }
 
         /**
@@ -352,12 +350,12 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
          * @throws SKException if the value cannot be converted to a ContextVariable
          */
         public <T> Builder<U> withVariable(String key, T value,
-                                           ContextVariableTypeConverter<T> typeConverter) {
+            ContextVariableTypeConverter<T> typeConverter) {
             return withVariable(key, new ContextVariable<>(
-                    new ContextVariableType<>(
-                            typeConverter,
-                            typeConverter.getType()),
-                    value));
+                new ContextVariableType<>(
+                    typeConverter,
+                    typeConverter.getType()),
+                value));
         }
 
         /**
@@ -376,8 +374,14 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
          *  @param executionSettings Execution settings
          *  @return {$code this} Builder for fluent coding
          */
-        public Builder<U> withExecutionSettings(Map<String, PromptExecutionSettings> executionSettings) {
-            return withExecutionSettings(new ArrayList<>(executionSettings.values()));
+        public Builder<U> withExecutionSettings(
+            Map<String, PromptExecutionSettings> executionSettings) {
+            if (executionSettings == null) {
+                return this;
+            }
+
+            this.executionSettings.putAll(executionSettings);
+            return this;
         }
 
         /**
@@ -397,17 +401,15 @@ public class KernelArguments implements Map<String, ContextVariable<?>> {
                 if (this.executionSettings.containsKey(serviceId)) {
                     if (serviceId.equals(PromptExecutionSettings.DEFAULT_SERVICE_ID)) {
                         throw new SKException(
-                                String.format(
-                                        "Multiple prompt execution settings with the default service id '%s' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances.",
-                                        PromptExecutionSettings.DEFAULT_SERVICE_ID)
-                        );
+                            String.format(
+                                "Multiple prompt execution settings with the default service id '%s' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances.",
+                                PromptExecutionSettings.DEFAULT_SERVICE_ID));
                     }
 
                     throw new SKException(
-                            String.format(
-                                    "Multiple prompt execution settings with the service id '%s' have been provided. Specify a unique service id for all instances.",
-                                    serviceId)
-                    );
+                        String.format(
+                            "Multiple prompt execution settings with the service id '%s' have been provided. Specify a unique service id for all instances.",
+                            serviceId));
                 }
 
                 this.executionSettings.put(serviceId, settings);

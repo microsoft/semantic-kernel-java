@@ -1,3 +1,4 @@
+// Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.agents;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

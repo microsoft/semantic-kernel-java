@@ -29,5 +29,5 @@ public interface TextAIService extends AIService {
      * future and/or made configurable should need arise.
      * </p>
      */
-    int MAXIMUM_INFLIGHT_AUTO_INVOKES = 5;
+    int MAXIMUM_INFLIGHT_AUTO_INVOKES = 128;
 }
