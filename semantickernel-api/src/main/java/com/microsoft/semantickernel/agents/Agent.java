@@ -17,6 +17,8 @@ import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface for a semantic kernel agent.
  */
@@ -44,6 +46,36 @@ public interface Agent {
     String getDescription();
 
     /**
+     * Invokes the agent with the given message.
+     *
+     * @param message The message to process
+     * @return A Mono containing the agent response
+     */
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message);
+
+    /**
+     * Invokes the agent with the given message and thread.
+     *
+     * @param message The message to process
+     * @param thread The agent thread to use
+     * @return A Mono containing the agent response
+     */
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message,
+                                                                     @Nullable AgentThread thread);
+
+    /**
+     * Invokes the agent with the given message, thread, and options.
+     *
+     * @param message The message to process
+     * @param thread The agent thread to use
+     * @param options The options for invoking the agent
+     * @return A Mono containing the agent response
+     */
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(@Nullable ChatMessageContent<?> message,
+                                                                     @Nullable AgentThread thread,
+                                                                     @Nullable AgentInvokeOptions options);
+
+    /**
      * Invoke the agent with the given chat history.
      *
      * @param messages The chat history to process
@@ -51,7 +83,9 @@ public interface Agent {
      * @param options The options for invoking the agent
      * @return A Mono containing the agent response
      */
-    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(List<ChatMessageContent<?>> messages, AgentThread thread, AgentInvokeOptions options);
+    Mono<List<AgentResponseItem<ChatMessageContent<?>>>> invokeAsync(List<ChatMessageContent<?>> messages,
+                                                                     @Nullable AgentThread thread,
+                                                                     @Nullable AgentInvokeOptions options);
 
     /**
      * Notifies the agent of a new message.

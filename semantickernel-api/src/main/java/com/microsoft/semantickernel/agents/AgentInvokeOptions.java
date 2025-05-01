@@ -13,9 +13,13 @@ import javax.annotation.Nullable;
  */
 public class AgentInvokeOptions {
 
+    @Nullable
     private final KernelArguments kernelArguments;
+    @Nullable
     private final Kernel kernel;
+    @Nullable
     private final String additionalInstructions;
+    @Nullable
     private final InvocationContext invocationContext;
 
     /**
