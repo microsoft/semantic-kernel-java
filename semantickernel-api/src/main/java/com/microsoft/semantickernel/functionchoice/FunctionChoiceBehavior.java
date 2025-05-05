@@ -74,14 +74,44 @@ public abstract class FunctionChoiceBehavior {
      *                   invoke the kernel functions and return the value to the model.
      * @param functions Functions to provide to the model. If null, all the Kernel's plugins' functions are provided to the model.
      *                  If empty, no functions are provided to the model, which is equivalent to disabling function calling.
+     *
+     * @return A new FunctionChoiceBehavior instance with all kernel functions allowed.
+     */
+    public static FunctionChoiceBehavior auto(boolean autoInvoke,
+                                              @Nullable List<KernelFunction<?>> functions) {
+        return new AutoFunctionChoiceBehavior(autoInvoke, functions, null);
+    }
+
+    /**
+     * Gets an instance of the FunctionChoiceBehavior that provides either all the Kernel's plugins functions to the AI model to call or specific functions.
+     *
+     * @param autoInvoke Enable or disable auto-invocation.
+     *                   If auto-invocation is enabled, the model may request that the Semantic Kernel
+     *                   invoke the kernel functions and return the value to the model.
+     * @param functions Functions to provide to the model. If null, all the Kernel's plugins' functions are provided to the model.
+     *                  If empty, no functions are provided to the model, which is equivalent to disabling function calling.
      * @param options   Options for the function choice behavior.
      *
      * @return A new FunctionChoiceBehavior instance with all kernel functions allowed.
      */
     public static FunctionChoiceBehavior auto(boolean autoInvoke,
-        List<KernelFunction<?>> functions,
-        @Nullable FunctionChoiceBehaviorOptions options) {
+                                              @Nullable List<KernelFunction<?>> functions,
+                                              @Nullable FunctionChoiceBehaviorOptions options) {
         return new AutoFunctionChoiceBehavior(autoInvoke, functions, options);
+    }
+
+    /**
+     * Gets an instance of the FunctionChoiceBehavior that provides either all the Kernel's plugins functions to the AI model to call or specific functions.
+     * <p>
+     * This behavior forces the model to call the provided functions.
+     * SK connectors will invoke a requested function or multiple requested functions if the model requests multiple ones in one request,
+     * while handling the first request, and stop advertising the functions for the following requests to prevent the model from repeatedly calling the same function(s).
+     *
+     * @return A new FunctionChoiceBehavior instance with the required function.
+     */
+    public static FunctionChoiceBehavior required(boolean autoInvoke,
+                                                  @Nullable List<KernelFunction<?>> functions) {
+        return new RequiredFunctionChoiceBehavior(autoInvoke, functions, null);
     }
 
     /**
@@ -96,9 +126,18 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with the required function.
      */
     public static FunctionChoiceBehavior required(boolean autoInvoke,
-        List<KernelFunction<?>> functions,
-        @Nullable FunctionChoiceBehaviorOptions options) {
+                                                  @Nullable List<KernelFunction<?>> functions,
+                                                  @Nullable FunctionChoiceBehaviorOptions options) {
         return new RequiredFunctionChoiceBehavior(autoInvoke, functions, options);
+    }
+
+    /**
+     * Gets an instance of the FunctionChoiceBehavior that provides either all the Kernel's plugins functions to the AI model to call or specific functions.
+     * <p>
+     * This behavior is useful if the user should first validate what functions the model will use.
+     */
+    public static FunctionChoiceBehavior none() {
+        return new NoneFunctionChoiceBehavior(null, null);
     }
 
     /**
@@ -109,7 +148,7 @@ public abstract class FunctionChoiceBehavior {
      * @param functions Functions to provide to the model. If null, all the Kernel's plugins' functions are provided to the model.
      *                  If empty, no functions are provided to the model, which is equivalent to disabling function calling.
      */
-    public static FunctionChoiceBehavior none(List<KernelFunction<?>> functions,
+    public static FunctionChoiceBehavior none(@Nullable List<KernelFunction<?>> functions,
         @Nullable FunctionChoiceBehaviorOptions options) {
         return new NoneFunctionChoiceBehavior(functions, options);
     }
