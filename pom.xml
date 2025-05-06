@@ -60,7 +60,7 @@
         <mockito.version>5.14.2</mockito.version>
         <mutability.detector.version>0.9.1</mutability.detector.version>
         <!-- TODO move to 7.6.0+ in the future -->
-        <pmd.version>6.55.0</pmd.version>
+        <pmd.version>7.10.0</pmd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.github.repository>microsoft/semantic-kernel</project.github.repository>
         <repository.url>git@github.com:${project.github.repository}.git</repository.url>
