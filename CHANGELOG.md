@@ -1,3 +1,9 @@
+# 1.4.4-RC1
+
+- Add Agent framework abstractions.
+- Add ChatCompletionAgent implementation.
+- Add FunctionChoiceBehavior for OpenAI, replacing the older ToolCallBehavior.
+
 # 1.4.3
 
 - Bug fix for execution on Android (https://github.com/microsoft/semantic-kernel-java/pull/284)
