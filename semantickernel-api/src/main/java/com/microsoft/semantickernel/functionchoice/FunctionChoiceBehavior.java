@@ -78,7 +78,7 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with all kernel functions allowed.
      */
     public static FunctionChoiceBehavior auto(boolean autoInvoke,
-                                              @Nullable List<KernelFunction<?>> functions) {
+        @Nullable List<KernelFunction<?>> functions) {
         return new AutoFunctionChoiceBehavior(autoInvoke, functions, null);
     }
 
@@ -95,8 +95,8 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with all kernel functions allowed.
      */
     public static FunctionChoiceBehavior auto(boolean autoInvoke,
-                                              @Nullable List<KernelFunction<?>> functions,
-                                              @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable List<KernelFunction<?>> functions,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         return new AutoFunctionChoiceBehavior(autoInvoke, functions, options);
     }
 
@@ -110,7 +110,7 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with the required function.
      */
     public static FunctionChoiceBehavior required(boolean autoInvoke,
-                                                  @Nullable List<KernelFunction<?>> functions) {
+        @Nullable List<KernelFunction<?>> functions) {
         return new RequiredFunctionChoiceBehavior(autoInvoke, functions, null);
     }
 
@@ -126,8 +126,8 @@ public abstract class FunctionChoiceBehavior {
      * @return A new FunctionChoiceBehavior instance with the required function.
      */
     public static FunctionChoiceBehavior required(boolean autoInvoke,
-                                                  @Nullable List<KernelFunction<?>> functions,
-                                                  @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable List<KernelFunction<?>> functions,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         return new RequiredFunctionChoiceBehavior(autoInvoke, functions, options);
     }
 

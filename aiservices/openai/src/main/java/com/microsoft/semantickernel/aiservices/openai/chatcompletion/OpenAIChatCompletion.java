@@ -38,6 +38,7 @@ import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.aiservices.openai.OpenAiService;
 import com.microsoft.semantickernel.aiservices.openai.chatcompletion.responseformat.ChatCompletionsJsonSchemaResponseFormat;
 import com.microsoft.semantickernel.aiservices.openai.implementation.OpenAIRequestSettings;
+import com.microsoft.semantickernel.contents.FunctionCallContent;
 import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.exceptions.AIException;
@@ -468,7 +469,6 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 .doOnTerminate(span::close);
         })
             .flatMap(completions -> {
-
                 List<ChatResponseMessage> responseMessages = completions
                     .getChoices()
                     .stream()
@@ -488,6 +488,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                         completions);
                     return Mono.just(messages.addChatMessage(chatMessageContents));
                 }
+
                 // Or if there are no tool calls to be done
                 ChatResponseMessage response = responseMessages.get(0);
                 List<ChatCompletionsToolCall> toolCalls = response.getToolCalls();
@@ -633,8 +634,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         ContextVariableTypes contextVariableTypes) {
 
         try {
-            OpenAIFunctionToolCall openAIFunctionToolCall = extractOpenAIFunctionToolCall(toolCall);
-            String pluginName = openAIFunctionToolCall.getPluginName();
+            FunctionCallContent FunctionCallContent = extractFunctionCallContent(toolCall);
+            String pluginName = FunctionCallContent.getPluginName();
             if (pluginName == null || pluginName.isEmpty()) {
                 return Mono.error(
                     new SKException("Plugin name is required for function tool call"));
@@ -642,12 +643,12 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
             KernelFunction<?> function = kernel.getFunction(
                 pluginName,
-                openAIFunctionToolCall.getFunctionName());
+                FunctionCallContent.getFunctionName());
 
             PreToolCallEvent hookResult = executeHook(invocationContext, kernel,
                 new PreToolCallEvent(
-                    openAIFunctionToolCall.getFunctionName(),
-                    openAIFunctionToolCall.getArguments(),
+                    FunctionCallContent.getFunctionName(),
+                    FunctionCallContent.getArguments(),
                     function,
                     contextVariableTypes));
 
@@ -686,7 +687,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
     }
 
     @SuppressWarnings("StringSplitter")
-    private OpenAIFunctionToolCall extractOpenAIFunctionToolCall(
+    private FunctionCallContent extractFunctionCallContent(
         ChatCompletionsFunctionToolCall toolCall)
         throws JsonProcessingException {
 
@@ -712,10 +713,10 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 }
             });
 
-        return new OpenAIFunctionToolCall(
-            toolCall.getId(),
-            pluginName,
+        return new FunctionCallContent(
             fnName,
+            pluginName,
+            toolCall.getId(),
             arguments);
     }
 
@@ -744,7 +745,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                         null,
                         null,
                         completionMetadata,
-                        formOpenAiToolCalls(response));
+                        formFunctionCallContents(response));
                 } catch (SKCheckedException e) {
                     LOGGER.warn("Failed to form chat message content", e);
                     return null;
@@ -784,7 +785,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                             null);
                     } else if (message instanceof ChatRequestAssistantMessage) {
                         try {
-                            List<OpenAIFunctionToolCall> calls = getToolCalls(
+                            List<FunctionCallContent> calls = getFunctionCallContents(
                                 ((ChatRequestAssistantMessage) message).getToolCalls());
                             return new OpenAIChatMessageContent<>(
                                 AuthorRole.ASSISTANT,
@@ -823,7 +824,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
     }
 
     @Nullable
-    private List<OpenAIFunctionToolCall> getToolCalls(
+    private List<FunctionCallContent> getFunctionCallContents(
         @Nullable List<ChatCompletionsToolCall> toolCalls) throws SKCheckedException {
         if (toolCalls == null || toolCalls.isEmpty()) {
             return null;
@@ -835,7 +836,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 .map(call -> {
                     if (call instanceof ChatCompletionsFunctionToolCall) {
                         try {
-                            return extractOpenAIFunctionToolCall(
+                            return extractFunctionCallContent(
                                 (ChatCompletionsFunctionToolCall) call);
                         } catch (JsonProcessingException e) {
                             throw SKException.build("Failed to parse tool arguments", e);
@@ -852,7 +853,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
     }
 
     @Nullable
-    private List<OpenAIFunctionToolCall> formOpenAiToolCalls(
+    private List<FunctionCallContent> formFunctionCallContents(
         ChatResponseMessage response) throws SKCheckedException {
         if (response.getToolCalls() == null || response.getToolCalls().isEmpty()) {
             return null;
@@ -864,7 +865,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
                 .map(call -> {
                     if (call instanceof ChatCompletionsFunctionToolCall) {
                         try {
-                            return extractOpenAIFunctionToolCall(
+                            return extractFunctionCallContent(
                                 (ChatCompletionsFunctionToolCall) call);
                         } catch (JsonProcessingException e) {
                             throw SKException.build("Failed to parse tool arguments", e);
@@ -1251,10 +1252,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         // TODO: handle tools other than function calls
         ChatRequestAssistantMessage asstMessage = new ChatRequestAssistantMessage(content);
 
-        List<OpenAIFunctionToolCall> toolCalls = null;
-        if (message instanceof OpenAIChatMessageContent) {
-            toolCalls = ((OpenAIChatMessageContent<?>) message).getToolCall();
-        }
+        List<FunctionCallContent> toolCalls = FunctionCallContent.getFunctionCalls(message);
 
         if (toolCalls != null) {
             asstMessage.setToolCalls(

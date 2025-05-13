@@ -48,6 +48,13 @@ public abstract class KernelContentImpl<T> implements KernelContent<T> {
     }
 
     /**
+     * Initializes a new instance of the {@link KernelContentImpl} class.
+     */
+    public KernelContentImpl() {
+        this(null, null, null);
+    }
+
+    /**
      * Gets the inner content representation.
      *
      * @return The inner content representation.

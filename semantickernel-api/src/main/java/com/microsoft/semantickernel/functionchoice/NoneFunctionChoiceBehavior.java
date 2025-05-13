@@ -12,7 +12,7 @@ public class NoneFunctionChoiceBehavior extends FunctionChoiceBehavior {
      * Create a new instance of NoneFunctionChoiceBehavior.
      */
     public NoneFunctionChoiceBehavior(@Nullable List<KernelFunction<?>> functions,
-                                      @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable FunctionChoiceBehaviorOptions options) {
         super(functions, options);
     }
 }
