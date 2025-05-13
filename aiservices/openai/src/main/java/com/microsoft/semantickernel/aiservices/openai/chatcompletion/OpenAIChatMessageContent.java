@@ -1,12 +1,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.aiservices.openai.chatcompletion;
 
+import com.microsoft.semantickernel.contents.FunctionCallContent;
 import com.microsoft.semantickernel.orchestration.FunctionResultMetadata;
+import com.microsoft.semantickernel.services.KernelContent;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -16,6 +19,7 @@ import javax.annotation.Nullable;
  */
 public class OpenAIChatMessageContent<T> extends ChatMessageContent<T> {
 
+    @Deprecated
     @Nullable
     private final List<OpenAIFunctionToolCall> toolCall;
 
@@ -28,7 +32,7 @@ public class OpenAIChatMessageContent<T> extends ChatMessageContent<T> {
      * @param innerContent The inner content.
      * @param encoding     The encoding.
      * @param metadata     The metadata.
-     * @param toolCall     The tool call.
+     * @param functionCalls     The tool call.
      */
     public OpenAIChatMessageContent(
         AuthorRole authorRole,
@@ -37,13 +41,25 @@ public class OpenAIChatMessageContent<T> extends ChatMessageContent<T> {
         @Nullable T innerContent,
         @Nullable Charset encoding,
         @Nullable FunctionResultMetadata<?> metadata,
-        @Nullable List<OpenAIFunctionToolCall> toolCall) {
-        super(authorRole, content, modelId, innerContent, encoding, metadata);
+        @Nullable List<? extends FunctionCallContent> functionCalls) {
+        super(authorRole, content, (List<? extends KernelContent<T>>) functionCalls, modelId,
+            innerContent, encoding, metadata);
 
-        if (toolCall == null) {
+        if (functionCalls == null) {
             this.toolCall = null;
         } else {
-            this.toolCall = Collections.unmodifiableList(toolCall);
+            // Keep OpenAIFunctionToolCall list for legacy
+            this.toolCall = Collections.unmodifiableList(functionCalls.stream().map(t -> {
+                if (t instanceof OpenAIFunctionToolCall) {
+                    return (OpenAIFunctionToolCall) t;
+                } else {
+                    return new OpenAIFunctionToolCall(
+                        t.getId(),
+                        t.getPluginName(),
+                        t.getFunctionName(),
+                        t.getArguments());
+                }
+            }).collect(Collectors.toList()));
         }
     }
 
@@ -51,7 +67,10 @@ public class OpenAIChatMessageContent<T> extends ChatMessageContent<T> {
      * Gets any tool calls requested.
      *
      * @return The tool call.
+     * 
+     * @deprecated Use {@link FunctionCallContent#getFunctionCalls(ChatMessageContent)} instead.
      */
+    @Deprecated
     @Nullable
     public List<OpenAIFunctionToolCall> getToolCall() {
         return toolCall;

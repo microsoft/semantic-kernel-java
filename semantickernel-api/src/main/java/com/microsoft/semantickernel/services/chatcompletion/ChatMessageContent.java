@@ -135,7 +135,7 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
      */
     public ChatMessageContent(
         AuthorRole authorRole,
-        @Nullable List<KernelContent<T>> items,
+        @Nullable List<? extends KernelContent<T>> items,
         String modelId,
         T innerContent,
         Charset encoding,
@@ -151,6 +151,36 @@ public class ChatMessageContent<T> extends KernelContentImpl<T> {
             this.items = new ArrayList<>(items);
         }
         this.contentType = contentType;
+    }
+
+    /**
+     * Creates a new instance of the {@link ChatMessageContent} class.
+     *
+     * @param authorRole   the author role that generated the content
+     * @param items        the items
+     * @param modelId      the model id
+     * @param innerContent the inner content
+     * @param encoding     the encoding
+     * @param metadata     the metadata
+     */
+    public ChatMessageContent(
+        AuthorRole authorRole,
+        @Nullable String content,
+        @Nullable List<? extends KernelContent<T>> items,
+        String modelId,
+        T innerContent,
+        Charset encoding,
+        FunctionResultMetadata metadata) {
+        super(innerContent, modelId, metadata);
+        this.content = content;
+        this.authorRole = authorRole;
+        this.encoding = encoding != null ? encoding : StandardCharsets.UTF_8;
+        if (items == null) {
+            this.items = null;
+        } else {
+            this.items = new ArrayList<>(items);
+        }
+        this.contentType = ChatMessageContentType.TEXT;
     }
 
     /**

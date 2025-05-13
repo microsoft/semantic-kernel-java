@@ -16,8 +16,8 @@ public class RequiredFunctionChoiceBehavior extends AutoFunctionChoiceBehavior {
      * @param options    Options for the function choice behavior.
      */
     public RequiredFunctionChoiceBehavior(boolean autoInvoke,
-                                          @Nullable List<KernelFunction<?>> functions,
-                                          @Nullable FunctionChoiceBehaviorOptions options) {
+        @Nullable List<KernelFunction<?>> functions,
+        @Nullable FunctionChoiceBehaviorOptions options) {
         super(autoInvoke, functions, options);
     }
 }
