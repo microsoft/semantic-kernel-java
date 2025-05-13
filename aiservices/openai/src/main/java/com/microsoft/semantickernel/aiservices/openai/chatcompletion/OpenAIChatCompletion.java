@@ -634,8 +634,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         ContextVariableTypes contextVariableTypes) {
 
         try {
-            FunctionCallContent FunctionCallContent = extractFunctionCallContent(toolCall);
-            String pluginName = FunctionCallContent.getPluginName();
+            FunctionCallContent functionCallContent = extractFunctionCallContent(toolCall);
+            String pluginName = functionCallContent.getPluginName();
             if (pluginName == null || pluginName.isEmpty()) {
                 return Mono.error(
                     new SKException("Plugin name is required for function tool call"));
@@ -643,12 +643,12 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
             KernelFunction<?> function = kernel.getFunction(
                 pluginName,
-                FunctionCallContent.getFunctionName());
+                functionCallContent.getFunctionName());
 
             PreToolCallEvent hookResult = executeHook(invocationContext, kernel,
                 new PreToolCallEvent(
-                    FunctionCallContent.getFunctionName(),
-                    FunctionCallContent.getArguments(),
+                    functionCallContent.getFunctionName(),
+                    functionCallContent.getArguments(),
                     function,
                     contextVariableTypes));
 
