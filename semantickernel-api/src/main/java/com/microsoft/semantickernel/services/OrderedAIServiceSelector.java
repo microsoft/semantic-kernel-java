@@ -58,23 +58,6 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
     }
 
     @Nullable
-    private static Map<String, PromptExecutionSettings> settingsFromFunctionSettings(
-        @Nullable KernelFunction function) {
-        if (function != null) {
-            return function.getExecutionSettings();
-        }
-        return null;
-    }
-
-//    @Nullable
-//    @Override
-//    public <T extends AIService> AIServiceSelection<T> trySelectAIService(
-//            Class<T> serviceType,
-//            @Nullable KernelArguments arguments) {
-//        return selectAIService(serviceType, arguments.getPromptExecutionSettings());
-//    }
-
-    @Nullable
     @Override
     public <T extends AIService> AIServiceSelection<T> trySelectAIService(
         Class<T> serviceType,
@@ -82,17 +65,17 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
         @Nullable KernelArguments arguments,
         Map<Class<? extends AIService>, AIService> services) {
 
-        // Allow the execution settings from the kernel arguments to take precedence
-        Map<String, PromptExecutionSettings> executionSettings = settingsFromFunctionSettings(
-            function);
+        if (function == null) {
+            return selectAIService(serviceType,
+                arguments != null ? arguments.getExecutionSettings() : null);
+        }
 
-        return selectAIService(serviceType, executionSettings);
+        return selectAIService(serviceType, function.getExecutionSettings());
     }
 
-
     private <T extends AIService> AIServiceSelection<T> selectAIService(
-            Class<T> serviceType,
-            @Nullable Map<String, PromptExecutionSettings> executionSettings) {
+        Class<T> serviceType,
+        @Nullable Map<String, PromptExecutionSettings> executionSettings) {
 
         if (executionSettings == null || executionSettings.isEmpty()) {
             AIService service = getAnyService(serviceType);
@@ -101,50 +84,50 @@ public class OrderedAIServiceSelector extends BaseAIServiceSelector {
             }
         } else {
             AIServiceSelection<?> selection = executionSettings
-                    .entrySet()
-                    .stream()
-                    .map(keyValue -> {
+                .entrySet()
+                .stream()
+                .map(keyValue -> {
 
-                        PromptExecutionSettings settings = keyValue.getValue();
-                        String serviceId = keyValue.getKey();
+                    PromptExecutionSettings settings = keyValue.getValue();
+                    String serviceId = keyValue.getKey();
 
-                        if (!Verify.isNullOrEmpty(serviceId)) {
-                            AIService service = getService(serviceId);
-                            if (service != null) {
-                                return castServiceSelection(
-                                        new AIServiceSelection<>(service, settings));
-                            }
+                    if (!Verify.isNullOrEmpty(serviceId)) {
+                        AIService service = getService(serviceId);
+                        if (service != null) {
+                            return castServiceSelection(
+                                new AIServiceSelection<>(service, settings));
                         }
+                    }
 
-                        return null;
-                    })
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElseGet(() -> null);
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseGet(() -> null);
 
             if (selection != null) {
                 return castServiceSelection(selection);
             }
 
             selection = executionSettings
-                    .entrySet()
-                    .stream()
-                    .map(keyValue -> {
-                        PromptExecutionSettings settings = keyValue.getValue();
+                .entrySet()
+                .stream()
+                .map(keyValue -> {
+                    PromptExecutionSettings settings = keyValue.getValue();
 
-                        if (!Verify.isNullOrEmpty(settings.getModelId())) {
-                            AIService service = getServiceByModelId(settings.getModelId());
-                            if (service != null) {
-                                return castServiceSelection(
-                                        new AIServiceSelection<>(service, settings));
-                            }
+                    if (!Verify.isNullOrEmpty(settings.getModelId())) {
+                        AIService service = getServiceByModelId(settings.getModelId());
+                        if (service != null) {
+                            return castServiceSelection(
+                                new AIServiceSelection<>(service, settings));
                         }
+                    }
 
-                        return null;
-                    })
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElseGet(() -> null);
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseGet(() -> null);
 
             if (selection != null) {
                 return castServiceSelection(selection);

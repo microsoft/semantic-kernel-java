@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.microsoft.semantic-kernel</groupId>
         <artifactId>semantickernel-concepts</artifactId>
-        <version>1.4.4-SNAPSHOT</version>
+        <version>1.4.4-RC2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -47,6 +47,11 @@
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-agents-core</artifactId>
         </dependency>
 
         <dependency>

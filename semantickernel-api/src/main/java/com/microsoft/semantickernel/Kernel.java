@@ -192,7 +192,7 @@ public class Kernel {
      */
 
     public <T> FunctionInvocation<T> invokePromptAsync(@Nonnull String prompt,
-                                                       @Nonnull KernelArguments arguments, @Nonnull InvocationContext invocationContext) {
+        @Nonnull KernelArguments arguments, @Nonnull InvocationContext invocationContext) {
 
         KernelFunction<T> function = KernelFunction.<T>createFromPrompt(prompt).build();
 
@@ -302,15 +302,37 @@ public class Kernel {
      * @param clazz The class of the service to get.
      * @return The service of the specified type from the kernel.
      * @throws ServiceNotFoundException if the service is not found.
-     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class,
-     * KernelFunction, KernelArguments)
+     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class, KernelArguments)
      */
     public <T extends AIService> T getService(Class<T> clazz) throws ServiceNotFoundException {
         AIServiceSelection<T> selector = serviceSelector
             .trySelectAIService(
                 clazz,
-                null,
                 null);
+
+        if (selector == null) {
+            throw new ServiceNotFoundException("Unable to find service of type " + clazz.getName());
+        }
+
+        return selector.getService();
+    }
+
+    /**
+     * Get the service of the specified type from the kernel.
+     *
+     * @param <T>   The type of the service to get.
+     * @param clazz The class of the service to get.
+     * @param args  The arguments to help select the service to get.
+     * @return The service of the specified type from the kernel.
+     * @throws ServiceNotFoundException if the service is not found.
+     * @see com.microsoft.semantickernel.services.AIServiceSelector#trySelectAIService(Class, KernelArguments)
+     */
+    public <T extends AIService> T getService(Class<T> clazz, KernelArguments args)
+        throws ServiceNotFoundException {
+        AIServiceSelection<T> selector = serviceSelector
+            .trySelectAIService(
+                clazz,
+                args);
 
         if (selector == null) {
             throw new ServiceNotFoundException("Unable to find service of type " + clazz.getName());

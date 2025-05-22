@@ -131,9 +131,13 @@ public class KernelFunctionFromPrompt<T> extends KernelFunction<T> {
 
                 LOGGER.info(SemanticKernelResources.getString("rendered.prompt"), prompt);
 
-                FunctionInvokingEvent updateArguments = kernelHooks
+                FunctionInvokingEvent invokingEvent = kernelHooks
                     .executeHooks(new FunctionInvokingEvent(this, args));
-                args = updateArguments.getArguments();
+
+                args = KernelArguments.builder()
+                    .withVariables(invokingEvent.getArguments())
+                    .withExecutionSettings(this.getExecutionSettings())
+                    .build();
 
                 AIServiceSelection<?> aiServiceSelection = kernel
                     .getServiceSelector()

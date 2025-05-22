@@ -8,6 +8,7 @@ import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverte
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
 import com.microsoft.semantickernel.contextvariables.converters.ContextVariableJacksonConverter;
 import com.microsoft.semantickernel.exceptions.SKException;
+import com.microsoft.semantickernel.functionchoice.FunctionChoiceBehavior;
 import com.microsoft.semantickernel.hooks.KernelHook;
 import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
@@ -48,6 +49,9 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
     protected PromptExecutionSettings promptExecutionSettings;
     @Nullable
     protected ToolCallBehavior toolCallBehavior;
+    @Nullable
+    protected FunctionChoiceBehavior functionChoiceBehavior;
+
     @Nullable
     protected SemanticKernelTelemetry telemetry;
 
@@ -196,6 +200,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
             .withArguments(arguments)
             .addKernelHooks(hooks)
             .withPromptExecutionSettings(promptExecutionSettings)
+            .withFunctionChoiceBehavior(functionChoiceBehavior)
             .withToolCallBehavior(toolCallBehavior)
             .withTypes(contextVariableTypes);
     }
@@ -287,7 +292,29 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      */
     public FunctionInvocation<T> withToolCallBehavior(@Nullable ToolCallBehavior toolCallBehavior) {
         logSubscribeWarning();
+        if (toolCallBehavior != null && functionChoiceBehavior != null) {
+            throw new SKException(
+                "ToolCallBehavior cannot be set when FunctionChoiceBehavior is set.");
+        }
         this.toolCallBehavior = toolCallBehavior;
+        return this;
+    }
+
+    /**
+     * Supply function choice behavior to the function invocation.
+     *
+     * @param functionChoiceBehavior The function choice behavior to supply to the function
+     *                               invocation.
+     * @return this {@code FunctionInvocation} for fluent chaining.
+     */
+    public FunctionInvocation<T> withFunctionChoiceBehavior(
+        @Nullable FunctionChoiceBehavior functionChoiceBehavior) {
+        if (functionChoiceBehavior != null && toolCallBehavior != null) {
+            throw new SKException(
+                "FunctionChoiceBehavior cannot be set when ToolCallBehavior is set.");
+        }
+        logSubscribeWarning();
+        this.functionChoiceBehavior = functionChoiceBehavior;
         return this;
     }
 
@@ -340,6 +367,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
         }
         logSubscribeWarning();
         withTypes(invocationContext.getContextVariableTypes());
+        withFunctionChoiceBehavior(invocationContext.getFunctionChoiceBehavior());
         withToolCallBehavior(invocationContext.getToolCallBehavior());
         withPromptExecutionSettings(invocationContext.getPromptExecutionSettings());
         addKernelHooks(invocationContext.getKernelHooks());
@@ -387,6 +415,7 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
                 hooks,
                 promptExecutionSettings,
                 toolCallBehavior,
+                functionChoiceBehavior,
                 contextVariableTypes,
                 InvocationReturnMode.NEW_MESSAGES_ONLY,
                 telemetry));
