@@ -442,9 +442,18 @@ public class PostgreSQLVectorStoreQueryProvider extends
     @Override
     public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
         String fieldName = JDBCVectorStoreQueryProvider
-            .validateSQLidentifier(filterClause.getFieldName());
+                .validateSQLidentifier(filterClause.getFieldName());
 
         return String.format("%s @> ?::jsonb", fieldName);
+    }
+    
+    @Override
+    public <Record> VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper(Class<Record> recordClass,
+            VectorStoreRecordDefinition recordDefinition) {
+        return PostgreSQLVectorStoreRecordMapper.<Record>builder()
+                .withRecordClass(recordClass)
+                .withVectorStoreRecordDefinition(recordDefinition)
+                .build();
     }
 
     /**

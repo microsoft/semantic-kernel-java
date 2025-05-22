@@ -2,9 +2,6 @@
 package com.microsoft.semantickernel.data.jdbc;
 
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
-import com.microsoft.semantickernel.data.jdbc.mysql.MySQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.data.jdbc.postgres.PostgreSQLVectorStoreQueryProvider;
-import com.microsoft.semantickernel.data.jdbc.postgres.PostgreSQLVectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
@@ -73,25 +70,9 @@ public class JDBCVectorStoreRecordCollection<Record>
 
         // If mapper is not provided, set a default one
         if (options.getVectorStoreRecordMapper() == null) {
-            // Default mapper for PostgreSQL
-            if (this.queryProvider instanceof PostgreSQLVectorStoreQueryProvider) {
-                vectorStoreRecordMapper = PostgreSQLVectorStoreRecordMapper.<Record>builder()
-                    .withRecordClass(options.getRecordClass())
-                    .withVectorStoreRecordDefinition(recordDefinition)
-                    .build();
-                // Default mapper for MySQL
-            } else if (this.queryProvider instanceof MySQLVectorStoreQueryProvider) {
-                vectorStoreRecordMapper = JDBCVectorStoreRecordMapper.<Record>builder()
-                    .withRecordClass(options.getRecordClass())
-                    .withVectorStoreRecordDefinition(recordDefinition)
-                    .build();
-                // Default mapper for other databases
-            } else {
-                vectorStoreRecordMapper = JDBCVectorStoreRecordMapper.<Record>builder()
-                    .withRecordClass(options.getRecordClass())
-                    .withVectorStoreRecordDefinition(recordDefinition)
-                    .build();
-            }
+            vectorStoreRecordMapper = options.getQueryProvider()
+                .getVectorStoreRecordMapper(options.getRecordClass(),
+                    recordDefinition);
         } else {
             vectorStoreRecordMapper = options.getVectorStoreRecordMapper();
         }
