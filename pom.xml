@@ -81,6 +81,7 @@
         <module>data/semantickernel-data-hsqldb</module>
         <module>data/semantickernel-data-postgres</module>
         <module>data/semantickernel-data-sqlite</module>
+        <module>data/semantickernel-data-oracle</module>
         <module>agents/semantickernel-agents-core</module>
         <module>semantickernel-api-data</module>
         <module>semantickernel-api-exceptions</module>
@@ -249,6 +250,7 @@
                         <source>${maven.compiler.release}</source>
                         <target>${maven.compiler.release}</target>
                         <release>8</release>
+                        <compilerArgument>-Xlint:unchecked</compilerArgument>
                     </configuration>
                 </plugin>
                 <plugin>

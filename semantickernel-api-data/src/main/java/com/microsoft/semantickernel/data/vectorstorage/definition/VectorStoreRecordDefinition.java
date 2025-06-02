@@ -7,6 +7,7 @@ import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRe
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.exceptions.SKException;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -193,7 +194,7 @@ public class VectorStoreRecordDefinition {
                 dataFields.add(VectorStoreRecordDataField.builder()
                     .withName(field.getName())
                     .withStorageName(storageName)
-                    .withFieldType(field.getType())
+                    .withFieldType(field.getType(),  List.class.equals(field.getType()) ? (Class<?>)((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0] : null)
                     .isFilterable(dataAttribute.isFilterable())
                     .build());
             }

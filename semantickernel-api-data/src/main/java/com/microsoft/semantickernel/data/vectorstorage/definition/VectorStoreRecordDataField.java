@@ -39,6 +39,18 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
         this.isFullTextSearchable = isFullTextSearchable;
     }
 
+    public VectorStoreRecordDataField(
+        @Nonnull String name,
+        @Nullable String storageName,
+        @Nonnull Class<?> fieldType,
+        @Nonnull Class<?> fieldSubType,
+        boolean isFilterable,
+        boolean isFullTextSearchable) {
+        super(name, storageName, fieldType, fieldSubType);
+        this.isFilterable = isFilterable;
+        this.isFullTextSearchable = isFullTextSearchable;
+    }
+
     /**
      * Gets a value indicating whether the field is filterable.
      *
@@ -105,6 +117,7 @@ public class VectorStoreRecordDataField extends VectorStoreRecordField {
                 name,
                 storageName,
                 fieldType,
+                fieldSubType,
                 isFilterable,
                 isFullTextSearchable);
         }

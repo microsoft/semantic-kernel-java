@@ -220,7 +220,7 @@ public class JDBCVectorStoreQueryProvider
     @Override
     public void prepareVectorStore() {
         String createCollectionsTable = formatQuery(
-            "CREATE TABLE IF NOT EXISTS %s (collectionId VARCHAR(255) PRIMARY KEY);",
+            "CREATE TABLE IF NOT EXISTS %s (collectionId VARCHAR(255) PRIMARY KEY)",
             validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();

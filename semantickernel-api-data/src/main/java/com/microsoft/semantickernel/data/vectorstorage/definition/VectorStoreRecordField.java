@@ -14,6 +14,7 @@ public class VectorStoreRecordField {
     @Nullable
     private final String storageName;
     private final Class<?> fieldType;
+    private final Class<?> fieldSubType;
 
     /**
      * Creates a new instance of the VectorStoreRecordField class.
@@ -29,6 +30,27 @@ public class VectorStoreRecordField {
         this.name = name;
         this.storageName = storageName;
         this.fieldType = fieldType;
+        this.fieldSubType = null;
+    }
+
+    /**
+     * Creates a new instance of the VectorStoreRecordField class.
+     *
+     * @param name the name of the field
+     * @param storageName the storage name of the field
+     * @param fieldType the field type
+     * @param fieldSubType if the field type is a list, the type of
+     *                     the list elements, otherwise null
+     */
+    public VectorStoreRecordField(
+        @Nonnull String name,
+        @Nullable String storageName,
+        @Nonnull Class<?> fieldType,
+        @Nonnull Class<?> fieldSubType) {
+        this.name = name;
+        this.storageName = storageName;
+        this.fieldType = fieldType;
+        this.fieldSubType = fieldSubType;
     }
 
     /**
@@ -68,6 +90,10 @@ public class VectorStoreRecordField {
         return fieldType;
     }
 
+    public Class<?> getFieldSubType() {
+        return fieldSubType;
+    }
+
     /**
      * A builder for the VectorStoreRecordField class.
      * @param <T> the type of the field
@@ -82,6 +108,9 @@ public class VectorStoreRecordField {
         protected String storageName;
         @Nullable
         protected Class<?> fieldType;
+
+        @Nullable
+        protected Class<?> fieldSubType;
 
         /**
          * Sets the name of the field.
@@ -113,6 +142,12 @@ public class VectorStoreRecordField {
          */
         public U withFieldType(Class<?> fieldType) {
             this.fieldType = fieldType;
+            return (U) this;
+        }
+
+        public U withFieldType(Class<?> fieldType, Class<?> fieldSubType) {
+            this.fieldType = fieldType;
+            this.fieldSubType = fieldSubType;
             return (U) this;
         }
 
