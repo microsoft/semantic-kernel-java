@@ -127,19 +127,19 @@ public class OracleVectorStoreRecordCollectionTest {
 
     private static List<Hotel> getHotels() {
         return Arrays.asList(
-            new Hotel("id_1", "Hotel 1", 1, 1.49d, null, "Hotel 1 description",
+            new Hotel("id_1", "Hotel 1", 1, 1.49d, Arrays.asList("one", "two"), "Hotel 1 description",
                 Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f), null, null, null,
                 4.0),
-            new Hotel("id_2", "Hotel 2", 2, 1.44d, null, "Hotel 2 description with free-text search",
+            new Hotel("id_2", "Hotel 2", 2, 1.44d, Arrays.asList("three", "four"), "Hotel 2 description with free-text search",
                 Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f), null, null, null,
                 4.0),
-            new Hotel("id_3", "Hotel 3", 3, 1.53d, null, "Hotel 3 description",
+            new Hotel("id_3", "Hotel 3", 3, 1.53d, Arrays.asList("five", "six"), "Hotel 3 description",
                 Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f), null, null, null,
                 5.0),
-            new Hotel("id_4", "Hotel 4", 4, 1.35d, null, "Hotel 4 description",
+            new Hotel("id_4", "Hotel 4", 4, 1.35d, Arrays.asList("seven", "eight"), "Hotel 4 description",
                 Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f), null, null, null,
                 4.0),
-            new Hotel("id_5", "Hotel 5", 5, 1.89d, null,"Hotel 5 description",
+            new Hotel("id_5", "Hotel 5", 5, 1.89d, Arrays.asList("nine", "ten"),"Hotel 5 description",
                 Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f), null, null, null,
                 4.0));
     }
@@ -298,6 +298,30 @@ public class OracleVectorStoreRecordCollectionTest {
         // The first hotel should be the most similar
         assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
         assertEquals(results.get(0).getScore(), expectedDistance, 0.0001d);
+    }
+
+
+    @Test
+    public void searchWithTagFilter() {
+        List<Hotel> hotels = getHotels();
+        recordCollection.upsertBatchAsync(hotels, null).block();
+
+        VectorSearchOptions options = VectorSearchOptions.builder()
+//            .withVectorFieldName("")
+            .withTop(3)
+            .withVectorSearchFilter(
+                VectorSearchFilter.builder()
+                    .anyTagEqualTo("tags", "three")
+                    .build())
+            .build();
+
+        // Embeddings similar to the third hotel, but as the filter is set to 4.0, the third hotel should not be returned
+        List<VectorSearchResult<Hotel>> results = recordCollection
+            .searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        // The first hotel should be the most similar
+        assertEquals(hotels.get(1).getId(), results.get(0).getRecord().getId());
     }
 
     private static Stream<Arguments> distanceFunctionAndDistance() {
