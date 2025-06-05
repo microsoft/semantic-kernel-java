@@ -152,6 +152,18 @@ public interface SQLVectorStoreQueryProvider {
         VectorStoreRecordMapper<Record, ResultSet> mapper);
 
     /**
+     * Gets the record mapper for the given record class and definition.
+     * 
+     * @param <Record>         the record type
+     * @param recordClass      the record class
+     * @param recordDefinition the record definition
+     * @return the record mapper that maps JDBC result sets to the given record.
+     */
+    <Record> VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper(
+            final Class<Record> recordClass,
+            final VectorStoreRecordDefinition recordDefinition);
+
+    /**
      * The builder for the JDBC vector store query provider.
      */
     interface Builder extends SemanticKernelBuilder<SQLVectorStoreQueryProvider> {
