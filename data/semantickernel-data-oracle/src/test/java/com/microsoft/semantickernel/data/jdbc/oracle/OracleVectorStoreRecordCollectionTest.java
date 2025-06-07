@@ -9,17 +9,28 @@ import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
+import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.impl.OracleDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +52,6 @@ public class OracleVectorStoreRecordCollectionTest {
     private static final String ORACLE_IMAGE_NAME = "gvenzl/oracle-free:23.7-slim-faststart";
     private static final OracleDataSource DATA_SOURCE;
     private static final OracleDataSource SYSDBA_DATA_SOURCE;
-
 
     static {
 
@@ -337,6 +347,155 @@ public class OracleVectorStoreRecordCollectionTest {
         assertEquals(1, results.size());
         // The first hotel should be the most similar
         assertEquals(hotels.get(1).getId(), results.get(0).getRecord().getId());
+    }
+
+    @Nested
+    class HNSWIndexTests {
+        @Test
+        void testHNSWIndexIsCreatedSuccessfully() throws Exception {
+            VectorStoreRecordKeyField keyField = VectorStoreRecordKeyField.builder()
+                .withName("id")
+                .withStorageName("id")
+                .withFieldType(String.class)
+                .build();
+
+            VectorStoreRecordDataField dummyField = VectorStoreRecordDataField.builder()
+                .withName("dummy")
+                .withStorageName("dummy")
+                .withFieldType(String.class)
+                .isFilterable(false)
+                .build();
+
+            VectorStoreRecordVectorField hnswVector= VectorStoreRecordVectorField.builder()
+                .withName("hnsw")
+                .withStorageName("hnsw")
+                .withFieldType(List.class)
+                .withDimensions(8)
+                .withDistanceFunction(DistanceFunction.COSINE_SIMILARITY)
+                .withIndexKind(IndexKind.HNSW)
+                .build();
+
+            VectorStoreRecordDefinition definition = VectorStoreRecordDefinition.fromFields(
+                Arrays.asList(keyField, dummyField, hnswVector)
+            );
+
+            OracleVectorStoreQueryProvider queryProvider = OracleVectorStoreQueryProvider.builder()
+                .withDataSource(DATA_SOURCE)
+                .build();
+
+            JDBCVectorStore vectorStore = JDBCVectorStore.builder()
+                .withDataSource(DATA_SOURCE)
+                .withOptions(JDBCVectorStoreOptions.builder()
+                    .withQueryProvider(queryProvider)
+                    .build())
+                .build();
+
+            String collectionName = "skhotels_hnsw";
+            VectorStoreRecordCollection<String, Object> collection =
+                vectorStore.getCollection(collectionName,
+                    JDBCVectorStoreRecordCollectionOptions.<Object>builder()
+                        .withRecordClass(Object.class)
+                        .withRecordDefinition(definition)
+                        .build());
+
+            // create collection
+            collection.createCollectionAsync().block();
+
+            String expectedIndexName = hnswVector.getEffectiveStorageName().toUpperCase() + "_VECTOR_INDEX";
+
+            // check if index exist
+            try (Connection conn = DATA_SOURCE.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM USER_INDEXES WHERE INDEX_NAME=?")) {
+                stmt.setString(1, expectedIndexName);
+                ResultSet rs = stmt.executeQuery();
+                rs.next();
+                int count = rs.getInt(1);
+
+                assertEquals(1, count, "hnsw vector index should have been created");
+            } finally {
+                // clean up
+                try (Connection conn = DATA_SOURCE.getConnection();
+                    Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate("DROP TABLE " + "SKCOLLECTION_" + collectionName);
+                }
+            }
+        }
+    }
+
+    @Nested
+    class UndefinedIndexTests {
+        @Test
+        void testNoIndexIsCreatedForUndefined() throws Exception {
+            // create key field
+            VectorStoreRecordKeyField keyField = VectorStoreRecordKeyField.builder()
+                .withName("id")
+                .withStorageName("id")
+                .withFieldType(String.class)
+                .build();
+
+            // create vector field, set IndexKind to UNDEFINED
+            VectorStoreRecordVectorField undefinedVector= VectorStoreRecordVectorField.builder()
+                .withName("undef")
+                .withStorageName("undef")
+                .withFieldType(List.class)
+                .withDimensions(8)
+                .withDistanceFunction(DistanceFunction.COSINE_SIMILARITY)
+                .withIndexKind(IndexKind.UNDEFINED)
+                .build();
+
+            VectorStoreRecordDataField dummyField = VectorStoreRecordDataField.builder()
+                .withName("dummy")
+                .withStorageName("dummy")
+                .withFieldType(String.class)
+                .isFilterable(false)
+                .build();
+
+            VectorStoreRecordDefinition definition = VectorStoreRecordDefinition.fromFields(
+                Arrays.asList(keyField, dummyField,  undefinedVector)
+            );
+
+            OracleVectorStoreQueryProvider queryProvider = OracleVectorStoreQueryProvider.builder()
+                .withDataSource(DATA_SOURCE)
+                .build();
+
+            JDBCVectorStore vectorStore = JDBCVectorStore.builder()
+                .withDataSource(DATA_SOURCE)
+                .withOptions(JDBCVectorStoreOptions.builder()
+                    .withQueryProvider(queryProvider)
+                    .build())
+                .build();
+
+            String collectionName = "skhotels_undefined";
+            VectorStoreRecordCollection<String, Object> collection =
+                vectorStore.getCollection(collectionName,
+                    JDBCVectorStoreRecordCollectionOptions.<Object>builder()
+                        .withRecordClass(Object.class)
+                        .withRecordDefinition(definition)
+                        .build());
+
+            // create collection
+            collection.createCollectionAsync().block();
+
+            // check if index exist
+            String expectedIndexName = undefinedVector.getEffectiveStorageName().toUpperCase() + "_VETCOR_INDEX";
+            try (Connection conn = DATA_SOURCE.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM USER_INDEXES WHERE INDEX_NAME = ?")) {
+                stmt.setString(1, expectedIndexName);
+                ResultSet rs = stmt.executeQuery();
+                rs.next();
+                int count = rs.getInt(1);
+
+                assertEquals(0,count,"Vector index should not be created for IndexKind.UNDEFINED");
+            } finally {
+                // clean up
+                try (Connection conn = DATA_SOURCE.getConnection();
+                    Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate("DROP TABLE " + "SKCOLLECTION_" + collectionName);
+                }
+            }
+        }
     }
 
     private static Stream<Arguments> distanceFunctionAndDistance() {
