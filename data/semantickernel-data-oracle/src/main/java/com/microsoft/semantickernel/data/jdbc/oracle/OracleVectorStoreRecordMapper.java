@@ -147,29 +147,43 @@ public class OracleVectorStoreRecordMapper<Record>
 
                             Object value;
                             switch (supportedDataTypesMapping.get(fieldType)) {
-                                case "CLOB":
+                                case OracleDataTypesMapping.STRING_CLOB:
                                     value = resultSet.getString(field.getEffectiveStorageName());
                                     break;
-                                case "INTEGER":
+                                case OracleDataTypesMapping.BYTE:
+                                    value = resultSet.getByte(field.getEffectiveStorageName());
+                                    break;
+                                case OracleDataTypesMapping.SHORT:
+                                    value = resultSet.getShort(field.getEffectiveStorageName());
+                                    break;
+                                case OracleDataTypesMapping.INTEGER:
                                     value = resultSet.getInt(field.getEffectiveStorageName());
                                     break;
-                                case "LONG":
-                                    value = resultSet.getInt(field.getEffectiveStorageName());
+                                case OracleDataTypesMapping.LONG:
+                                    value = resultSet.getLong(field.getEffectiveStorageName());
                                     break;
-                                case "REAL":
+                                case OracleDataTypesMapping.FLOAT:
                                     value = resultSet.getFloat(field.getEffectiveStorageName());
                                     break;
-                                case "DOUBLE PRECISION":
+                                case OracleDataTypesMapping.DOUBLE:
                                     value = resultSet.getDouble(field.getEffectiveStorageName());
                                     break;
-                                case "BOOLEAN":
+                                case OracleDataTypesMapping.DECIMAL:
+                                    value = resultSet.getBigDecimal(field.getEffectiveStorageName());
+                                    break;
+                                case OracleDataTypesMapping.BOOLEAN:
                                     value = resultSet.getBoolean(field.getEffectiveStorageName());
                                     break;
-                                case "TIMESTAMPTZ":
+                                case OracleDataTypesMapping.OFFSET_DATE_TIME:
                                     value = ((OracleResultSet)resultSet).getTIMESTAMPTZ(field.getEffectiveStorageName())
                                         .offsetDateTimeValue();
                                     break;
-                                case "JSON":
+                                case OracleDataTypesMapping.BYTE_ARRAY:
+                                    value = resultSet.getBytes(field.getEffectiveStorageName());
+                                    break;
+                                // fallthrough
+                                case OracleDataTypesMapping.UUID:
+                                case OracleDataTypesMapping.JSON:
                                     value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
                                     break;
                                 default:
