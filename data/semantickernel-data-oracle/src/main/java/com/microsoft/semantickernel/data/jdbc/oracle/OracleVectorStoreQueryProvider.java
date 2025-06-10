@@ -29,6 +29,7 @@ import oracle.jdbc.OracleTypes;
 
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,6 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -81,17 +83,25 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             prefixForCollectionTables,
             buildSupportedKeyTypes(),
             buildSupportedDataTypes(stringTypeMapping, defaultVarcharSize),
-            buildSupportedVectorTypes(defaultVarcharSize));
+            buildSupportedVectorTypes());
         this.collectionsTable = collectionsTable;
         this.objectMapper = objectMapper;
     }
 
     private static HashMap<Class<?>, String> buildSupportedKeyTypes() {
         HashMap<Class<?>, String> supportedKeyTypes = new HashMap<>();
-        supportedKeyTypes.put(String.class, "VARCHAR(255)");
+        supportedKeyTypes.put(String.class, String.format(OracleDataTypesMapping.STRING_VARCHAR, 255));
+        supportedKeyTypes.put(short.class, OracleDataTypesMapping.SHORT);
+        supportedKeyTypes.put(Short.class, OracleDataTypesMapping.SHORT);
+        supportedKeyTypes.put(int.class, OracleDataTypesMapping.INTEGER);
+        supportedKeyTypes.put(Integer.class, OracleDataTypesMapping.INTEGER);
+        supportedKeyTypes.put(long.class, OracleDataTypesMapping.LONG);
+        supportedKeyTypes.put(Long.class, OracleDataTypesMapping.LONG);
+        supportedKeyTypes.put(UUID.class, OracleDataTypesMapping.UUID);
+
         return supportedKeyTypes;
     }
-    private static Map<Class<?>, String> buildSupportedVectorTypes(int defaultVarCharLength) {
+    private static Map<Class<?>, String> buildSupportedVectorTypes() {
         HashMap<Class<?>, String> supportedVectorTypes = new HashMap<>();
         supportedVectorTypes.put(String.class, "VECTOR(%s)");
         supportedVectorTypes.put(List.class, "VECTOR(%s)");
@@ -102,22 +112,29 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
     private static Map<Class<?>, String> buildSupportedDataTypes(StringTypeMapping stringTypeMapping, int defaultVarCharLength) {
         HashMap<Class<?>, String> supportedDataTypes = new HashMap<>();
         if (stringTypeMapping.equals(StringTypeMapping.USE_VARCHAR)) {
-            supportedDataTypes.put(String.class, "VARCHAR(" + defaultVarCharLength + ")");
+            supportedDataTypes.put(String.class, String.format(OracleDataTypesMapping.STRING_VARCHAR, defaultVarCharLength));
         } else {
-            supportedDataTypes.put(String.class, "CLOB");
+            supportedDataTypes.put(String.class, OracleDataTypesMapping.STRING_CLOB);
         }
-        supportedDataTypes.put(Integer.class, "INTEGER");
-        supportedDataTypes.put(int.class, "INTEGER");
-        supportedDataTypes.put(Long.class, "LONG");
-        supportedDataTypes.put(long.class, "LONG");
-        supportedDataTypes.put(Float.class, "REAL");
-        supportedDataTypes.put(float.class, "REAL");
-        supportedDataTypes.put(Double.class, "DOUBLE PRECISION");
-        supportedDataTypes.put(double.class, "DOUBLE PRECISION");
-        supportedDataTypes.put(Boolean.class, "BOOLEAN");
-        supportedDataTypes.put(boolean.class, "BOOLEAN");
-        supportedDataTypes.put(OffsetDateTime.class, "TIMESTAMPTZ");
-        supportedDataTypes.put(List.class, "JSON");
+        supportedDataTypes.put(byte.class, OracleDataTypesMapping.BYTE);
+        supportedDataTypes.put(Byte.class, OracleDataTypesMapping.BYTE);
+        supportedDataTypes.put(short.class, OracleDataTypesMapping.SHORT);
+        supportedDataTypes.put(Short.class, OracleDataTypesMapping.SHORT);
+        supportedDataTypes.put(int.class, OracleDataTypesMapping.INTEGER);
+        supportedDataTypes.put(Integer.class, OracleDataTypesMapping.INTEGER);
+        supportedDataTypes.put(long.class, OracleDataTypesMapping.LONG);
+        supportedDataTypes.put(Long.class, OracleDataTypesMapping.LONG);
+        supportedDataTypes.put(Float.class, OracleDataTypesMapping.FLOAT);
+        supportedDataTypes.put(float.class, OracleDataTypesMapping.FLOAT);
+        supportedDataTypes.put(Double.class, OracleDataTypesMapping.DOUBLE);
+        supportedDataTypes.put(double.class, OracleDataTypesMapping.DOUBLE);
+        supportedDataTypes.put(BigDecimal.class, OracleDataTypesMapping.DECIMAL);
+        supportedDataTypes.put(Boolean.class, OracleDataTypesMapping.BOOLEAN);
+        supportedDataTypes.put(boolean.class, OracleDataTypesMapping.BOOLEAN);
+        supportedDataTypes.put(OffsetDateTime.class, OracleDataTypesMapping.OFFSET_DATE_TIME);
+        supportedDataTypes.put(UUID.class, OracleDataTypesMapping.UUID);
+        supportedDataTypes.put(byte[].class, OracleDataTypesMapping.BYTE_ARRAY);
+        supportedDataTypes.put(List.class, OracleDataTypesMapping.JSON);
         return supportedDataTypes;
     }
 
@@ -178,11 +195,11 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
 
             List<VectorStoreRecordVectorField> vectorFields = recordDefinition.getVectorFields();
             String createStorageTable = formatQuery("CREATE TABLE IF NOT EXISTS %s ("
-                    + "%s VARCHAR(255) PRIMARY KEY, "
+                    + "%s PRIMARY KEY, "
                     + "%s, "
                     + "%s)",
                 getCollectionTableName(collectionName),
-                getKeyColumnName(recordDefinition.getKeyField()),
+                getKeyColumnNameAndType(recordDefinition.getKeyField(), getSupportedDataTypes()),
                 getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
                     getSupportedDataTypes()),
                 getVectorColumnNamesAndTypes(new ArrayList<>(vectorFields),
@@ -235,6 +252,11 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 throw new SKException("Failed to create collection", e);
             }
         }
+    }
+
+    private String getKeyColumnNameAndType(VectorStoreRecordKeyField field, Map<Class<?>, String> types) {
+        return validateSQLidentifier(field.getEffectiveStorageName()) + " "
+            + types.get(field.getFieldType());
     }
 
     private String createIndexForDataField(String collectionName, VectorStoreRecordDataField dataField) {
@@ -545,7 +567,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         private String prefixForCollectionTables = DEFAULT_PREFIX_FOR_COLLECTION_TABLES;
         private ObjectMapper objectMapper = new ObjectMapper();
         private StringTypeMapping stringTypeMapping = StringTypeMapping.USE_VARCHAR;
-        private int defaultVarcharSize = 4000;
+        private int defaultVarcharSize = 2000;
 
 
         @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -594,7 +616,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         /**
          * Sets the default size of the VARHCHAR2 fields.
          * @param defaultVarcharSize the default size of the VARHCHAR2 fields. By default, the size
-         *                           is 4000.
+         *                           is 2000.
          * @return then builder
          */
         public Builder withDefaultVarcharSize (int defaultVarcharSize) {
