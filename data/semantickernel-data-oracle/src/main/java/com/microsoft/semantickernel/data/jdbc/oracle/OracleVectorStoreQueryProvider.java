@@ -309,7 +309,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 if (field instanceof VectorStoreRecordVectorField) {
                     // Convert the vector field to a string
                     if (!field.getFieldType().equals(String.class)) {
-                        double[] values = valueNode == null ? null :  StreamSupport.stream(((ArrayNode)valueNode).spliterator(), false).mapToDouble(d -> d.asDouble()).toArray();
+                        double[] values = valueNode.isNull() ? null :  StreamSupport.stream(((ArrayNode)valueNode).spliterator(), false).mapToDouble(d -> d.asDouble()).toArray();
                         statement.setObject(i + 1, values, OracleType.VECTOR_FLOAT64);
                         System.out.println("Set values: " + values);
                         continue;

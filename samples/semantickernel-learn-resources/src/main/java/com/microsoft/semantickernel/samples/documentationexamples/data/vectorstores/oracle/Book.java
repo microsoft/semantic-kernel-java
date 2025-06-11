@@ -10,9 +10,6 @@ import java.util.List;
 
 public class Book {
 
-    @VectorStoreRecordKey
-    private final String isbn;
-
     public Book(String isbn, String title, String author, int pages,
         List<String> tags, String summary, List<Float> summaryEmbedding) {
         this.isbn = isbn;
@@ -23,6 +20,10 @@ public class Book {
         this.summary = summary;
         this.summaryEmbedding = summaryEmbedding;
     }
+
+
+    @VectorStoreRecordKey
+    private final String isbn;
 
     @VectorStoreRecordData(isFilterable = true)
     private final String title;
@@ -42,4 +43,31 @@ public class Book {
     @VectorStoreRecordVector(dimensions = 4, distanceFunction = DistanceFunction.COSINE_DISTANCE, indexKind = IndexKind.HNSW)
     private final List<Float> summaryEmbedding;
 
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public int getPages() {
+        return pages;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public List<Float> getSummaryEmbedding() {
+        return summaryEmbedding;
+    }
 }
