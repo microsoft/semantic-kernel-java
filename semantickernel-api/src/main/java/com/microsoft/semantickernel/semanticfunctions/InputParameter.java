@@ -41,7 +41,7 @@ public class InputParameter {
     }
 
     /**
-     * Parameter description for UI apps and planner. Localization is not supported here.
+     * Parameter description for UI apps. Localization is not supported here.
      *
      * @return description
      */

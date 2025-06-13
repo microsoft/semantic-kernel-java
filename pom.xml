@@ -135,16 +135,7 @@
                 <artifactId>semantickernel-connectors-ai-openai</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>semantickernel-sequentialplanner-extension</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.microsoft.semantic-kernel.extensions</groupId>
-                <artifactId>semantickernel-actionplanner-extension</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+
 
             <dependency>
                 <groupId>com.github.spotbugs</groupId>

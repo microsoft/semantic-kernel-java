@@ -9,13 +9,13 @@ Welcome to the Semantic Kernel for Java. For detailed documentation, visit [Micr
 [Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/) is an SDK that integrates Large Language Models (LLMs) like [OpenAI](https://platform.openai.com/docs/introduction), [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service), and [Hugging Face](https://huggingface.co/)
 with conventional programming languages like C#, Python, and Java. Semantic Kernel achieves this by allowing you to define [plugins](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins??tabs=Java&pivots=programming-language-java) that can be chained together in just a [few lines of code](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Java&pivots=programming-language-java#using-the-runasync-method-to-simplify-your-code).
 
-What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate plugins with AI. With Semantic Kernel [planners](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner?tabs=Java&pivots=programming-language-java), you can ask an LLM to generate a plan that achieves a user's unique goal. Afterwards, Semantic Kernel will execute the plan for the user.
+What makes Semantic Kernel _special_, however, is its ability to _automatically_ orchestrate plugins with AI. With Semantic Kernel, you can combine plugins and prompts to create intelligent workflows that achieve your goals.
 
 For C#, Python and other language support, see [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel).
 
 #### Please star the repo to show your support for this project!
 
-![Orchestrating plugins with planner](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
+![Orchestrating plugins](https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-infographic.png)
 
 ## Getting started with Semantic Kernel for Java
 
@@ -34,7 +34,6 @@ on our Learn site.
 1. 👄 [Creating semantic functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/semantic-functions?tabs=Java&pivots=programming-language-java)
 1. 💽 [Creating native functions](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/native-functions?tabs=Java&pivots=programming-language-java)
 1. ⛓️ [Chaining functions together](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chaining-functions?tabs=Java&pivots=programming-language-java)
-1. 🤖 [Auto create plans with planner](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/planner?tabs=Java&pivots=programming-language-java)
 1. 💡 [Create and run a ChatGPT plugin](https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/chatgpt-plugins?tabs=Java&pivots=programming-language-java)
 
 ## Join the community

@@ -198,7 +198,6 @@ The `runPrompt` method is defined as follows:
 ```
 For more information, please refer to the following resources:
 - [Microsoft Documentation on Prompt Template Syntax](https://learn.microsoft.com/en-us/semantic-kernel/prompts/prompt-template-syntax)
-- [Microsoft Devblogs on Using Handlebars Planner in Semantic Kernel](https://devblogs.microsoft.com/semantic-kernel/using-handlebars-planner-in-semantic-kernel/)
 
 ### Configuration file
 
