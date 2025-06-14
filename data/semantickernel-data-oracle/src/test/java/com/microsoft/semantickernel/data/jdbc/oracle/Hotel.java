@@ -77,9 +77,9 @@ public class Hotel {
         this.tags = tags;
         this.description = description;
         this.euclidean = euclidean;
-        this.cosineDistance = euclidean;
-        this.cosineSimilarity = euclidean;
-        this.dotProduct = euclidean;
+        this.cosineDistance = cosineDistance;
+        this.cosineSimilarity = cosineSimilarity;
+        this.dotProduct = dotProduct;
         this.rating = rating;
     }
 
