@@ -1,5 +1,7 @@
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
@@ -16,6 +18,7 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
+
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.impl.OracleDataSource;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,7 +36,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -334,6 +339,69 @@ public class OracleVectorStoreRecordCollectionTest {
         assertEquals(hotels.get(1).getId(), results.get(0).getRecord().getId());
     }
 
+    @ParameterizedTest
+    @MethodSource("supportedKeyTypes")
+    <T> void testKeyTypes(String suffix, Class<?> keyType, Object keyValue) {
+        VectorStoreRecordKeyField keyField = VectorStoreRecordKeyField.builder()
+            .withName("id")
+            .withStorageName("id")
+            .withFieldType(keyType)
+            .build();
+
+        VectorStoreRecordDataField dummyField = VectorStoreRecordDataField.builder()
+            .withName("dummy")
+            .withStorageName("dummy")
+            .withFieldType(String.class)
+            .build();
+
+        VectorStoreRecordVectorField dummyVector = VectorStoreRecordVectorField.builder()
+            .withName("vec")
+            .withStorageName("vec")
+            .withFieldType(List.class)
+            .withDimensions(2)
+            .withDistanceFunction(DistanceFunction.EUCLIDEAN_DISTANCE)
+            .withIndexKind(IndexKind.UNDEFINED)
+            .build();
+
+        VectorStoreRecordDefinition definition = VectorStoreRecordDefinition.fromFields(
+            Arrays.asList(keyField, dummyField, dummyVector)
+        );
+
+        OracleVectorStoreQueryProvider queryProvider = OracleVectorStoreQueryProvider.builder()
+            .withDataSource(DATA_SOURCE)
+            .build();
+
+        JDBCVectorStore vectorStore = JDBCVectorStore.builder()
+            .withDataSource(DATA_SOURCE)
+            .withOptions(JDBCVectorStoreOptions.builder()
+                .withQueryProvider(queryProvider)
+                .build())
+            .build();
+
+        String collectionName = "test_keytype_" + suffix;
+
+        VectorStoreRecordCollection collectionRaw =
+            vectorStore.getCollection(collectionName,
+                JDBCVectorStoreRecordCollectionOptions.<DummyRecordForKeyTypes>builder()
+                    .withRecordClass(DummyRecordForKeyTypes.class)
+                    .withRecordDefinition(definition)
+                    .build());
+
+        VectorStoreRecordCollection<Object, DummyRecordForKeyTypes> collection =
+            (VectorStoreRecordCollection<Object, DummyRecordForKeyTypes>) collectionRaw;
+
+        collection.createCollectionAsync().block();
+
+        DummyRecordForKeyTypes record = new DummyRecordForKeyTypes(keyValue, "dummyValue", Arrays.asList(1.0f, 2.0f));
+        collection.upsertAsync(record, null).block();
+
+        DummyRecordForKeyTypes result = collection.getAsync(keyValue, null).block();
+        assertNotNull(result);
+        assertEquals("dummyValue", result.getDummy());
+
+        collection.deleteCollectionAsync().block();
+    }
+
     @Nested
     class HNSWIndexTests {
         @Test
@@ -501,5 +569,49 @@ public class OracleVectorStoreRecordCollectionTest {
             Arguments.of (DistanceFunction.EUCLIDEAN_DISTANCE, Arrays.asList(0.1000d, 18.9081d, 19.9669d)),
             Arguments.of (DistanceFunction.UNDEFINED, Arrays.asList(0.1000d, 18.9081d, 19.9669d))
         );
+    }
+
+    // commented out temporarily because only String type key is supported in 
+    // JDBCVectorStoreRecordCollection<Record>#getKeyFromRecord:
+    // ...
+    // return (String) keyField.get(data);
+    // ...
+    // thus upsertAync/getAsync won't work
+    private static Stream<Arguments> supportedKeyTypes() {
+        return Stream.of(
+            Arguments.of("string", String.class, "asd123")/*,
+            Arguments.of("integer", Integer.class, 321),
+            Arguments.of("long", Long.class, 5L),
+            Arguments.of("short", Short.class, (short) 3),
+            Arguments.of("uuid", UUID.class, UUID.randomUUID())*/
+        );
+    }
+
+    private static class DummyRecordForKeyTypes {
+        private final Object id;
+        private final String dummy;
+        private final List<Float> vec;
+        @JsonCreator
+        public DummyRecordForKeyTypes(
+            @JsonProperty("id")Object id,
+            @JsonProperty("dummy") String dummy,
+            @JsonProperty("vec") List<Float> vec) {
+            this.id = id;
+            this.dummy = dummy;
+            this.vec = vec;
+        }
+
+        public Object getId() {
+            return id;
+        }
+
+        public String getDummy() {
+            return dummy;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(id);
+        }
     }
 }
