@@ -15,38 +15,33 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFuncti
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
-import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.OracleStatement;
-import oracle.jdbc.OracleType;
 import oracle.jdbc.OracleTypes;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
 import javax.sql.DataSource;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/**
+ * JDBC Vector Store for the Oracle Database
+ */
 public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider {
 
     // This could be removed if super.collectionTable made protected
@@ -57,7 +52,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
 
     private static final Object dbCreationLock = new Object();
 
-    Logger logger = Logger.getLogger(OracleVectorStoreQueryProvider.class.getName());
+    private static final Logger logger = Logger.getLogger(OracleVectorStoreQueryProvider.class.getName());
 
     public enum StringTypeMapping {
         /**
@@ -70,6 +65,15 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         USE_VARCHAR
     }
 
+    /**
+     * Constructor
+     * @param dataSource the datasiyrce
+     * @param collectionsTable the collections table name
+     * @param prefixForCollectionTables the prefix for the collection table name
+     * @param defaultVarcharSize the size of VARCHAR columns
+     * @param stringTypeMapping the storage type of string columns (VARCHAR or CLOB)
+     * @param objectMapper the object mapper.
+     */
     private OracleVectorStoreQueryProvider(
         @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,
@@ -81,113 +85,16 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             dataSource,
             collectionsTable,
             prefixForCollectionTables,
-            buildSupportedKeyTypes(),
-            buildSupportedDataTypes(stringTypeMapping, defaultVarcharSize),
-            buildSupportedVectorTypes());
+            OracleVectorStoreFieldHelper.getSupportedKeyTypes(),
+            OracleVectorStoreFieldHelper.getSupportedDataTypes(stringTypeMapping, defaultVarcharSize),
+            OracleVectorStoreFieldHelper.getSupportedVectorTypes());
         this.collectionsTable = collectionsTable;
         this.objectMapper = objectMapper;
     }
 
-    private static HashMap<Class<?>, String> buildSupportedKeyTypes() {
-        HashMap<Class<?>, String> supportedKeyTypes = new HashMap<>();
-        supportedKeyTypes.put(String.class, String.format(OracleDataTypesMapping.STRING_VARCHAR, 255));
-        supportedKeyTypes.put(short.class, OracleDataTypesMapping.SHORT);
-        supportedKeyTypes.put(Short.class, OracleDataTypesMapping.SHORT);
-        supportedKeyTypes.put(int.class, OracleDataTypesMapping.INTEGER);
-        supportedKeyTypes.put(Integer.class, OracleDataTypesMapping.INTEGER);
-        supportedKeyTypes.put(long.class, OracleDataTypesMapping.LONG);
-        supportedKeyTypes.put(Long.class, OracleDataTypesMapping.LONG);
-        supportedKeyTypes.put(UUID.class, OracleDataTypesMapping.UUID);
-
-        return supportedKeyTypes;
-    }
-    private static Map<Class<?>, String> buildSupportedVectorTypes() {
-        HashMap<Class<?>, String> supportedVectorTypes = new HashMap<>();
-        supportedVectorTypes.put(String.class, "VECTOR(%s)");
-        supportedVectorTypes.put(List.class, "VECTOR(%s)");
-        supportedVectorTypes.put(Collection.class, "VECTOR(%s)");
-        return supportedVectorTypes;
-    }
-
-    private static Map<Class<?>, String> buildSupportedDataTypes(StringTypeMapping stringTypeMapping, int defaultVarCharLength) {
-        HashMap<Class<?>, String> supportedDataTypes = new HashMap<>();
-        if (stringTypeMapping.equals(StringTypeMapping.USE_VARCHAR)) {
-            supportedDataTypes.put(String.class, String.format(OracleDataTypesMapping.STRING_VARCHAR, defaultVarCharLength));
-        } else {
-            supportedDataTypes.put(String.class, OracleDataTypesMapping.STRING_CLOB);
-        }
-        supportedDataTypes.put(byte.class, OracleDataTypesMapping.BYTE);
-        supportedDataTypes.put(Byte.class, OracleDataTypesMapping.BYTE);
-        supportedDataTypes.put(short.class, OracleDataTypesMapping.SHORT);
-        supportedDataTypes.put(Short.class, OracleDataTypesMapping.SHORT);
-        supportedDataTypes.put(int.class, OracleDataTypesMapping.INTEGER);
-        supportedDataTypes.put(Integer.class, OracleDataTypesMapping.INTEGER);
-        supportedDataTypes.put(long.class, OracleDataTypesMapping.LONG);
-        supportedDataTypes.put(Long.class, OracleDataTypesMapping.LONG);
-        supportedDataTypes.put(Float.class, OracleDataTypesMapping.FLOAT);
-        supportedDataTypes.put(float.class, OracleDataTypesMapping.FLOAT);
-        supportedDataTypes.put(Double.class, OracleDataTypesMapping.DOUBLE);
-        supportedDataTypes.put(double.class, OracleDataTypesMapping.DOUBLE);
-        supportedDataTypes.put(BigDecimal.class, OracleDataTypesMapping.DECIMAL);
-        supportedDataTypes.put(Boolean.class, OracleDataTypesMapping.BOOLEAN);
-        supportedDataTypes.put(boolean.class, OracleDataTypesMapping.BOOLEAN);
-        supportedDataTypes.put(OffsetDateTime.class, OracleDataTypesMapping.OFFSET_DATE_TIME);
-        supportedDataTypes.put(UUID.class, OracleDataTypesMapping.UUID);
-        supportedDataTypes.put(byte[].class, OracleDataTypesMapping.BYTE_ARRAY);
-        supportedDataTypes.put(List.class, OracleDataTypesMapping.JSON);
-        return supportedDataTypes;
-    }
-
-    private String createIndexForVectorField(String collectionName, VectorStoreRecordVectorField vectorField) {
-        switch (vectorField.getIndexKind()) {
-            case IVFFLAT:
-                return "CREATE VECTOR INDEX IF NOT EXISTS "
-                    + getIndexName(vectorField.getEffectiveStorageName())
-                    + " ON "
-                    + getCollectionTableName(collectionName) + "( " + vectorField.getEffectiveStorageName() + " ) "
-                    + " ORGANIZATION NEIGHBOR PARTITIONS "
-                    + " WITH DISTANCE COSINE "
-                    + "PARAMETERS ( TYPE IVF )";
-            case HNSW:
-                return "CREATE VECTOR INDEX IF NOT EXISTS " + getIndexName(vectorField.getEffectiveStorageName())
-                    + " ON "
-                    + getCollectionTableName(collectionName) + "( " + vectorField.getEffectiveStorageName() + " ) "
-                                + "ORGANIZATION INMEMORY GRAPH "
-                    + "WITH DISTANCE COSINE "
-                    + "PARAMETERS (TYPE HNSW)";
-            case UNDEFINED:
-                return null;
-            default:
-                logger.warning("Unsupported index kind: " + vectorField.getIndexKind());
-                return null;
-        }
-    }
-
-    private String getIndexName(String effectiveStorageName) {
-        return effectiveStorageName + "_VECTOR_INDEX";
-    }
-
-
-    protected String getVectorColumnNamesAndTypes(List<VectorStoreRecordVectorField> fields,
-        Map<Class<?>, String> types) {
-        List<String> columns = fields.stream()
-            .map(field -> validateSQLidentifier(field.getEffectiveStorageName()) + " "
-                + String.format(types.get(field.getFieldType()), field.getDimensions() > 0 ? field.getDimensions() + ", FLOAT32" : "FLOAT32"))
-            .collect(Collectors.toList());
-
-        return String.join(", ", columns);
-    }
-
     @Override
-    protected String getInsertCollectionQuery(String collectionsTable) {
-        return formatQuery(
-            "MERGE INTO %s existing "+
-                "USING (SELECT ? AS collectionId FROM DUAL) new ON (existing.collectionId = new.collectionId) " +
-                "WHEN NOT MATCHED THEN INSERT (existing.collectionId) VALUES (new.collectionId)",
-            collectionsTable);
-    }
-
-    @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
+    @GuardedBy("dbCreationLock")
     public void createCollection(String collectionName,
         VectorStoreRecordDefinition recordDefinition) {
 
@@ -199,11 +106,11 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     + "%s, "
                     + "%s)",
                 getCollectionTableName(collectionName),
-                getKeyColumnNameAndType(recordDefinition.getKeyField(), getSupportedDataTypes()),
+                OracleVectorStoreFieldHelper.getKeyColumnNameAndType(recordDefinition.getKeyField()),
                 getColumnNamesAndTypes(new ArrayList<>(recordDefinition.getDataFields()),
                     getSupportedDataTypes()),
-                getVectorColumnNamesAndTypes(new ArrayList<>(vectorFields),
-                    getSupportedVectorTypes()));
+                OracleVectorStoreFieldHelper.getVectorColumnNamesAndTypes(
+                    new ArrayList<>(vectorFields)));
 
             String insertCollectionQuery = this.getInsertCollectionQuery(collectionsTable);
 
@@ -213,28 +120,28 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 try (Statement statement = connection.createStatement()) {
                     // Create table
                     System.out.println(createStorageTable);
-                    statement.addBatch(createStorageTable);
+                    statement.execute(createStorageTable);
 
                     // Index filterable columns
                     for (VectorStoreRecordDataField dataField : recordDefinition.getDataFields()) {
                         if (dataField.isFilterable()) {
-                            String dataFieldIndex = createIndexForDataField(collectionName, dataField);
+                            String dataFieldIndex = OracleVectorStoreFieldHelper.createIndexForDataField(
+                                getCollectionTableName(collectionName), dataField, supportedDataTypes);
                             System.out.println(dataFieldIndex);
-                            statement.addBatch(dataFieldIndex);
+                            statement.execute(dataFieldIndex);
                         }
                     }
 
                     // Create indexed for vectorFields
                     for (VectorStoreRecordVectorField vectorField : vectorFields) {
-                        String createVectorIndex = createIndexForVectorField(collectionName,
-                            vectorField);
-
+                        String createVectorIndex = OracleVectorStoreFieldHelper.getCreateVectorIndexStatement(
+                            vectorField, getCollectionTableName(collectionName));
                         if (createVectorIndex != null) {
                             System.out.println(createVectorIndex);
-                            statement.addBatch(createVectorIndex);
+                            statement.execute(createVectorIndex);
                         }
                     }
-                    statement.executeBatch();
+                    //statement.executeBatch();
 
                     try (PreparedStatement insert = connection.prepareStatement(
                         insertCollectionQuery)) {
@@ -254,60 +161,48 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         }
     }
 
-    private String getKeyColumnNameAndType(VectorStoreRecordKeyField field, Map<Class<?>, String> types) {
-        return validateSQLidentifier(field.getEffectiveStorageName()) + " "
-            + types.get(field.getFieldType());
-    }
-
-    private String createIndexForDataField(String collectionName, VectorStoreRecordDataField dataField) {
-        if (supportedDataTypes.get(dataField.getFieldType()) == "JSON") {
-            String dataFieldIndex = "CREATE MULTIVALUE INDEX %s ON %s t (t.%s.%s)";
-            return formatQuery(dataFieldIndex,
-                getCollectionTableName(collectionName) + "_" + dataField.getEffectiveStorageName(),
-                getCollectionTableName(collectionName),
-                dataField.getEffectiveStorageName(),
-                getFunctionForType(supportedDataTypes.get(dataField.getFieldSubType())));
-        }  else {
-            String dataFieldIndex = "CREATE INDEX %s ON %s (%s ASC)";
-            return formatQuery(dataFieldIndex,
-                getCollectionTableName(collectionName) + "_" + dataField.getEffectiveStorageName(),
-                getCollectionTableName(collectionName),
-                dataField.getEffectiveStorageName()
-            );
-        }
-
-    }
-
-    private String getFunctionForType(String jdbcType) {
-        switch (jdbcType) {
-            case "BOOLEAN":
-                return "boolean()";
-            case "INTEGER":
-            case "LONG":
-            case "REAL":
-            case "DOUBLE PRECISION":
-                return "numberOnly()";
-            case "TIMESTAMPTZ":
-                return "timestamp()";
-            default:
-                return "string()";
-        }
+    @Override
+    protected String getInsertCollectionQuery(String collectionsTable) {
+        return formatQuery(
+            "MERGE INTO %s existing "+
+                "USING (SELECT ? AS collectionId FROM DUAL) new ON (existing.collectionId = new.collectionId) " +
+                "WHEN NOT MATCHED THEN INSERT (existing.collectionId) VALUES (new.collectionId)",
+            collectionsTable);
     }
 
     @Override
     public void upsertRecords(String collectionName, List<?> records, VectorStoreRecordDefinition recordDefinition, UpsertRecordOptions options) {
+
+        final String NEW_VALUE = "new";
+        final String EXISTING_VALUE = "existing";
+
+        String insertNewFieldList = recordDefinition.getAllFields().stream()
+            .map(f ->  NEW_VALUE + "." + f.getEffectiveStorageName())
+            .collect(Collectors.joining(", "));
+
+        String insertExistingFieldList = recordDefinition.getAllFields().stream()
+            .map(f ->  EXISTING_VALUE + "." + f.getEffectiveStorageName())
+            .collect(Collectors.joining(", "));
+
+        String updateFieldList = recordDefinition.getAllFields().stream()
+            .filter(f -> f != recordDefinition.getKeyField())
+            .map(f -> EXISTING_VALUE + "." + f.getEffectiveStorageName() + " = " + NEW_VALUE + "." + f.getEffectiveStorageName())
+            .collect(Collectors.joining(", "));
+
+        String namedWildcard = recordDefinition.getAllFields().stream().map(f -> "? " + f.getEffectiveStorageName())
+            .collect(Collectors.joining(", "));
 
         String upsertQuery = formatQuery("MERGE INTO %s existing "+
                 "USING (SELECT %s FROM DUAL) new ON (existing.%s = new.%s) " +
                 "WHEN MATCHED THEN UPDATE SET %s " +
                 "WHEN NOT MATCHED THEN INSERT (%s) VALUES (%s)",
             getCollectionTableName(collectionName),
-            getNamedWildcard(recordDefinition.getAllFields()),
+            namedWildcard,
             getKeyColumnName(recordDefinition.getKeyField()),
             getKeyColumnName(recordDefinition.getKeyField()),
-            getUpdateFieldList(recordDefinition.getKeyField(), recordDefinition.getAllFields(), "existing", "new"),
-            getInsertFieldList(recordDefinition.getKeyField(), recordDefinition.getAllFields(), "existing"),
-            getInsertFieldList(recordDefinition.getKeyField(), recordDefinition.getAllFields(), "new"));
+            updateFieldList,
+            insertExistingFieldList,
+            insertNewFieldList);
 
         System.out.println(upsertQuery);
         try (Connection connection = dataSource.getConnection();
@@ -335,8 +230,13 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 if (field instanceof VectorStoreRecordVectorField) {
                     // Convert the vector field to a string
                     if (!field.getFieldType().equals(String.class)) {
-                        double[] values = valueNode == null ? null :  StreamSupport.stream(((ArrayNode)valueNode).spliterator(), false).mapToDouble(d -> d.asDouble()).toArray();
-                        statement.setObject(i + 1, values, OracleType.VECTOR_FLOAT64);
+                        double[] values = valueNode.isNull()
+                            ? null
+                            : StreamSupport.stream((
+                                (ArrayNode)valueNode).spliterator(), false)
+                                .mapToDouble(d -> d.asDouble()).toArray();
+                        statement.setObject(i + 1, values,
+                            OracleVectorStoreFieldHelper.getOracleTypeForField((VectorStoreRecordVectorField)field));
                         System.out.println("Set values: " + values);
                         continue;
                     }
@@ -356,23 +256,6 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 throw new RuntimeException(e);
             }
         }
-    }
-    private String getInsertFieldList(VectorStoreRecordKeyField key, List<VectorStoreRecordField> fields, String alias) {
-        return fields.stream().map(f -> alias + "." + f.getEffectiveStorageName())
-            .collect(Collectors.joining(", "));
-    }
-
-    private String getUpdateFieldList(VectorStoreRecordKeyField key, List<VectorStoreRecordField> fields, String oldAlias, String newAlias) {
-        return fields.stream().filter(f -> f != key).map(f -> oldAlias + "." + f.getEffectiveStorageName() + " = " +
-            newAlias + "." + f.getEffectiveStorageName())
-            .collect(Collectors.joining(", "));
-
-    }
-
-
-    private String getNamedWildcard(List<VectorStoreRecordField> fields) {
-        return fields.stream().map(f -> "? " + f.getEffectiveStorageName())
-            .collect(Collectors.joining(", "));
     }
 
     @Override
@@ -430,10 +313,12 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             int columnIndex = 1;
             defineDataColumnType(columnIndex++, oracleStatement, Double.class);
             for (VectorStoreRecordField field : fields) {
-                if (field instanceof VectorStoreRecordDataField)
+                if (!(field instanceof VectorStoreRecordVectorField))
                     defineDataColumnType(columnIndex++, oracleStatement, field.getFieldType());
                 else
-                    oracleStatement.defineColumnType(columnIndex++, OracleTypes.VECTOR_FLOAT32, Integer.MAX_VALUE);
+                    oracleStatement.defineColumnType(columnIndex++,
+                        OracleVectorStoreFieldHelper.getOracleTypeForField((VectorStoreRecordVectorField) field),
+                        Integer.MAX_VALUE);
             }
             oracleStatement.setLobPrefetchSize(Integer.MAX_VALUE); // Workaround for Oracle JDBC bug 37030121
 
@@ -454,38 +339,49 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             throw  new SKException("Search failed", e);
         }
 
-
-
         return new VectorSearchResults<>(records);
     }
+
 
     private void defineDataColumnType(int columnIndex, OracleStatement statement, Class<?> fieldType) throws SQLException {
         // swich between supported classes and define the column type on the statement
         switch (supportedDataTypes.get(fieldType)) {
-            case "CLOB":
+            case OracleDataTypesMapping.STRING_CLOB:
                 statement.defineColumnType(columnIndex, OracleTypes.CLOB, Integer.MAX_VALUE);
                 break;
-            case "INTEGER":
+            case OracleDataTypesMapping.BYTE:
+                statement.defineColumnType(columnIndex, OracleTypes.NUMBER);
+                break;
+            case OracleDataTypesMapping.SHORT:
+                statement.defineColumnType(columnIndex, OracleTypes.NUMBER);
+                break;
+            case OracleDataTypesMapping.INTEGER:
                 statement.defineColumnType(columnIndex, OracleTypes.INTEGER);
                 break;
-            case "LONG":
+            case OracleDataTypesMapping.LONG:
                 statement.defineColumnType(columnIndex, OracleTypes.BIGINT);
                 break;
-            case "REAL":
-                statement.defineColumnType(columnIndex, OracleTypes.REAL);
+            case OracleDataTypesMapping.FLOAT:
+                statement.defineColumnType(columnIndex, OracleTypes.BINARY_FLOAT);
                 break;
-            case "DOUBLE PRECISION":
+            case OracleDataTypesMapping.DOUBLE:
                 statement.defineColumnType(columnIndex, OracleTypes.BINARY_DOUBLE);
                 break;
-            case "BOOLEAN":
+            case OracleDataTypesMapping.DECIMAL:
+                statement.defineColumnType(columnIndex, OracleTypes.BINARY_DOUBLE);
+                break;
+            case OracleDataTypesMapping.BOOLEAN:
                 statement.defineColumnType(columnIndex, OracleTypes.BOOLEAN);
                 break;
-            case "TIMESTAMPTZ":
+            case OracleDataTypesMapping.OFFSET_DATE_TIME:
                 statement.defineColumnType(columnIndex, OracleTypes.TIMESTAMPTZ);
                 break;
-            case "JSON":
+            case OracleDataTypesMapping.JSON:
                 statement.defineColumnType(columnIndex, OracleTypes.JSON, Integer.MAX_VALUE);
                 break;
+            case OracleDataTypesMapping.UUID:
+            case OracleDataTypesMapping.BYTE_ARRAY:
+                statement.defineColumnType(columnIndex, OracleTypes.RAW);
             default:
                 statement.defineColumnType(columnIndex, OracleTypes.VARCHAR);
         }
@@ -542,11 +438,6 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         return String.format("JSON_EXISTS(%s, '$[*]?(@ == $v_%s)' PASSING ? AS \"v_%s\")",
             fieldName, fieldName, fieldName);
     }
-    
-
-    public static Builder builder() {
-        return new Builder();
-    }
 
     @Override
     public <Record> VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper(
@@ -557,6 +448,10 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             .withVectorStoreRecordDefinition(vectorStoreRecordDefinition)
             .withSupportedDataTypesMapping(getSupportedDataTypes())
             .build();
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public static class Builder

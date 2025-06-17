@@ -40,15 +40,15 @@ public class Hotel {
 
     @JsonProperty("summaryEmbedding2")
     @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.COSINE_DISTANCE, indexKind = IndexKind.HNSW)
-    private final List<Float> cosineDistance;
+    private final float[] cosineDistance;
 
     @JsonProperty("summaryEmbedding3")
     @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.COSINE_SIMILARITY, indexKind = IndexKind.IVFFLAT)
-    private final List<Float> cosineSimilarity;
+    private final float[] cosineSimilarity;
 
     @JsonProperty("summaryEmbedding4")
     @VectorStoreRecordVector(dimensions = 8, distanceFunction = DistanceFunction.DOT_PRODUCT, indexKind = IndexKind.IVFFLAT)
-    private final List<Float> dotProduct;
+    private final Float[] dotProduct;
     @VectorStoreRecordData
     private double rating;
 
@@ -66,9 +66,9 @@ public class Hotel {
         @JsonProperty("tags") List<String> tags,
         @JsonProperty("summary") String description,
         @JsonProperty("summaryEmbedding1") List<Float> euclidean,
-        @JsonProperty("summaryEmbedding2") List<Float> cosineDistance,
-        @JsonProperty("summaryEmbedding3") List<Float> cosineSimilarity,
-        @JsonProperty("summaryEmbedding4") List<Float> dotProduct,
+        @JsonProperty("summaryEmbedding2") float[] cosineDistance,
+        @JsonProperty("summaryEmbedding3") float[] cosineSimilarity,
+        @JsonProperty("summaryEmbedding4") Float[] dotProduct,
         @JsonProperty("rating") double rating) {
         this.id = id;
         this.name = name;
@@ -77,9 +77,9 @@ public class Hotel {
         this.tags = tags;
         this.description = description;
         this.euclidean = euclidean;
-        this.cosineDistance = euclidean;
-        this.cosineSimilarity = euclidean;
-        this.dotProduct = euclidean;
+        this.cosineDistance = cosineDistance;
+        this.cosineSimilarity = cosineSimilarity;
+        this.dotProduct = dotProduct;
         this.rating = rating;
     }
 
@@ -107,11 +107,11 @@ public class Hotel {
         return euclidean;
     }
 
-    public List<Float> getCosineDistance() {
+    public float[]  getCosineDistance() {
         return cosineDistance;
     }
 
-    public List<Float> getDotProduct() {
+    public Float[] getDotProduct() {
         return dotProduct;
     }
 
