@@ -210,7 +210,7 @@ public class VectorStoreRecordDefinition {
                 vectorFields.add(VectorStoreRecordVectorField.builder()
                     .withName(field.getName())
                     .withStorageName(storageName)
-                    .withFieldType(field.getType())
+                    .withFieldType(field.getType(),  List.class.equals(field.getType()) ? (Class<?>)((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0] : null)
                     .withDimensions(vectorAttribute.dimensions())
                     .withIndexKind(vectorAttribute.indexKind())
                     .withDistanceFunction(vectorAttribute.distanceFunction())

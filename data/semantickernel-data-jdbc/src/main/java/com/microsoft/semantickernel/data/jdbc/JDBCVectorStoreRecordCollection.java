@@ -34,10 +34,10 @@ public class JDBCVectorStoreRecordCollection<Record>
     implements SQLVectorStoreRecordCollection<String, Record> {
 
     private final String collectionName;
-    private final VectorStoreRecordDefinition recordDefinition;
-    private final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
+    protected final VectorStoreRecordDefinition recordDefinition;
+    protected final VectorStoreRecordMapper<Record, ResultSet> vectorStoreRecordMapper;
     private final JDBCVectorStoreRecordCollectionOptions<Record> options;
-    private final SQLVectorStoreQueryProvider queryProvider;
+    protected final SQLVectorStoreQueryProvider queryProvider;
 
     /**
      * Creates a new instance of the {@link JDBCVectorStoreRecordCollection}.

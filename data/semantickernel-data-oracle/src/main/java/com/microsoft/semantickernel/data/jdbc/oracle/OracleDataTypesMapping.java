@@ -1,5 +1,8 @@
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
+/**
+ * Defines oracle database type constants for supported field types.
+ */
 public class OracleDataTypesMapping {
     public static final String STRING_VARCHAR = "NVARCHAR2(%s)";
     public static final String STRING_CLOB = "CLOB";
@@ -15,4 +18,5 @@ public class OracleDataTypesMapping {
     public static final String OFFSET_DATE_TIME = "TIMESTAMP(7) WITH TIME ZONE";
     public static final String UUID = "RAW(16)";
     public static final String JSON = "JSON";
+    public static final String VECTOR_FLOAT = "VECTOR(%s, FLOAT32)";
 }
