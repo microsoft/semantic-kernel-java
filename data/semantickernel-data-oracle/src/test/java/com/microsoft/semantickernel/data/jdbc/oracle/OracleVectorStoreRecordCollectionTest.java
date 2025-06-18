@@ -29,20 +29,25 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -417,6 +422,87 @@ public class OracleVectorStoreRecordCollectionTest {
         collection.deleteCollectionAsync().block();
     }
 
+    @ParameterizedTest
+    @MethodSource("supportedDataTypes")
+    void testDataTypes(String dataFieldName, Class<?> dataFieldType, Object dataFieldValue, Class<?> fieldSubType) {
+        VectorStoreRecordKeyField keyField = VectorStoreRecordKeyField.builder()
+            .withName("id")
+            .withStorageName("id")
+            .withFieldType(String.class)
+            .build();
+
+        VectorStoreRecordDataField dataField;
+        if (fieldSubType != null) {
+            dataField = VectorStoreRecordDataField.builder()
+                .withName("dummy")
+                .withStorageName("dummy")
+                .withFieldType(dataFieldType, fieldSubType)
+                .isFilterable(true)
+                .build();
+        } else {
+            dataField = VectorStoreRecordDataField.builder()
+                .withName("dummy")
+                .withStorageName("dummy")
+                .withFieldType(dataFieldType)
+                .isFilterable(true)
+                .build();
+        }
+
+        VectorStoreRecordVectorField dummyVector = VectorStoreRecordVectorField.builder()
+            .withName("vec")
+            .withStorageName("vec")
+            .withFieldType(List.class)
+            .withDimensions(2)
+            .withDistanceFunction(DistanceFunction.EUCLIDEAN_DISTANCE)
+            .withIndexKind(IndexKind.UNDEFINED)
+            .build();
+
+        VectorStoreRecordDefinition definition = VectorStoreRecordDefinition.fromFields(
+            Arrays.asList(keyField, dataField, dummyVector)
+        );
+
+        OracleVectorStoreQueryProvider queryProvider = OracleVectorStoreQueryProvider.builder()
+            .withDataSource(DATA_SOURCE)
+            .build();
+
+        JDBCVectorStore vectorStore = JDBCVectorStore.builder()
+            .withDataSource(DATA_SOURCE)
+            .withOptions(JDBCVectorStoreOptions.builder()
+                .withQueryProvider(queryProvider)
+                .build())
+            .build();
+
+        String collectionName = "test_datatype_" + dataFieldName;
+
+        VectorStoreRecordCollection<String, DummyRecordForDataTypes> collection =
+            vectorStore.getCollection(collectionName,
+                JDBCVectorStoreRecordCollectionOptions.<DummyRecordForDataTypes> builder()
+                    .withRecordClass(DummyRecordForDataTypes.class)
+                    .withRecordDefinition(definition).build());
+
+        collection.createCollectionAsync().block();
+
+        String key = "testid";
+
+        DummyRecordForDataTypes record =
+            new DummyRecordForDataTypes(key, dataFieldValue, Arrays.asList(1.0f, 2.0f));
+
+        collection.upsertAsync(record, null).block();
+
+        DummyRecordForDataTypes result = collection.getAsync(key, null).block();
+        assertNotNull(result);
+
+        if (dataFieldValue instanceof Number && result.getDummy() instanceof Number) {
+            assertEquals(((Number) dataFieldValue).doubleValue(), ((Number) result.getDummy()).doubleValue());
+        } else if (dataFieldValue instanceof byte[]) {
+            assertArrayEquals((byte[]) dataFieldValue, (byte[]) result.getDummy());
+        } else {
+            assertEquals(dataFieldValue, result.getDummy());
+        }
+
+        collection.deleteCollectionAsync().block();
+    }
+
     @Nested
     class HNSWIndexTests {
         @Test
@@ -602,6 +688,25 @@ public class OracleVectorStoreRecordCollectionTest {
         );
     }
 
+    private static Stream<Arguments> supportedDataTypes() {
+        return Stream.of(
+            Arguments.of("string", String.class, "asd123", null),
+            Arguments.of("boolean_true", Boolean.class, true, null),
+            Arguments.of("boolean_false", Boolean.class, false, null),
+            Arguments.of("byte", Byte.class, (byte) 127, null),
+            Arguments.of("short", Short.class, (short) 3, null),
+            Arguments.of("integer", Integer.class, 321, null),
+            Arguments.of("long", Long.class, 5L, null),
+            Arguments.of("float", Float.class, 3.14f, null),
+            Arguments.of("double", double.class, 3.14159265358d, null),
+            Arguments.of("decimal", BigDecimal.class, new BigDecimal("12345.67"), null),
+            //Arguments.of("timestamp", OffsetDateTime.class, OffsetDateTime.now(), null)
+            //Arguments.of("uuid", UUID.class, UUID.randomUUID(), null)
+            Arguments.of("byte_array", byte[].class, "abc".getBytes(StandardCharsets.UTF_8), null),
+            Arguments.of("json", List.class, Arrays.asList("a", "s", "d"), String.class)
+        );
+    }
+
     private static class DummyRecordForKeyTypes {
         private final Object id;
         private final String dummy;
@@ -621,6 +726,34 @@ public class OracleVectorStoreRecordCollectionTest {
         }
 
         public String getDummy() {
+            return dummy;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(id);
+        }
+    }
+
+    private static class DummyRecordForDataTypes {
+        private final String id;
+        private final Object dummy;
+        private final List<Float> vec;
+        @JsonCreator
+        public DummyRecordForDataTypes(
+            @JsonProperty("id") String id,
+            @JsonProperty("dummy") Object dummy,
+            @JsonProperty("vec") List<Float> vec) {
+            this.id = id;
+            this.dummy = dummy;
+            this.vec = vec;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public Object getDummy() {
             return dummy;
         }
 
