@@ -2,6 +2,7 @@ package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.microsoft.semantickernel.data.jdbc.oracle.OracleVectorStoreQueryProvider.StringTypeMapping;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import oracle.jdbc.OracleTypes;
@@ -255,9 +256,16 @@ public class OracleVectorStoreFieldHelper {
      * @param field the vector field definition.
      * @return the JDBC oracle type.
      */
-    public static int getOracleTypeForField(VectorStoreRecordVectorField field) {
+    public static int getOracleTypeForVectorField(VectorStoreRecordVectorField field) {
         if (field.getFieldSubType() == null) {
-            return mapOracleTypeToVector.get(field.getFieldType()).intValue();
+            Integer oracleType = mapOracleTypeToVector.get(field.getFieldType());
+            if (oracleType != null) {
+                return oracleType.intValue();
+            } else {
+                // field was declared as list with no subtype, assume FLOAT
+                return OracleTypes.VECTOR_FLOAT32;
+            }
+
         } else {
             switch (field.getFieldSubType().getName()) {
                 case "java.lang.Double":
@@ -270,6 +278,10 @@ public class OracleVectorStoreFieldHelper {
                     return OracleTypes.VECTOR_FLOAT32;
             }
         }
+    }
+
+    public static boolean isUUID (VectorStoreRecordField field) {
+        return (field.getFieldType().getName() == "java.util.UUID");
     }
 
     /**

@@ -3,7 +3,11 @@ package com.microsoft.semantickernel.data.jdbc.oracle;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
 import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
 import com.microsoft.semantickernel.data.jdbc.*;
@@ -21,20 +25,32 @@ import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptio
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleStatement;
 import oracle.jdbc.OracleTypes;
+import oracle.sql.TIMESTAMPLTZ;
+import oracle.sql.TIMESTAMPTZ;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import javax.sql.DataSource;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLType;
 import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -90,6 +106,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             OracleVectorStoreFieldHelper.getSupportedVectorTypes());
         this.collectionsTable = collectionsTable;
         this.objectMapper = objectMapper;
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Override
@@ -120,7 +137,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 try (Statement statement = connection.createStatement()) {
                     // Create table
                     System.out.println(createStorageTable);
-                    statement.execute(createStorageTable);
+                    statement.addBatch(createStorageTable);
 
                     // Index filterable columns
                     for (VectorStoreRecordDataField dataField : recordDefinition.getDataFields()) {
@@ -128,7 +145,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                             String dataFieldIndex = OracleVectorStoreFieldHelper.createIndexForDataField(
                                 getCollectionTableName(collectionName), dataField, supportedDataTypes);
                             System.out.println(dataFieldIndex);
-                            statement.execute(dataFieldIndex);
+                            statement.addBatch(dataFieldIndex);
                         }
                     }
 
@@ -138,10 +155,10 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                             vectorField, getCollectionTableName(collectionName));
                         if (createVectorIndex != null) {
                             System.out.println(createVectorIndex);
-                            statement.execute(createVectorIndex);
+                            statement.addBatch(createVectorIndex);
                         }
                     }
-                    //statement.executeBatch();
+                    statement.executeBatch();
 
                     try (PreparedStatement insert = connection.prepareStatement(
                         insertCollectionQuery)) {
@@ -220,6 +237,10 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
 
     private void setUpsertStatementValues(PreparedStatement statement, Object record,
         List<VectorStoreRecordField> fields) {
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        String datePattern = "yyyy-MM-dd HH:mm:ss.SSSZ";
+        SimpleDateFormat df = new SimpleDateFormat(datePattern);
+        objectMapper.setDateFormat(df);
         JsonNode jsonNode = objectMapper.valueToTree(record);
 
         for (int i = 0; i < fields.size(); ++i) {
@@ -230,13 +251,13 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 if (field instanceof VectorStoreRecordVectorField) {
                     // Convert the vector field to a string
                     if (!field.getFieldType().equals(String.class)) {
-                        double[] values = valueNode.isNull()
+                        double[] values = (valueNode == null || valueNode.isNull())
                             ? null
                             : StreamSupport.stream((
                                 (ArrayNode)valueNode).spliterator(), false)
                                 .mapToDouble(d -> d.asDouble()).toArray();
                         statement.setObject(i + 1, values,
-                            OracleVectorStoreFieldHelper.getOracleTypeForField((VectorStoreRecordVectorField)field));
+                            OracleVectorStoreFieldHelper.getOracleTypeForVectorField((VectorStoreRecordVectorField)field));
                         System.out.println("Set values: " + values);
                         continue;
                     }
@@ -244,13 +265,41 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     // Convert List field to a string
                     if (field.getFieldType().equals(List.class)) {
                         statement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
-                        System.out.println("Set values: " + objectMapper.writeValueAsString(valueNode));
+                        System.out.println(
+                            "Set values: " + objectMapper.writeValueAsString(valueNode));
+                        continue;
+                    }
+                    if (OracleVectorStoreFieldHelper.isUUID(field)) {
+                        if (valueNode == null || valueNode.isNull()) {
+                            statement.setNull(i + 1, OracleTypes.RAW);
+                        } else {
+                            UUID uuid = UUID.fromString(valueNode.textValue());
+                            ByteBuffer bb = ByteBuffer.allocate(16);
+                            bb.putLong(uuid.getMostSignificantBits());
+                            bb.putLong(uuid.getLeastSignificantBits());
+                            statement.setBytes(i + 1, bb.array());
+                            System.out.println("Set values: " + objectMapper.convertValue(valueNode,
+                                field.getFieldType()));
+                        }
+                        continue;
+                    }
+                    if (field.getFieldType().equals(OffsetDateTime.class)) {
+                        if (valueNode == null || valueNode.isNull()) {
+                            statement.setNull(i + 1, OracleTypes.TIMESTAMPTZ);
+                        } else {
+                            OffsetDateTime offsetDateTime = OffsetDateTime.parse(
+                                valueNode.asText());
+                            ((OraclePreparedStatement) statement).setTIMESTAMPTZ(i + 1,
+                                TIMESTAMPTZ.of(offsetDateTime));
+                            System.out.println("Set values: " + objectMapper.convertValue(valueNode,
+                                field.getFieldType()));
+                        }
                         continue;
                     }
                 }
 
                 statement.setObject(i + 1,
-                    objectMapper.convertValue(valueNode, field.getFieldType()));
+                    objectMapper.convertValue(valueNode,field.getFieldType()));
                 System.out.println("Set values: " + objectMapper.convertValue(valueNode, field.getFieldType()));
             } catch (SQLException | JsonProcessingException e) {
                 throw new RuntimeException(e);
@@ -317,7 +366,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     defineDataColumnType(columnIndex++, oracleStatement, field.getFieldType());
                 else
                     oracleStatement.defineColumnType(columnIndex++,
-                        OracleVectorStoreFieldHelper.getOracleTypeForField((VectorStoreRecordVectorField) field),
+                        OracleVectorStoreFieldHelper.getOracleTypeForVectorField((VectorStoreRecordVectorField) field),
                         Integer.MAX_VALUE);
             }
             oracleStatement.setLobPrefetchSize(Integer.MAX_VALUE); // Workaround for Oracle JDBC bug 37030121
@@ -380,6 +429,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 statement.defineColumnType(columnIndex, OracleTypes.JSON, Integer.MAX_VALUE);
                 break;
             case OracleDataTypesMapping.UUID:
+                statement.defineColumnType(columnIndex, OracleTypes.RAW);
+                break;
             case OracleDataTypesMapping.BYTE_ARRAY:
                 statement.defineColumnType(columnIndex, OracleTypes.RAW);
             default:

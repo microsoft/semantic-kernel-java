@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
-import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
@@ -16,13 +14,12 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.provider.oson.OsonModule;
-import oracle.sql.json.OracleJsonArray;
-import oracle.sql.json.OracleJsonObject;
+import oracle.sql.TIMESTAMPTZ;
+import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.BiFunction;
 
 /**
@@ -175,21 +172,37 @@ public class OracleVectorStoreRecordMapper<Record>
                                     value = resultSet.getBoolean(field.getEffectiveStorageName());
                                     break;
                                 case OracleDataTypesMapping.OFFSET_DATE_TIME:
-                                    value = ((OracleResultSet)resultSet).getTIMESTAMPTZ(field.getEffectiveStorageName())
-                                        .offsetDateTimeValue();
+                                    TIMESTAMPTZ timestamptz = ((OracleResultSet)resultSet).getTIMESTAMPTZ(field.getEffectiveStorageName());
+                                    value = timestamptz != null ? timestamptz.offsetDateTimeValue() : null;
                                     break;
                                 case OracleDataTypesMapping.BYTE_ARRAY:
                                     value = resultSet.getBytes(field.getEffectiveStorageName());
                                     break;
-                                // fallthrough
                                 case OracleDataTypesMapping.UUID:
+                                    byte[] bytes = resultSet.getBytes(field.getEffectiveStorageName());
+                                    if (bytes != null) {
+                                        ByteBuffer bb = ByteBuffer.wrap(bytes);
+                                        long firstLong = bb.getLong();
+                                        long secondLong = bb.getLong();
+                                        value = new UUID(firstLong, secondLong);
+                                    } else {
+                                        value = null;
+                                    }
+                                    break;
                                 case OracleDataTypesMapping.JSON:
                                     value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
                                     break;
                                 default:
                                     value = resultSet.getString(field.getEffectiveStorageName());
                             }
+                            // Result set getter method sometimes returns a default value when NULL,
+                            // set value to null in that case.
+                            if (resultSet.wasNull()) {
+                                value = null;
+                            }
+
                             JsonNode genericNode = objectMapper.valueToTree(value);
+
                             objectNode.set(field.getEffectiveStorageName(), genericNode);
                         }
                         if (options != null && options.isIncludeVectors()) {
