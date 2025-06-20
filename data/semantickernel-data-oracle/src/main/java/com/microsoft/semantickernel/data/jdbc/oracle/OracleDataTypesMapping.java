@@ -14,7 +14,7 @@ public class OracleDataTypesMapping {
     public static final String LONG = "NUMBER(19)";
     public static final String FLOAT = "BINARY_FLOAT";
     public static final String DOUBLE = "BINARY_DOUBLE";
-    public static final String DECIMAL = "NUMBER(18,2)";
+    public static final String DECIMAL = "NUMBER";
     public static final String OFFSET_DATE_TIME = "TIMESTAMP(7) WITH TIME ZONE";
     public static final String UUID = "RAW(16)";
     public static final String JSON = "JSON";

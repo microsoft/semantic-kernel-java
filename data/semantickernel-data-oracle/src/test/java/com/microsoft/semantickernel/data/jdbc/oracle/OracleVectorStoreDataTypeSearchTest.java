@@ -4,11 +4,9 @@ import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
-import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,7 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OracleVectorStoreDataTypeSearchTest extends OracleCommonVectorStoreRecordCollectionTest {
-    private static final double MIN_NUMBER = 1.0E-130;
+    private static final double MIN_DOUBLE = 1.0E-130;
+    private static final double MIN_DECIMAL = -1.0E125;
     private static final BigDecimal BIG_NUMBER = BigDecimal.valueOf(9999999999999999.99);
 
 
@@ -119,6 +118,11 @@ public class OracleVectorStoreDataTypeSearchTest extends OracleCommonVectorStore
 
         assertEquals(1, results.getTotalCount());
         assertEquals(record.getDoubleValue(), results.getResults().get(0).getRecord().getDoubleValue());
+
+        System.out.println(record.getDecimalValue());
+        System.out.println(record.getDecimalValue().doubleValue());
+        System.out.println(results.getResults().get(0).getRecord().getDecimalValue());
+        System.out.println(results.getResults().get(0).getRecord().getDecimalValue().doubleValue());
 
         // decimal
         results = collection.searchAsync(
@@ -223,7 +227,7 @@ public class OracleVectorStoreDataTypeSearchTest extends OracleCommonVectorStore
             Arguments.of(
                 new ClassWithAllBoxedTypes(
                     "ID2", false, Byte.MIN_VALUE, Short.MIN_VALUE, Integer.MIN_VALUE, Long.MIN_VALUE,
-                    Float.MIN_VALUE, MIN_NUMBER, BigDecimal.valueOf(MIN_NUMBER),
+                    Float.MIN_VALUE, MIN_DOUBLE, BigDecimal.valueOf(MIN_DECIMAL),
                     OffsetDateTime.now(), UUID.randomUUID(), new byte[] {Byte.MIN_VALUE, -10, 0, 10, Byte.MAX_VALUE},
                     Arrays.asList(Float.MIN_VALUE, -10f, 0f, 10f, Float.MAX_VALUE),
                     new Float[] { 0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f }
@@ -265,7 +269,7 @@ public class OracleVectorStoreDataTypeSearchTest extends OracleCommonVectorStore
                 new ClassWithAllPrimitiveTypes(
                     "ID2", false, Byte.MIN_VALUE, Short.MIN_VALUE, Integer.MIN_VALUE,
                     Long.MIN_VALUE,
-                    Float.MIN_VALUE, MIN_NUMBER, BigDecimal.valueOf(MIN_NUMBER),
+                    Float.MIN_VALUE, MIN_DOUBLE, BigDecimal.valueOf(MIN_DECIMAL),
                     OffsetDateTime.now(), UUID.randomUUID(),
                     new byte[]{Byte.MIN_VALUE, -10, 0, 10, Byte.MAX_VALUE},
                     Arrays.asList(Float.MIN_VALUE, -10f, 0f, 10f, Float.MAX_VALUE),
