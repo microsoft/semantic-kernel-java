@@ -34,6 +34,7 @@ import oracle.sql.TIMESTAMPTZ;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -331,7 +332,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         List<Object> parameters = getFilterParameters(options.getVectorSearchFilter());
 
         String selectQuery = "SELECT "
-            + formatQuery("VECTOR_DISTANCE(%s, ?, %s) distance, ", vectorField.getEffectiveStorageName(), toOracleDistanceFunction(distanceFunction))
+            + (vector == null ? "0 as distance, " :
+                formatQuery("VECTOR_DISTANCE(%s, ?, %s) distance, ", vectorField.getEffectiveStorageName(), toOracleDistanceFunction(distanceFunction)))
             + getQueryColumnsFromFields(fields)
             + " FROM " + getCollectionTableName(collectionName)
             + (filter != null && !filter.isEmpty() ? " WHERE " + filter : "")
@@ -345,12 +347,16 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             PreparedStatement statement = connection.prepareStatement(selectQuery)) {
             // set parameters from filters
             int parameterIndex = 1;
-            System.out.println("Set vector parameter with index " + parameterIndex  +" to: " + objectMapper.writeValueAsString(vector));
-            statement.setString(parameterIndex++,
-                objectMapper.writeValueAsString(vector));
+            if (vector != null) {
+                System.out.println("Set vector parameter with index " + parameterIndex + " to: "
+                    + objectMapper.writeValueAsString(vector));
+                statement.setString(parameterIndex++,
+                    objectMapper.writeValueAsString(vector));
+            }
             for (Object parameter : parameters) {
-                System.out.println("Set parameter " + parameterIndex + " to: " + parameter);
-                statement.setObject(parameterIndex++, parameter);
+                if (parameter != null) {
+                    setSearchParameter(statement, parameterIndex++, parameter.getClass(), parameter);
+                }
             }
 
             // Calls to defineColumnType reduce the number of network requests. When Oracle JDBC knows that it is
@@ -389,6 +395,58 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         }
 
         return new VectorSearchResults<>(records);
+    }
+
+    private void setSearchParameter(PreparedStatement statement, int index, Class<?> type, Object value) {
+
+        try {
+            if (List.class.equals(type)) {
+                statement.setObject(index, objectMapper.writeValueAsString(value));
+                System.out.println(
+                    "Set values: " + objectMapper.writeValueAsString(value));
+                return;
+            }
+            if (UUID.class.equals(type)) {
+                if (value == null) {
+                    statement.setNull(index, OracleTypes.RAW);
+                } else {
+                    UUID uuid = (UUID)value;
+                    ByteBuffer bb = ByteBuffer.allocate(16);
+                    bb.putLong(uuid.getMostSignificantBits());
+                    bb.putLong(uuid.getLeastSignificantBits());
+                    statement.setBytes(index, bb.array());
+                    System.out.println("Set values: " + uuid);
+                }
+                return;
+            }
+            if (OffsetDateTime.class.equals(type)) {
+                if (value == null) {
+                    statement.setNull(index, OracleTypes.TIMESTAMPTZ);
+                } else {
+                    OffsetDateTime offsetDateTime = (OffsetDateTime) value;
+                    ((OraclePreparedStatement) statement).setTIMESTAMPTZ(index,
+                        TIMESTAMPTZ.of(offsetDateTime));
+                    System.out.println("Set values: " + offsetDateTime);
+                }
+                return;
+            }
+            if (BigDecimal.class.equals(type)) {
+                if (value == null) {
+                    statement.setNull(index, OracleTypes.DECIMAL);
+                } else {
+                    BigDecimal bigDecimal = (BigDecimal) value;
+                    ((OraclePreparedStatement) statement).setBigDecimal(index,
+                        bigDecimal);
+                    System.out.println("Set values: " + bigDecimal);
+                }
+                return;
+            }
+            System.out.println("Set parameter " + index + " to: " + value);
+            statement.setObject(index, value);
+
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
 
@@ -479,6 +537,19 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     + filterClause.getClass().getSimpleName() + "'.");
             }
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getEqualToFilter(EqualToFilterClause filterClause) {
+        String fieldName = JDBCVectorStoreQueryProvider
+            .validateSQLidentifier(filterClause.getFieldName());
+        Object value = filterClause.getValue();
+
+        if (value == null) {
+            return String.format("%s is NULL", fieldName);
+        } else {
+            return String.format("%s = ?", fieldName);
+        }
     }
 
     @Override

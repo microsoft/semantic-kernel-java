@@ -123,6 +123,7 @@ public class OracleVectorStoreDataTypeTest extends OracleCommonVectorStoreRecord
         collection.deleteCollectionAsync().block();
     }
 
+
     private static Stream<Arguments> supportedDataTypes() {
         return Stream.of(
             Arguments.of(
