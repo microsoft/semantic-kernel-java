@@ -4,11 +4,11 @@ package com.microsoft.semantickernel.samples.documentationexamples.data.vectorst
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
-import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
-import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 import java.util.List;
 
 public class Book {
+
+    public Book() {}
 
     public Book(String isbn, String title, String author, int pages,
         List<String> tags, String summary, List<Float> summaryEmbedding) {
@@ -21,27 +21,26 @@ public class Book {
         this.summaryEmbedding = summaryEmbedding;
     }
 
-
     @VectorStoreRecordKey
-    private final String isbn;
+    private String isbn;
 
     @VectorStoreRecordData(isFilterable = true)
-    private final String title;
+    private String title;
 
     @VectorStoreRecordData(isFilterable = true)
-    private final String author;
+    private String author;
 
     @VectorStoreRecordData
-    private final int pages;
+    private int pages;
 
     @VectorStoreRecordData(isFilterable = true)
-    private final List<String> tags;
+    private List<String> tags;
 
     @VectorStoreRecordData( isFilterable = true, isFullTextSearchable = true )
-    private final String summary;
+    private String summary;
 
-    @VectorStoreRecordVector(dimensions = 4, distanceFunction = DistanceFunction.COSINE_DISTANCE, indexKind = IndexKind.HNSW)
-    private final List<Float> summaryEmbedding;
+    @VectorStoreRecordVector(dimensions = 2)
+    private List<Float> summaryEmbedding;
 
     public String getIsbn() {
         return isbn;
@@ -69,5 +68,33 @@ public class Book {
 
     public List<Float> getSummaryEmbedding() {
         return summaryEmbedding;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setPages(int pages) {
+        this.pages = pages;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public void setSummaryEmbedding(List<Float> summaryEmbedding) {
+        this.summaryEmbedding = summaryEmbedding;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
     }
 }

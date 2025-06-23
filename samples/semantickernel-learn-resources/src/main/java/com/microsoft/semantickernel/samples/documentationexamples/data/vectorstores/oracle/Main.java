@@ -5,11 +5,14 @@ import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.jdbc.oracle.OracleVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import oracle.jdbc.datasource.impl.OracleDataSource;
+import reactor.core.publisher.Mono;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
@@ -45,23 +48,30 @@ public class Main {
         collection.upsertBatchAsync(books, null).block();
 
         // Retrieve the upserted record.
-        //var retrievedBook = collection.getAsync("1", null).block();
+        Book retrievedBook = collection.getAsync("2", null).block();
+
+        System.out.println(retrievedBook.getAuthor());
 
         // Generate a vector for your search text, using your chosen embedding generation implementation.
         // Just showing a placeholder method here for brevity.
-        // var searchVector = generateEmbeddingsAsync(
-        // "I'm looking for a Book where customer happiness is the priority.").block();
+        List<Float> searchVector = generateEmbeddingsAsync(
+            "I'm looking for a horror book.").block();
 
         // Do the search.
-        // var searchResult = collection.searchAsync(searchVector, VectorSearchOptions.builder()
-        // .withTop(1).build()).block();
+        VectorSearchResults<Book> searchResult = collection.searchAsync(
+            searchVector, VectorSearchOptions.builder().withTop(1).build()).block();
 
-        // Book record = searchResult.getResults().get(0).getRecord();
-        // System.out.printf("Found Book description: %s\n", record.getDescription());
+        retrievedBook = searchResult.getResults().get(0).getRecord();
+        System.out.println("Found Book: " + retrievedBook.getIsbn());
 
     }
 
     static List<Book> books = Arrays.asList(
-        new Book("1", "one", "sking", 0, null, "sum", null));
+        new Book("1", "one", "sking", 0, null, "horror", List.of(1f, 1f)),
+        new Book("2", "two", "squeen", 0, null, "non-fiction", List.of(-11f, -11f)));
+
+    private static Mono<List<Float>> generateEmbeddingsAsync(String text) {
+        return Mono.just(List.of(-0.9f, -0.9f));
+    }
 
 }
