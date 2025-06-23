@@ -34,10 +34,11 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
         @Nonnull String name,
         @Nullable String storageName,
         @Nonnull Class<?> fieldType,
+        Class<?> fieldSubType,
         int dimensions,
         @Nullable IndexKind indexKind,
         @Nullable DistanceFunction distanceFunction) {
-        super(name, storageName, fieldType);
+        super(name, storageName, fieldType, fieldSubType);
         this.dimensions = dimensions;
         this.indexKind = indexKind == null ? IndexKind.UNDEFINED : indexKind;
         this.distanceFunction = distanceFunction == null ? DistanceFunction.UNDEFINED
@@ -130,7 +131,8 @@ public class VectorStoreRecordVectorField extends VectorStoreRecordField {
                 throw new IllegalArgumentException("dimensions must be greater than 0");
             }
 
-            return new VectorStoreRecordVectorField(name, storageName, fieldType, dimensions,
+            return new VectorStoreRecordVectorField(name, storageName, fieldType, fieldSubType,
+                dimensions,
                 indexKind,
                 distanceFunction);
         }
