@@ -68,10 +68,10 @@ public class Main {
 
     static List<Book> books = Arrays.asList(
         new Book("1", "one", "sking", 0, null, "horror", List.of(1f, 1f)),
-        new Book("2", "two", "squeen", 0, null, "non-fiction", List.of(-11f, -11f)));
+        new Book("2", "two", "squeen", 0, null, "non-fiction", List.of(-1f, -1f)));
 
     private static Mono<List<Float>> generateEmbeddingsAsync(String text) {
-        return Mono.just(List.of(-0.9f, -0.9f));
+        return Mono.just(List.of(-0.1f, -0.1f));
     }
 
 }
