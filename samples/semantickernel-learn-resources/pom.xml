@@ -85,6 +85,12 @@
             <version>9.0.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-data-postgres</artifactId>
+            <version>1.4.4-RC2-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>
