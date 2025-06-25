@@ -51,6 +51,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -66,6 +67,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
 
     // This could be common to all query providers
     private final ObjectMapper objectMapper;
+
+    private final Map<Class<?>, String> annotatedTypeMapping;
 
     private static final Object dbCreationLock = new Object();
 
@@ -97,7 +100,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         @Nonnull String prefixForCollectionTables,
         int defaultVarcharSize,
         @Nonnull StringTypeMapping stringTypeMapping,
-        ObjectMapper objectMapper) {
+        ObjectMapper objectMapper,
+        Map<Class<?>, String> annotatedTypeMapping) {
         super(
             dataSource,
             collectionsTable,
@@ -108,6 +112,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         this.collectionsTable = collectionsTable;
         this.objectMapper = objectMapper;
         this.objectMapper.registerModule(new JavaTimeModule());
+        this.annotatedTypeMapping = annotatedTypeMapping;
     }
 
     @Override
@@ -569,6 +574,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             .withRecordClass(recordClass)
             .withVectorStoreRecordDefinition(vectorStoreRecordDefinition)
             .withSupportedDataTypesMapping(getSupportedDataTypes())
+            .withAnnotatedTypeMapping(annotatedTypeMapping)
             .build();
     }
 
@@ -585,6 +591,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         private ObjectMapper objectMapper = new ObjectMapper();
         private StringTypeMapping stringTypeMapping = StringTypeMapping.USE_VARCHAR;
         private int defaultVarcharSize = 2000;
+
+        private Map<Class<?>, String> annotatedTypeMapping = null;
 
 
         @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -619,6 +627,11 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             return this;
         }
 
+        public Builder withAnnotatedTypeMapping(Map<Class<?>, String> annotatedTypeMapping) {
+            this.annotatedTypeMapping = annotatedTypeMapping;
+            return this;
+        }
+
         /**
          * Sets the desired String type mapping.
          * @param stringTypeMapping the desired String type mapping. The default value is
@@ -644,7 +657,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         @Override
         public OracleVectorStoreQueryProvider build() {
             return new OracleVectorStoreQueryProvider(dataSource, collectionsTable,
-                prefixForCollectionTables, defaultVarcharSize, stringTypeMapping, objectMapper);
+                prefixForCollectionTables, defaultVarcharSize, stringTypeMapping, objectMapper,
+                annotatedTypeMapping);
         }
     }
 }

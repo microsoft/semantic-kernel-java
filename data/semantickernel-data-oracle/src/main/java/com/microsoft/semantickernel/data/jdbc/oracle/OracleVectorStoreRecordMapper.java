@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -69,6 +71,7 @@ public class OracleVectorStoreRecordMapper<Record>
         private VectorStoreRecordDefinition vectorStoreRecordDefinition;
         private Map<Class<?>, String> supportedDataTypesMapping;
         private ObjectMapper objectMapper = new ObjectMapper();
+        private Map<Class<?>, String> annotatedTypeMapping;
 
         /**
          * Sets the record class.
@@ -118,6 +121,11 @@ public class OracleVectorStoreRecordMapper<Record>
             return this;
         }
 
+        public Builder<Record> withAnnotatedTypeMapping(Map<Class<?>, String> annotatedTypeMapping) {
+            this.annotatedTypeMapping = annotatedTypeMapping;
+            return this;
+        }
+
         /**
          * Builds the {@link OracleVectorStoreRecordMapper}.
          *
@@ -141,6 +149,14 @@ public class OracleVectorStoreRecordMapper<Record>
                         // Read non vector fields
                         for (VectorStoreRecordField field : vectorStoreRecordDefinition.getNonVectorFields()) {
                             Class<?> fieldType = field.getFieldType();
+
+                            boolean isAnnotated = false;
+                            try {
+                                isAnnotated = recordClass.getDeclaredField(field.getName())
+                                    .isAnnotationPresent(JsonTypeInfo.class);
+                            } catch (NoSuchFieldException e) {
+                                // ignore exception, assume the field is not annotated
+                            }
 
                             Object value;
                             switch (supportedDataTypesMapping.get(fieldType)) {
@@ -204,6 +220,18 @@ public class OracleVectorStoreRecordMapper<Record>
                             JsonNode genericNode = objectMapper.valueToTree(value);
 
                             objectNode.set(field.getEffectiveStorageName(), genericNode);
+                            if (isAnnotated) {
+                                if (annotatedTypeMapping != null && annotatedTypeMapping.containsKey(field.getFieldType())) {
+                                    objectNode.set(field.getEffectiveStorageName() + "_type",
+                                        TextNode.valueOf(
+                                            annotatedTypeMapping.get(field.getFieldType())));
+                                } else {
+                                    objectNode.set(field.getEffectiveStorageName() + "_type",
+                                        TextNode.valueOf(
+                                            field.getFieldType().getName()));
+
+                                }
+                            }
                         }
                         if (options != null && options.isIncludeVectors()) {
                             for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {
