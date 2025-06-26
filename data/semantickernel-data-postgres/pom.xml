@@ -10,7 +10,6 @@
          <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-data-postgres</artifactId>
     <name>Semantic Kernel PostreSQL connector</name>
     <description>Provides a PostreSQL connector for the Semantic Kernel</description>

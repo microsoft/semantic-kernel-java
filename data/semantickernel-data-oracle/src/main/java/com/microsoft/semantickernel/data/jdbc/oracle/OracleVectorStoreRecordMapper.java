@@ -182,6 +182,7 @@ public class OracleVectorStoreRecordMapper<Record>
                                     value = resultSet.getBoolean(field.getEffectiveStorageName());
                                     break;
                                 case OracleDataTypesMapping.OFFSET_DATE_TIME:
+<<<<<<< add-oracle-store
                                     TIMESTAMPTZ timestamptz = ((OracleResultSet)resultSet).getTIMESTAMPTZ(field.getEffectiveStorageName());
                                     value = timestamptz != null ? timestamptz.offsetDateTimeValue() : null;
                                     break;
@@ -192,6 +193,16 @@ public class OracleVectorStoreRecordMapper<Record>
                                     String uuidValue = resultSet.getString(field.getEffectiveStorageName());
                                     value = uuidValue == null ? null : UUID.fromString(uuidValue);
                                     break;
+=======
+                                    value = ((OracleResultSet)resultSet).getTIMESTAMPTZ(field.getEffectiveStorageName())
+                                        .offsetDateTimeValue();
+                                    break;
+                                case OracleDataTypesMapping.BYTE_ARRAY:
+                                    value = resultSet.getBytes(field.getEffectiveStorageName());
+                                    break;
+                                // fallthrough
+                                case OracleDataTypesMapping.UUID:
+>>>>>>> main
                                 case OracleDataTypesMapping.JSON:
                                     value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
                                     break;

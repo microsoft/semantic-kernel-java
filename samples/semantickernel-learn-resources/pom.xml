@@ -41,7 +41,16 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-data-redis</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-data-oracle</artifactId>
+            <version>1.4.4-RC2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-data-postgres</artifactId>
+            <version>1.4.4-RC2-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>

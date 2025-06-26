@@ -803,3 +803,4 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         }
     }
 }
+
