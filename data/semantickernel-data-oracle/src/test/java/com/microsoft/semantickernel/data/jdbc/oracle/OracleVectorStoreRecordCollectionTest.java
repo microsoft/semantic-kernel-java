@@ -1,3 +1,9 @@
+/*
+ ** Semantic Kernel Oracle connector version 1.0.
+ **
+ ** Copyright (c) 2025 Oracle and/or its affiliates.
+ ** Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
+ */
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.fasterxml.jackson.annotation.JsonCreator;

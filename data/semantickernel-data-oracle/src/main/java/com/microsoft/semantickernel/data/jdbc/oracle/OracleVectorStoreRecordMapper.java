@@ -1,11 +1,14 @@
-// Copyright (c) Microsoft. All rights reserved.
+/*
+ ** Semantic Kernel Oracle connector version 1.0.
+ **
+ ** Copyright (c) 2025 Oracle and/or its affiliates.
+ ** Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
+ */
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.microsoft.semantickernel.builders.SemanticKernelBuilder;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordMapper;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
@@ -17,7 +20,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.provider.oson.OsonModule;
 import oracle.sql.TIMESTAMPTZ;
-import java.nio.ByteBuffer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -150,14 +152,6 @@ public class OracleVectorStoreRecordMapper<Record>
                         for (VectorStoreRecordField field : vectorStoreRecordDefinition.getNonVectorFields()) {
                             Class<?> fieldType = field.getFieldType();
 
-                            boolean isAnnotated = false;
-                            try {
-                                isAnnotated = recordClass.getDeclaredField(field.getName())
-                                    .isAnnotationPresent(JsonTypeInfo.class);
-                            } catch (NoSuchFieldException e) {
-                                // ignore exception, assume the field is not annotated
-                            }
-
                             Object value;
                             switch (supportedDataTypesMapping.get(fieldType)) {
                                 case OracleDataTypesMapping.STRING_CLOB:
@@ -195,15 +189,8 @@ public class OracleVectorStoreRecordMapper<Record>
                                     value = resultSet.getBytes(field.getEffectiveStorageName());
                                     break;
                                 case OracleDataTypesMapping.UUID:
-                                    byte[] bytes = resultSet.getBytes(field.getEffectiveStorageName());
-                                    if (bytes != null) {
-                                        ByteBuffer bb = ByteBuffer.wrap(bytes);
-                                        long firstLong = bb.getLong();
-                                        long secondLong = bb.getLong();
-                                        value = new UUID(firstLong, secondLong);
-                                    } else {
-                                        value = null;
-                                    }
+                                    String uuidValue = resultSet.getString(field.getEffectiveStorageName());
+                                    value = uuidValue == null ? null : UUID.fromString(uuidValue);
                                     break;
                                 case OracleDataTypesMapping.JSON:
                                     value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
@@ -220,18 +207,6 @@ public class OracleVectorStoreRecordMapper<Record>
                             JsonNode genericNode = objectMapper.valueToTree(value);
 
                             objectNode.set(field.getEffectiveStorageName(), genericNode);
-                            if (isAnnotated) {
-                                if (annotatedTypeMapping != null && annotatedTypeMapping.containsKey(field.getFieldType())) {
-                                    objectNode.set(field.getEffectiveStorageName() + "_type",
-                                        TextNode.valueOf(
-                                            annotatedTypeMapping.get(field.getFieldType())));
-                                } else {
-                                    objectNode.set(field.getEffectiveStorageName() + "_type",
-                                        TextNode.valueOf(
-                                            field.getFieldType().getName()));
-
-                                }
-                            }
                         }
                         if (options != null && options.isIncludeVectors()) {
                             for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {

@@ -1,41 +1,45 @@
+/*
+ ** Semantic Kernel Oracle connector version 1.0.
+ **
+ ** Copyright (c) 2025 Oracle and/or its affiliates.
+ ** Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
+ */
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordData;
-import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordKey;
-import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
-import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
-import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassWithAnnotatedTypes {
 
     private final String id;
 
+    @JsonProperty("value_type")
+    private final String valueType;
+
+    @JsonProperty("value_field")
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = As.EXTERNAL_PROPERTY , property = "value_type")
     @JsonSubTypes({
-        @JsonSubTypes.Type(value = String.class, name="java.lang.String"),
-        @JsonSubTypes.Type(value = Boolean.class, name="java.lang.Boolean"),
-        @JsonSubTypes.Type(value = Byte.class, name="java.lang.Byte"),
-        @JsonSubTypes.Type(value = Short.class, name="java.lang.Short"),
-        @JsonSubTypes.Type(value = Integer.class, name="java.lang.Integer"),
-        @JsonSubTypes.Type(value = Long.class, name="java.lang.Long"),
-        @JsonSubTypes.Type(value = Float.class, name="java.lang.Float"),
-        @JsonSubTypes.Type(value = Double.class, name="java.lang.Double"),
-        @JsonSubTypes.Type(value = BigDecimal.class, name="java.math.BigDecimal"),
-        @JsonSubTypes.Type(value = OffsetDateTime.class, name="java.time.OffsetDateTime"),
-        @JsonSubTypes.Type(value = UUID.class, name="java.util.UUID"),
+        @JsonSubTypes.Type(value = String.class, name="string"),
+        @JsonSubTypes.Type(value = Boolean.class, name="boolean"),
+        @JsonSubTypes.Type(value = Byte.class, name="byte"),
+        @JsonSubTypes.Type(value = Short.class, name="short"),
+        @JsonSubTypes.Type(value = Integer.class, name="integer"),
+        @JsonSubTypes.Type(value = Long.class, name="long"),
+        @JsonSubTypes.Type(value = Float.class, name="float"),
+        @JsonSubTypes.Type(value = Double.class, name="double"),
+        @JsonSubTypes.Type(value = BigDecimal.class, name="decimal"),
+        @JsonSubTypes.Type(value = OffsetDateTime.class, name="timestamp"),
+        @JsonSubTypes.Type(value = UUID.class, name="uuid"),
         @JsonSubTypes.Type(value = byte[].class, name="byte_array"),
-        @JsonSubTypes.Type(value = List.class, name="listOfStrings")
+        @JsonSubTypes.Type(value = List.class, name="json")
     })
     private Object value;
 
@@ -43,10 +47,11 @@ public class ClassWithAnnotatedTypes {
 
 
     public ClassWithAnnotatedTypes() {
-        this(null, null, null);
+        this(null, null, null, null);
     };
-    public ClassWithAnnotatedTypes(String id, Object value, Float[] vectorValue) {
+    public ClassWithAnnotatedTypes(String id, String valueType, Object value, Float[] vectorValue) {
         this.id = id;
+        this.valueType = valueType;
         this.value = value;
         this.vectorValue = vectorValue;
     }
@@ -54,6 +59,8 @@ public class ClassWithAnnotatedTypes {
     public String getId() {
         return id;
     }
+
+    public String getValueType() { return valueType; }
 
     public Object getValue() {
         return value;

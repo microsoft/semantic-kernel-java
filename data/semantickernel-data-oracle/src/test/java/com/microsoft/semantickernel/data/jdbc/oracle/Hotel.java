@@ -1,4 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
+
+// Should we change the copyright from the file we copied? Or should we
+// just change the test to use a class that we create?
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
