@@ -138,8 +138,13 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-data-postgres</artifactId>
-            <version>1.4.4-RC2-SNAPSHOT</version>
+            <artifactId>semantickernel-data-jdbc</artifactId>
+            <version>1.4.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-learn-resources</artifactId>
+            <version>1.4.4-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
