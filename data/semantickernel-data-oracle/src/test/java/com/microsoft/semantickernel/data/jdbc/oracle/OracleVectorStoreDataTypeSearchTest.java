@@ -1,12 +1,9 @@
-<<<<<<< add-oracle-store
 /*
  ** Semantic Kernel Oracle connector version 1.0.
  **
  ** Copyright (c) 2025 Oracle and/or its affiliates.
  ** Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
  */
-=======
->>>>>>> main
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
@@ -128,14 +125,6 @@ public class OracleVectorStoreDataTypeSearchTest extends OracleCommonVectorStore
         assertEquals(1, results.getTotalCount());
         assertEquals(record.getDoubleValue(), results.getResults().get(0).getRecord().getDoubleValue());
 
-<<<<<<< add-oracle-store
-=======
-        System.out.println(record.getDecimalValue());
-        System.out.println(record.getDecimalValue().doubleValue());
-        System.out.println(results.getResults().get(0).getRecord().getDecimalValue());
-        System.out.println(results.getResults().get(0).getRecord().getDecimalValue().doubleValue());
-
->>>>>>> main
         // decimal
         results = collection.searchAsync(
             null,
