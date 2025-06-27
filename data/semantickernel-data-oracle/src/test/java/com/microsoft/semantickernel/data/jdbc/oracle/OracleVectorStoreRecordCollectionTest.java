@@ -290,7 +290,7 @@ public class OracleVectorStoreRecordCollectionTest extends OracleCommonVectorSto
             .searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(1, results.size());
-        // The first hotel should be the most similar
+        // The second hotel contains the tag we are searching for
         assertEquals(hotels.get(1).getId(), results.get(0).getRecord().getId());
     }
 

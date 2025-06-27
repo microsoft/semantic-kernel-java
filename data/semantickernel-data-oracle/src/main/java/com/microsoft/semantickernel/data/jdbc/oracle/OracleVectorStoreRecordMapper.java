@@ -18,9 +18,7 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import oracle.jdbc.OracleResultSet;
 import oracle.jdbc.provider.oson.OsonModule;
-import oracle.sql.TIMESTAMPTZ;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -183,8 +181,7 @@ public class OracleVectorStoreRecordMapper<Record>
                                     value = resultSet.getBoolean(field.getEffectiveStorageName());
                                     break;
                                 case OracleDataTypesMapping.OFFSET_DATE_TIME:
-                                    TIMESTAMPTZ timestamptz = ((OracleResultSet)resultSet).getTIMESTAMPTZ(field.getEffectiveStorageName());
-                                    value = timestamptz != null ? timestamptz.offsetDateTimeValue() : null;
+                                    value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
                                     break;
                                 case OracleDataTypesMapping.BYTE_ARRAY:
                                     value = resultSet.getBytes(field.getEffectiveStorageName());

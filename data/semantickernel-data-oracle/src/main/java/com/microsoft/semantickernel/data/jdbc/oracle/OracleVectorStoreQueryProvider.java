@@ -6,7 +6,9 @@
  */
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,10 +35,13 @@ import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleStatement;
 import oracle.jdbc.OracleTypes;
 import oracle.sql.TIMESTAMPTZ;
+import oracle.jdbc.provider.oson.OsonFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.GuardedBy;
 import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,12 +53,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * JDBC Vector Store for the Oracle Database
@@ -329,42 +332,33 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 // Some field types require special treatment to convert the java type to the
                 // DB type
                 if (field instanceof VectorStoreRecordVectorField) {
-
-                    // Convert the vector field to a string
-                    if (field.getFieldType().equals(String.class)) {
-                        String json = (valueNode == null || valueNode.isNull())
-                            ? null
-                            : valueNode.asText();
-                        double[] values = (json == null)
-                            ? null
-                            : objectMapper.readValue(json, double[].class);
-
-                        int dim = ((VectorStoreRecordVectorField) field).getDimensions();
-                        if (values != null && values.length != dim) {
-                            throw new SKException("Vector dimension mismatch: expected " + dim);
-                        }
-
-                        upsertStatement.setObject(i + 1, values, OracleTypes.VECTOR_FLOAT32);
-                        continue;
-                    }
-
-                    // If the vector field is not set as a string convert to an array of doubles
+                    // If the vector field is not set as a string convert to an array of floats
                     // and set the value
                     if (!field.getFieldType().equals(String.class)) {
-                        double[] values = (valueNode == null || valueNode.isNull())
-                            ? null
-                            : StreamSupport.stream((
-                                (ArrayNode)valueNode).spliterator(), false)
-                                .mapToDouble(d -> d.asDouble()).toArray();
-
-                        upsertStatement.setObject(i + 1, values, OracleTypes.VECTOR_FLOAT32);
+                        if (valueNode != null && !valueNode.isNull() && valueNode.isArray()) {
+                            final float[] values = new float[valueNode.size()];
+                            for (int j = 0; j < ((ArrayNode)valueNode).size(); j++) {
+                                values[j] = ((ArrayNode)valueNode).get(j).floatValue();
+                            }
+                            upsertStatement.setObject(i + 1, values, OracleTypes.VECTOR_FLOAT32);
+                        } else {
+                            upsertStatement.setNull(i + 1, OracleTypes.VECTOR_FLOAT32);
+                        }
                         continue;
                     }
                 } else if (field instanceof VectorStoreRecordDataField) {
-                    // Lists are stored as JSON objects, write the list as a JSON string representation
-                    // of the list.
+                    // Lists are stored as JSON objects, write the list using the JDBC OSON
+                    // extensions.
                     if (field.getFieldType().equals(List.class)) {
-                        upsertStatement.setObject(i + 1, objectMapper.writeValueAsString(valueNode));
+                        JsonFactory osonFactory = new OsonFactory();
+                        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                            try (JsonGenerator osonGen = osonFactory.createGenerator(out)) {
+                                objectMapper.writeValue(osonGen, valueNode);
+                            }
+                            upsertStatement.setBytes(i + 1, out.toByteArray());
+                        } catch (IOException ioEx) {
+                            throw new SKException("Failed to convert list to JSON value", ioEx);
+                        }
                         continue;
                     }
                     // Convert UUID to string before setting the value.
@@ -372,14 +366,14 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                         upsertStatement.setObject(i + 1, valueNode.isNull() ? null : valueNode.asText());
                         continue;
                     }
-                    // Convert OffsetDateTime to TIMESTAMPTZ  before setting the value.
+                    // Convert value node (its representations depends on Jackson JSON features)
+                    // to OffsetDateTime before setting the value.
                     if (field.getFieldType().equals(OffsetDateTime.class)) {
                         if (valueNode == null || valueNode.isNull()) {
                             upsertStatement.setNull(i + 1, OracleTypes.TIMESTAMPTZ);
                         } else {
                             OffsetDateTime offsetDateTime = (OffsetDateTime) objectMapper.convertValue(valueNode, field.getFieldType());
-                            ((OraclePreparedStatement) upsertStatement).setTIMESTAMPTZ(i + 1,
-                                TIMESTAMPTZ.of(offsetDateTime));
+                            upsertStatement.setObject(i + 1, offsetDateTime);
                         }
                         continue;
                     }
@@ -388,8 +382,8 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 // For all other field type use setObject with the field value
                 upsertStatement.setObject(i + 1,
                     objectMapper.convertValue(valueNode,field.getFieldType()));
-            } catch (SQLException | JsonProcessingException e) {
-                throw new RuntimeException(e);
+            } catch (SQLException e) {
+                throw new SKException(e);
             }
         }
     }
