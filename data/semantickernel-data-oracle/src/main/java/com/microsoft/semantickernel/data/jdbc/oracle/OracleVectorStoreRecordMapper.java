@@ -6,6 +6,7 @@
  */
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -210,6 +211,17 @@ public class OracleVectorStoreRecordMapper<Record>
                         }
                         if (options != null && options.isIncludeVectors()) {
                             for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {
+
+                                // String vector
+                                if (field.getFieldType().equals(String.class)) {
+                                    float[] arr = resultSet.getObject(field.getEffectiveStorageName(), float[].class);
+                                    String str = (arr == null)
+                                        ? null
+                                        : objectMapper.writeValueAsString(arr);
+                                    objectNode.put(field.getEffectiveStorageName(), str);
+                                    continue;
+                                }
+
                                 Object value = resultSet.getObject(field.getEffectiveStorageName(), float[].class);
                                 JsonNode genericNode = objectMapper.valueToTree(value);
                                 objectNode.set(field.getEffectiveStorageName(), genericNode);
@@ -227,6 +239,8 @@ public class OracleVectorStoreRecordMapper<Record>
                         throw new SKException(
                             "Failure to serialize object, by default the JDBC connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
                             e);
+                    } catch (JsonProcessingException e) {
+                      throw new RuntimeException(e);
                     }
                 });
         }

@@ -45,6 +45,7 @@ import java.sql.Statement;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -328,6 +329,25 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 // Some field types require special treatment to convert the java type to the
                 // DB type
                 if (field instanceof VectorStoreRecordVectorField) {
+
+                    // Convert the vector field to a string
+                    if (field.getFieldType().equals(String.class)) {
+                        String json = (valueNode == null || valueNode.isNull())
+                            ? null
+                            : valueNode.asText();
+                        double[] values = (json == null)
+                            ? null
+                            : objectMapper.readValue(json, double[].class);
+
+                        int dim = ((VectorStoreRecordVectorField) field).getDimensions();
+                        if (values != null && values.length != dim) {
+                            throw new SKException("Vector dimension mismatch: expected " + dim);
+                        }
+
+                        upsertStatement.setObject(i + 1, values, OracleTypes.VECTOR_FLOAT32);
+                        continue;
+                    }
+
                     // If the vector field is not set as a string convert to an array of doubles
                     // and set the value
                     if (!field.getFieldType().equals(String.class)) {
@@ -336,6 +356,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                             : StreamSupport.stream((
                                 (ArrayNode)valueNode).spliterator(), false)
                                 .mapToDouble(d -> d.asDouble()).toArray();
+
                         upsertStatement.setObject(i + 1, values, OracleTypes.VECTOR_FLOAT32);
                         continue;
                     }
