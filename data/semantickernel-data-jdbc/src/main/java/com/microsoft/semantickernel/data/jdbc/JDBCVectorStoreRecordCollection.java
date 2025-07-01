@@ -195,7 +195,7 @@ public class JDBCVectorStoreRecordCollection<Record>
             Field keyField = data.getClass()
                 .getDeclaredField(recordDefinition.getKeyField().getName());
             keyField.setAccessible(true);
-            return (String) keyField.get(data);
+            return keyField.get(data).toString();
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new SKException("Failed to get key from record", e);
         }

@@ -1,9 +1,13 @@
+/*
+ ** Semantic Kernel Oracle connector version 1.0.
+ **
+ ** Copyright (c) 2025 Oracle and/or its affiliates.
+ ** Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl/
+ */
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollection;
-import com.microsoft.semantickernel.data.VolatileVectorStoreRecordCollectionOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
@@ -14,36 +18,24 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFuncti
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
-import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 
-import oracle.jdbc.OracleConnection;
-import oracle.jdbc.datasource.impl.OracleDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,65 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.testcontainers.oracle.OracleContainer;
-import org.testcontainers.utility.MountableFile;
-
-public class OracleVectorStoreRecordCollectionTest {
+public class OracleVectorStoreRecordCollectionTest extends OracleCommonVectorStoreRecordCollectionTest {
     private static VectorStoreRecordCollection<String, Hotel> recordCollection;
-
-    private static final String ORACLE_IMAGE_NAME = "gvenzl/oracle-free:23.7-slim-faststart";
-    private static final OracleDataSource DATA_SOURCE;
-    private static final OracleDataSource SYSDBA_DATA_SOURCE;
-
-    static {
-
-        try {
-            DATA_SOURCE = new oracle.jdbc.datasource.impl.OracleDataSource();
-            SYSDBA_DATA_SOURCE = new oracle.jdbc.datasource.impl.OracleDataSource();
-            String urlFromEnv = System.getenv("ORACLE_JDBC_URL");
-
-            if (urlFromEnv == null) {
-                // The Ryuk component is relied upon to stop this container.
-                OracleContainer oracleContainer = new OracleContainer(ORACLE_IMAGE_NAME)
-                    .withCopyFileToContainer(MountableFile.forClasspathResource("/initialize.sql"),
-                        "/container-entrypoint-initdb.d/initialize.sql")
-                    .withStartupTimeout(Duration.ofSeconds(600))
-                    .withConnectTimeoutSeconds(600)
-                    .withDatabaseName("pdb1")
-                    .withUsername("testuser")
-                    .withPassword("testpwd");
-                oracleContainer.start();
-
-                initDataSource(
-                    DATA_SOURCE,
-                    oracleContainer.getJdbcUrl(),
-                    oracleContainer.getUsername(),
-                    oracleContainer.getPassword());
-                initDataSource(SYSDBA_DATA_SOURCE, oracleContainer.getJdbcUrl(), "sys", oracleContainer.getPassword());
-            } else {
-                initDataSource(
-                    DATA_SOURCE,
-                    urlFromEnv,
-                    System.getenv("ORACLE_JDBC_USER"),
-                    System.getenv("ORACLE_JDBC_PASSWORD"));
-                initDataSource(
-                    SYSDBA_DATA_SOURCE,
-                    urlFromEnv,
-                    System.getenv("ORACLE_JDBC_USER"),
-                    System.getenv("ORACLE_JDBC_PASSWORD"));
-            }
-            SYSDBA_DATA_SOURCE.setConnectionProperty(OracleConnection.CONNECTION_PROPERTY_INTERNAL_LOGON, "SYSDBA");
-
-        } catch (SQLException sqlException) {
-            throw new AssertionError(sqlException);
-        }
-    }
-
-    static void initDataSource(OracleDataSource dataSource, String url, String username, String password) {
-        dataSource.setURL(url);
-        dataSource.setUser(username);
-        dataSource.setPassword(password);
-    }
 
     @BeforeAll
     public static void setup() throws Exception {
@@ -146,36 +81,36 @@ public class OracleVectorStoreRecordCollectionTest {
     }
 
     private static List<Hotel> getHotels() {
+        List<Float> vec1 = Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f);
+        float[] arrayf1 = new float[] { 0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f };
+        Float[] arrayF1 = new Float[] { 0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f };
+        List<Float> vec2 = Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f);
+        float[] arrayf2 = new float[] { -2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f };
+        Float[] arrayF2 = new Float[] { -2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f };
+        List<Float> vec3 = Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f);
+        float[] arrayf3 = new float[] { 4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f };
+        Float[] arrayF3 = new Float[] { 4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f };
+        List<Float> vec4 = Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f);
+        float[] arrayf4 = new float[] { 7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f };
+        Float[] arrayF4 = new Float[] { 7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f };
+        List<Float> vec5 =Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f);
+        float[] arrayf5 = new float[] { -3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f };
+        Float[] arrayF5 = new Float[] { -3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f };
         return Arrays.asList(
             new Hotel("id_1", "Hotel 1", 1, 1.49d, Arrays.asList("one", "two"), "Hotel 1 description",
-                Arrays.asList(0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f),
-                new float[] {0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f},
-                new float[] {0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f},
-                new Float[] {0.5f, 3.2f, 7.1f, -4.0f, 2.8f, 10.0f, -1.3f, 5.5f},
+                vec1, arrayf1, arrayf1, arrayF1,
                 4.0),
             new Hotel("id_2", "Hotel 2", 2, 1.44d, Arrays.asList("three", "four"), "Hotel 2 description with free-text search",
-                Arrays.asList(-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f),
-                new float[] {-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f},
-                new float[] {-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f},
-                new Float[] {-2.0f, 8.1f, 0.9f, 5.4f, -3.3f, 2.2f, 9.9f, -4.5f},
+                vec2, arrayf2, arrayf2, arrayF2,
                 4.0),
             new Hotel("id_3", "Hotel 3", 3, 1.53d, Arrays.asList("five", "six"), "Hotel 3 description",
-                Arrays.asList(4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f),
-                new float[] {4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f},
-                new float[] {4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f},
-                new Float[] {4.5f, -6.2f, 3.1f, 7.7f, -0.8f, 1.1f, -2.2f, 8.3f},
+                vec3, arrayf3, arrayf3, arrayF3,
                 5.0),
             new Hotel("id_4", "Hotel 4", 4, 1.35d, Arrays.asList("seven", "eight"), "Hotel 4 description",
-                Arrays.asList(7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f),
-                new float[] {7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f},
-                new float[] {7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f},
-                new Float[] {7.0f, 1.2f, -5.3f, 2.5f, 6.6f, -7.8f, 3.9f, -0.1f},
+                vec4, arrayf4, arrayf4, arrayF4,
                 4.0),
             new Hotel("id_5", "Hotel 5", 5, 1.89d, Arrays.asList("nine", "ten"),"Hotel 5 description",
-                Arrays.asList(-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f),
-                new float[] {-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f},
-                new float[] {-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f},
-                new Float[] {-3.5f, 4.4f, -1.2f, 9.9f, 5.7f, -6.1f, 7.8f, -2.0f},
+                vec5, arrayf5, arrayf5, arrayF5,
                 4.0));
     }
 
@@ -355,7 +290,7 @@ public class OracleVectorStoreRecordCollectionTest {
             .searchAsync(SEARCH_EMBEDDINGS, options).block().getResults();
         assertNotNull(results);
         assertEquals(1, results.size());
-        // The first hotel should be the most similar
+        // The second hotel contains the tag we are searching for
         assertEquals(hotels.get(1).getId(), results.get(0).getRecord().getId());
     }
 
@@ -422,86 +357,6 @@ public class OracleVectorStoreRecordCollectionTest {
         collection.deleteCollectionAsync().block();
     }
 
-    @ParameterizedTest
-    @MethodSource("supportedDataTypes")
-    void testDataTypes(String dataFieldName, Class<?> dataFieldType, Object dataFieldValue, Class<?> fieldSubType) {
-        VectorStoreRecordKeyField keyField = VectorStoreRecordKeyField.builder()
-            .withName("id")
-            .withStorageName("id")
-            .withFieldType(String.class)
-            .build();
-
-        VectorStoreRecordDataField dataField;
-        if (fieldSubType != null) {
-            dataField = VectorStoreRecordDataField.builder()
-                .withName("dummy")
-                .withStorageName("dummy")
-                .withFieldType(dataFieldType, fieldSubType)
-                .isFilterable(true)
-                .build();
-        } else {
-            dataField = VectorStoreRecordDataField.builder()
-                .withName("dummy")
-                .withStorageName("dummy")
-                .withFieldType(dataFieldType)
-                .isFilterable(true)
-                .build();
-        }
-
-        VectorStoreRecordVectorField dummyVector = VectorStoreRecordVectorField.builder()
-            .withName("vec")
-            .withStorageName("vec")
-            .withFieldType(List.class)
-            .withDimensions(2)
-            .withDistanceFunction(DistanceFunction.EUCLIDEAN_DISTANCE)
-            .withIndexKind(IndexKind.UNDEFINED)
-            .build();
-
-        VectorStoreRecordDefinition definition = VectorStoreRecordDefinition.fromFields(
-            Arrays.asList(keyField, dataField, dummyVector)
-        );
-
-        OracleVectorStoreQueryProvider queryProvider = OracleVectorStoreQueryProvider.builder()
-            .withDataSource(DATA_SOURCE)
-            .build();
-
-        JDBCVectorStore vectorStore = JDBCVectorStore.builder()
-            .withDataSource(DATA_SOURCE)
-            .withOptions(JDBCVectorStoreOptions.builder()
-                .withQueryProvider(queryProvider)
-                .build())
-            .build();
-
-        String collectionName = "test_datatype_" + dataFieldName;
-
-        VectorStoreRecordCollection<String, DummyRecordForDataTypes> collection =
-            vectorStore.getCollection(collectionName,
-                JDBCVectorStoreRecordCollectionOptions.<DummyRecordForDataTypes> builder()
-                    .withRecordClass(DummyRecordForDataTypes.class)
-                    .withRecordDefinition(definition).build());
-
-        collection.createCollectionAsync().block();
-
-        String key = "testid";
-
-        DummyRecordForDataTypes record =
-            new DummyRecordForDataTypes(key, dataFieldValue, Arrays.asList(1.0f, 2.0f));
-
-        collection.upsertAsync(record, null).block();
-
-        DummyRecordForDataTypes result = collection.getAsync(key, null).block();
-        assertNotNull(result);
-
-        if (dataFieldValue instanceof Number && result.getDummy() instanceof Number) {
-            assertEquals(((Number) dataFieldValue).doubleValue(), ((Number) result.getDummy()).doubleValue());
-        } else if (dataFieldValue instanceof byte[]) {
-            assertArrayEquals((byte[]) dataFieldValue, (byte[]) result.getDummy());
-        } else {
-            assertEquals(dataFieldValue, result.getDummy());
-        }
-
-        collection.deleteCollectionAsync().block();
-    }
 
     @Nested
     class HNSWIndexTests {
@@ -680,30 +535,11 @@ public class OracleVectorStoreRecordCollectionTest {
     // thus upsertAync/getAsync won't work
     private static Stream<Arguments> supportedKeyTypes() {
         return Stream.of(
-            Arguments.of("string", String.class, "asd123")/*,
+            Arguments.of("string", String.class, "asd123") /*,
             Arguments.of("integer", Integer.class, 321),
             Arguments.of("long", Long.class, 5L),
             Arguments.of("short", Short.class, (short) 3),
             Arguments.of("uuid", UUID.class, UUID.randomUUID())*/
-        );
-    }
-
-    private static Stream<Arguments> supportedDataTypes() {
-        return Stream.of(
-            Arguments.of("string", String.class, "asd123", null),
-            Arguments.of("boolean_true", Boolean.class, true, null),
-            Arguments.of("boolean_false", Boolean.class, false, null),
-            Arguments.of("byte", Byte.class, (byte) 127, null),
-            Arguments.of("short", Short.class, (short) 3, null),
-            Arguments.of("integer", Integer.class, 321, null),
-            Arguments.of("long", Long.class, 5L, null),
-            Arguments.of("float", Float.class, 3.14f, null),
-            Arguments.of("double", double.class, 3.14159265358d, null),
-            Arguments.of("decimal", BigDecimal.class, new BigDecimal("12345.67"), null),
-            //Arguments.of("timestamp", OffsetDateTime.class, OffsetDateTime.now(), null)
-            //Arguments.of("uuid", UUID.class, UUID.randomUUID(), null)
-            Arguments.of("byte_array", byte[].class, "abc".getBytes(StandardCharsets.UTF_8), null),
-            Arguments.of("json", List.class, Arrays.asList("a", "s", "d"), String.class)
         );
     }
 
