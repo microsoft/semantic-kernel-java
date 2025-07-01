@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.data.jdbc.oracle;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStore;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreOptions;
 import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreRecordCollectionOptions;
+import com.microsoft.semantickernel.data.jdbc.oracle.OracleVectorStoreQueryProvider.StringTypeMapping;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
 import com.microsoft.semantickernel.data.vectorstorage.VectorStoreRecordCollection;
@@ -11,17 +12,23 @@ import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRe
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDefinition;
+import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.options.GetRecordOptions;
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
+
 import org.junit.jupiter.api.Test;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
@@ -184,7 +191,7 @@ public class OracleVectorStoreExtendedTest extends OracleCommonVectorStoreRecord
     }
 
     @Test
-    void testNull() {
+    void testNullFieldValue() {
         VectorStoreRecordCollection<String, DummyRecord> collection =
             createCollection("test_null", DummyRecord.class, null);
 
@@ -210,7 +217,59 @@ public class OracleVectorStoreExtendedTest extends OracleCommonVectorStoreRecord
 
     @Test
     void testSkipAndTop() {
+        VectorStoreRecordCollection<String, DummyRecord> collection =
+            createCollection(
+                "test_skip_and_top",
+                DummyRecord.class,
+                null);
 
+        List<DummyRecord> l1 = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            l1.add(new DummyRecord("id" + i, i, (double) i, floatVec(i)));
+        }
+        collection.upsertBatchAsync(l1, null).block();
+
+        VectorSearchResults<DummyRecord> results = collection.searchAsync(
+            Collections.nCopies(8,0f),
+            VectorSearchOptions.builder()
+                .withIncludeVectors(true)
+                .withSkip(5)
+                .withTop(3)
+                .build()
+        ).block();
+
+        assertEquals(3, results.getResults().size());
+        List<String> ids = results.getResults().stream().map(r -> r.getRecord().getId()).collect(
+            Collectors.toList());
+        assertEquals(Arrays.asList("id6","id7","id8"), ids);
+
+        collection.deleteCollectionAsync().block();
+    }
+
+    // corner case for OracleVectorStoreRecordMapper
+    @Test
+    void testMapRecordToStorageModel_throws() {
+        VectorStoreRecordKeyField keyField = VectorStoreRecordKeyField.builder()
+            .withName("id")
+            .withStorageName("id")
+            .withFieldType(String.class)
+            .build();
+
+        VectorStoreRecordDefinition definition =
+            VectorStoreRecordDefinition.fromFields(
+                Arrays.asList(keyField)
+            );
+
+        OracleVectorStoreRecordMapper<DummyRecord> mapper =
+            OracleVectorStoreRecordMapper.<DummyRecord> builder()
+                .withRecordClass(DummyRecord.class)
+                .withVectorStoreRecordDefinition(definition)
+                .build();
+
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class,
+            () -> mapper.mapRecordToStorageModel(new DummyRecord()));
+        assertEquals("Not implemented", ex.getMessage());
     }
 
     private <T> VectorStoreRecordCollection<String, T> createCollection(
