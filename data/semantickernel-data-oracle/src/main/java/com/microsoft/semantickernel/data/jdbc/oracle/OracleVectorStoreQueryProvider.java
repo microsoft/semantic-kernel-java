@@ -450,8 +450,11 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             int parameterIndex = 1;
             // if a vector was provided for similarity search set the value of the vector
             if (vector != null) {
-                statement.setString(parameterIndex++,
-                    objectMapper.writeValueAsString(vector));
+                float[] arrayVector = new float[vector.size()];
+                for (int i = 0; i < vector.size(); i++){
+                    arrayVector[i] = vector.get(i).floatValue();
+                }
+                statement.setObject(parameterIndex++, arrayVector, OracleTypes.VECTOR_FLOAT32);
             }
             // set all parameters.
             for (Object parameter : parameters) {
@@ -492,7 +495,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     records.add(new VectorSearchResult<>(mapper.mapStorageModelToRecord(rs, getRecordOptions), score));
                 }
             }
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (SQLException e) {
             throw  new SKException("Search failed", e);
         }
 
