@@ -7,7 +7,6 @@
 package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -16,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
 import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
-import com.microsoft.semantickernel.data.jdbc.*;
+import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
@@ -31,32 +30,30 @@ import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptio
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import oracle.jdbc.OraclePreparedStatement;
-import oracle.jdbc.OracleStatement;
-import oracle.jdbc.OracleTypes;
-import oracle.sql.TIMESTAMPTZ;
-import oracle.jdbc.provider.oson.OsonFactory;
-
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.GuardedBy;
-import javax.sql.DataSource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.GuardedBy;
+import javax.sql.DataSource;
+import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleStatement;
+import oracle.jdbc.OracleTypes;
+import oracle.jdbc.provider.oson.OsonFactory;
+import oracle.sql.TIMESTAMPTZ;
 
 /**
  * JDBC Vector Store for the Oracle Database

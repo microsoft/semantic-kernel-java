@@ -8,10 +8,8 @@ package com.microsoft.semantickernel.data.jdbc.oracle;
 
 import com.microsoft.semantickernel.data.jdbc.oracle.OracleVectorStoreQueryProvider.StringTypeMapping;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
-import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
-import oracle.jdbc.OracleTypes;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collection;
