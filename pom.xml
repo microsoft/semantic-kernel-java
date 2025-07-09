@@ -71,7 +71,6 @@
         <module>semantickernel-bom</module>
         <module>semantickernel-api</module>
         <module>semantickernel-experimental</module>
-        <module>samples</module>
         <module>aiservices/openai</module>
         <module>aiservices/google</module>
         <module>aiservices/huggingface</module>
