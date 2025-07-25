@@ -161,104 +161,109 @@ public class OracleVectorStoreRecordMapper<Record>
 
             return new OracleVectorStoreRecordMapper<>(
                 (resultSet, options) -> {
-                    try {
-                        objectMapper.registerModule(new OsonModule());
-                        // Create an ObjectNode to hold the values
-                        ObjectNode objectNode = objectMapper.createObjectNode();
-
-                        // Read non vector fields
-                        for (VectorStoreRecordField field : vectorStoreRecordDefinition.getNonVectorFields()) {
-                            Class<?> fieldType = field.getFieldType();
-
-                            Object value;
-                            switch (supportedDataTypesMapping.get(fieldType)) {
-                                case OracleDataTypesMapping.STRING_CLOB:
-                                    value = resultSet.getString(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.BYTE:
-                                    value = resultSet.getByte(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.SHORT:
-                                    value = resultSet.getShort(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.INTEGER:
-                                    value = resultSet.getInt(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.LONG:
-                                    value = resultSet.getLong(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.FLOAT:
-                                    value = resultSet.getFloat(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.DOUBLE:
-                                    value = resultSet.getDouble(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.DECIMAL:
-                                    value = resultSet.getBigDecimal(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.BOOLEAN:
-                                    value = resultSet.getBoolean(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.OFFSET_DATE_TIME:
-                                    value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
-                                    break;
-                                case OracleDataTypesMapping.BYTE_ARRAY:
-                                    value = resultSet.getBytes(field.getEffectiveStorageName());
-                                    break;
-                                case OracleDataTypesMapping.UUID:
-                                    String uuidValue = resultSet.getString(field.getEffectiveStorageName());
-                                    value = uuidValue == null ? null : UUID.fromString(uuidValue);
-                                    break;
-                                case OracleDataTypesMapping.JSON:
-                                    value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
-                                    break;
-                                default:
-                                    value = resultSet.getString(field.getEffectiveStorageName());
-                            }
-                            // Result set getter method sometimes returns a default value when NULL,
-                            // set value to null in that case.
-                            if (resultSet.wasNull()) {
-                                value = null;
-                            }
-
-                            JsonNode genericNode = objectMapper.valueToTree(value);
-
-                            objectNode.set(field.getEffectiveStorageName(), genericNode);
-                        }
-                        if (options != null && options.isIncludeVectors()) {
-                            for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {
-
-                                // String vector
-                                if (field.getFieldType().equals(String.class)) {
-                                    float[] arr = resultSet.getObject(field.getEffectiveStorageName(), float[].class);
-                                    String str = (arr == null)
-                                        ? null
-                                        : objectMapper.writeValueAsString(arr);
-                                    objectNode.put(field.getEffectiveStorageName(), str);
-                                    continue;
-                                }
-
-                                Object value = resultSet.getObject(field.getEffectiveStorageName(), float[].class);
-                                JsonNode genericNode = objectMapper.valueToTree(value);
-                                objectNode.set(field.getEffectiveStorageName(), genericNode);
-                            }
-                        } else {
-                            for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {
-                                JsonNode genericNode = objectMapper.valueToTree(null);
-                                objectNode.set(field.getEffectiveStorageName(), genericNode);
-                            }
-                        }
-
-                        // Deserialize the object node to the record class
-                        return objectMapper.convertValue(objectNode, recordClass);
-                    } catch (SQLException e) {
-                        throw new SKException(
-                            "Failure to serialize object, by default the JDBC connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
-                            e);
-                    } catch (JsonProcessingException e) {
-                      throw new RuntimeException(e);
-                    }
+                    return MapResultSetToRecord(resultSet, options);
                 });
         }
+
+        private Record MapResultSetToRecord(ResultSet resultSet, GetRecordOptions options) {
+            try {
+                objectMapper.registerModule(new OsonModule());
+                // Create an ObjectNode to hold the values
+                ObjectNode objectNode = objectMapper.createObjectNode();
+
+                // Read non vector fields
+                for (VectorStoreRecordField field : vectorStoreRecordDefinition.getNonVectorFields()) {
+                    Class<?> fieldType = field.getFieldType();
+
+                    Object value;
+                    switch (supportedDataTypesMapping.get(fieldType)) {
+                        case OracleDataTypesMapping.STRING_CLOB:
+                            value = resultSet.getString(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.BYTE:
+                            value = resultSet.getByte(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.SHORT:
+                            value = resultSet.getShort(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.INTEGER:
+                            value = resultSet.getInt(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.LONG:
+                            value = resultSet.getLong(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.FLOAT:
+                            value = resultSet.getFloat(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.DOUBLE:
+                            value = resultSet.getDouble(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.DECIMAL:
+                            value = resultSet.getBigDecimal(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.BOOLEAN:
+                            value = resultSet.getBoolean(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.OFFSET_DATE_TIME:
+                            value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
+                            break;
+                        case OracleDataTypesMapping.BYTE_ARRAY:
+                            value = resultSet.getBytes(field.getEffectiveStorageName());
+                            break;
+                        case OracleDataTypesMapping.UUID:
+                            String uuidValue = resultSet.getString(field.getEffectiveStorageName());
+                            value = uuidValue == null ? null : UUID.fromString(uuidValue);
+                            break;
+                        case OracleDataTypesMapping.JSON:
+                            value = resultSet.getObject(field.getEffectiveStorageName(), fieldType);
+                            break;
+                        default:
+                            value = resultSet.getString(field.getEffectiveStorageName());
+                    }
+                    // Result set getter method sometimes returns a default value when NULL,
+                    // set value to null in that case.
+                    if (resultSet.wasNull()) {
+                        value = null;
+                    }
+
+                    JsonNode genericNode = objectMapper.valueToTree(value);
+
+                    objectNode.set(field.getEffectiveStorageName(), genericNode);
+                }
+                if (options != null && options.isIncludeVectors()) {
+                    for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {
+
+                        // String vector
+                        if (field.getFieldType().equals(String.class)) {
+                            float[] arr = resultSet.getObject(field.getEffectiveStorageName(), float[].class);
+                            String str = (arr == null)
+                                ? null
+                                : objectMapper.writeValueAsString(arr);
+                            objectNode.put(field.getEffectiveStorageName(), str);
+                            continue;
+                        }
+
+                        Object value = resultSet.getObject(field.getEffectiveStorageName(), float[].class);
+                        JsonNode genericNode = objectMapper.valueToTree(value);
+                        objectNode.set(field.getEffectiveStorageName(), genericNode);
+                    }
+                } else {
+                    for (VectorStoreRecordVectorField field : vectorStoreRecordDefinition.getVectorFields()) {
+                        JsonNode genericNode = objectMapper.valueToTree(null);
+                        objectNode.set(field.getEffectiveStorageName(), genericNode);
+                    }
+                }
+
+                // Deserialize the object node to the record class
+                return objectMapper.convertValue(objectNode, recordClass);
+            } catch (SQLException e) {
+                throw new SKException(
+                    "Failure to serialize object, by default the JDBC connector uses Jackson, ensure your model object can be serialized by Jackson, i.e the class is visible, has getters, constructor, annotations etc.",
+                    e);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
+
 }

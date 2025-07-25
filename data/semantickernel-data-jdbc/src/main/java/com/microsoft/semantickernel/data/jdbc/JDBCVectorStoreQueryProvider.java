@@ -106,7 +106,7 @@ public class JDBCVectorStoreQueryProvider
         @SuppressFBWarnings("EI_EXPOSE_REP2") @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,
         @Nonnull String prefixForCollectionTables,
-        @Nonnull HashMap<Class<?>, String> supportedKeyTypes,
+        @Nonnull Map<Class<?>, String> supportedKeyTypes,
         @Nonnull Map<Class<?>, String> supportedDataTypes,
         @Nonnull Map<Class<?>, String> supportedVectorTypes) {
         this.dataSource = dataSource;
