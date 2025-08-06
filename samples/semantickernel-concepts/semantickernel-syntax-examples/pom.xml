@@ -144,7 +144,7 @@
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-learn-resources</artifactId>
-            <version>1.4.4-SNAPSHOT</version>
+            <version>1.4.4-RC2-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

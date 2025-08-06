@@ -426,16 +426,20 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         VectorSearchOptions options, VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
 
+
+        if (vector != null && recordDefinition.getVectorFields().isEmpty()) {
+            throw new SKException("Record definition must contain at least one vector field"
+                + " to perform a vector search");
+        }
+
         // Gets the search vector field and its distance function. If not vector field was provided,
         // use the first one
-        VectorStoreRecordVectorField vectorField = options.getVectorFieldName() == null
-            ? recordDefinition.getVectorFields().get(0)
-            : (VectorStoreRecordVectorField) recordDefinition
-                .getField(options.getVectorFieldName());
-        DistanceFunction distanceFunction = vectorField == null ? null : vectorField.getDistanceFunction();
-        if (options.getVectorFieldName() != null && vectorField == null) {
-            throw new SKException("");
+        VectorStoreRecordVectorField vectorField = null;
+        if (vector != null) {
+            vectorField = getVectorFieldByName(recordDefinition, options.getVectorFieldName());
         }
+
+
 
         // get list of fields that should be returned by the query
         List<VectorStoreRecordField> fields = (options.isIncludeVectors())
@@ -449,7 +453,9 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         // generate SQL statement
         String selectQuery = "SELECT "
             + (vector == null ? "0 as distance, " :
-                formatQuery("VECTOR_DISTANCE(%s, ?, %s) distance, ", vectorField.getEffectiveStorageName(), toOracleDistanceFunction(distanceFunction)))
+                formatQuery("VECTOR_DISTANCE(%s, ?, %s) distance, ",
+                    OracleVectorStoreFieldHelper.validateObjectNaming(vectorField.getEffectiveStorageName()),
+                    toOracleDistanceFunction(vectorField.getDistanceFunction())))
             + getQueryColumnsFromFields(fields)
             + " FROM " + getCollectionTableName(collectionName)
             + (filter != null && !filter.isEmpty() ? " WHERE " + filter : "")
@@ -504,7 +510,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                 while (rs.next()) {
                     // Cosine distance function. 1 - cosine similarity.
                     double score = Math.abs(rs.getDouble("distance"));
-                    if (distanceFunction == DistanceFunction.COSINE_SIMILARITY) {
+                    if (vector != null && vectorField.getDistanceFunction() == DistanceFunction.COSINE_SIMILARITY) {
                         score = 1d - score;
                     }
                     // Use the mapper to convert to result set to records
@@ -516,6 +522,27 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
         }
 
         return new VectorSearchResults<>(records);
+    }
+
+    private VectorStoreRecordVectorField getVectorFieldByName(
+        VectorStoreRecordDefinition recordDefinition,
+        String name) {
+        VectorStoreRecordField vectorField;
+        if (name != null) {
+            vectorField = recordDefinition.getField(name);
+            if (vectorField == null) {
+                throw new SKException("Vector field not found in record definition");
+            }
+            if (!(vectorField instanceof VectorStoreRecordVectorField)) {
+                throw new SKException("Invalid type");
+            }
+        } else {
+            if (recordDefinition.getVectorFields().isEmpty()) {
+                throw new SKException("Record definition should contain at least one vector field");
+            }
+            vectorField = recordDefinition.getVectorFields().get(0);
+        }
+        return (VectorStoreRecordVectorField)vectorField;
     }
 
     /**

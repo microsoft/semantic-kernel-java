@@ -29,9 +29,11 @@ import com.microsoft.semantickernel.data.jdbc.oracle.OracleVectorStoreQueryProvi
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordDataField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordKeyField;
 import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRecordVectorField;
+import com.microsoft.semantickernel.exceptions.SKException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,10 @@ import java.util.stream.Collectors;
  */
 class OracleVectorStoreFieldHelper {
 
+    /**
+     * Object naming regular expression
+     */
+    private static final String OBJECT_NAMING_REGEXP = "[a-zA-Z_][a-zA-Z0-9_]{1,128}";
     /**
      * The logger
      */
@@ -109,8 +115,9 @@ class OracleVectorStoreFieldHelper {
      *
      * @return the mapping between the supported Java key types and the Oracle database type.
      */
-    public static HashMap<Class<?>, String> getSupportedKeyTypes() {
-        return supportedKeyTypes;
+    static Map<Class<?>, String> getSupportedKeyTypes() {
+
+        return Collections.unmodifiableMap(supportedKeyTypes);
     }
 
     /**
@@ -118,14 +125,14 @@ class OracleVectorStoreFieldHelper {
      *
      * @return the mapping between the supported Java data types and the Oracle database type.
      */
-    public static Map<Class<?>, String> getSupportedDataTypes(
+    static Map<Class<?>, String> getSupportedDataTypes(
         StringTypeMapping stringTypeMapping, int defaultVarCharLength) {
         String stringType = stringTypeMapping.equals(StringTypeMapping.USE_VARCHAR)
             ? String.format(OracleDataTypesMapping.STRING_VARCHAR, defaultVarCharLength)
             : OracleDataTypesMapping.STRING_CLOB;
         supportedDataTypes.put(String.class, stringType);
         LOGGER.finest("Mapping String columns to " + stringType);
-        return supportedDataTypes;
+        return Collections.unmodifiableMap(supportedDataTypes);
     }
 
     /**
@@ -133,8 +140,9 @@ class OracleVectorStoreFieldHelper {
      *
      * @return the mapping between the supported Java data types and the Oracle database type.
      */
-    public static Map<Class<?>, String> getSupportedVectorTypes() {
-        return supportedVectorTypes;
+    static Map<Class<?>, String> getSupportedVectorTypes() {
+
+        return Collections.unmodifiableMap(supportedVectorTypes);
     }
 
     /**
@@ -143,20 +151,23 @@ class OracleVectorStoreFieldHelper {
      * @return the CREATE VECTOR INDEX statement to create the index according to the vector
      *         field definition.
      */
-    public static String getCreateVectorIndexStatement(VectorStoreRecordVectorField field, String collectionTableName) {
+    static String getCreateVectorIndexStatement(VectorStoreRecordVectorField field, String collectionTableName) {
         switch (field.getIndexKind()) {
             case IVFFLAT:
                 return "CREATE VECTOR INDEX IF NOT EXISTS "
-                    + getIndexName(field.getEffectiveStorageName())
+                    + validateObjectNaming(getIndexName(field.getEffectiveStorageName()))
                     + " ON "
-                    + collectionTableName + "( " + field.getEffectiveStorageName() + " ) "
+                    + validateObjectNaming(collectionTableName)
+                    + "( " + validateObjectNaming(field.getEffectiveStorageName()) + " ) "
                     + " ORGANIZATION NEIGHBOR PARTITIONS "
                     + " WITH DISTANCE COSINE "
                     + "PARAMETERS ( TYPE IVF )";
             case HNSW:
-                return "CREATE VECTOR INDEX IF NOT EXISTS " + getIndexName(field.getEffectiveStorageName())
+                return "CREATE VECTOR INDEX IF NOT EXISTS "
+                    + validateObjectNaming(getIndexName(field.getEffectiveStorageName()))
                     + " ON "
-                    + collectionTableName + "( " + field.getEffectiveStorageName() + " ) "
+                    + validateObjectNaming(collectionTableName)
+                    + "( " + validateObjectNaming(field.getEffectiveStorageName()) + " ) "
                     + "ORGANIZATION INMEMORY GRAPH "
                     + "WITH DISTANCE COSINE "
                     + "PARAMETERS (TYPE HNSW)";
@@ -173,20 +184,20 @@ class OracleVectorStoreFieldHelper {
      *
      * @return the CREATE INDEX statement to create the index according to the field definition.
      */
-    public static String createIndexForDataField(String collectionTableName, VectorStoreRecordDataField dataField, Map<Class<?>, String> supportedDataTypes) {
+    static String createIndexForDataField(String collectionTableName, VectorStoreRecordDataField dataField, Map<Class<?>, String> supportedDataTypes) {
         if (supportedDataTypes.get(dataField.getFieldType()) == "JSON") {
             String dataFieldIndex = "CREATE MULTIVALUE INDEX IF NOT EXISTS %s ON %s t (t.%s.%s)";
             return String.format(dataFieldIndex,
-                collectionTableName + "_" + dataField.getEffectiveStorageName(),
-                collectionTableName,
-                dataField.getEffectiveStorageName(),
+                validateObjectNaming(collectionTableName + "_" + dataField.getEffectiveStorageName()),
+                validateObjectNaming(collectionTableName),
+                validateObjectNaming(dataField.getEffectiveStorageName()),
                 getFunctionForType(supportedDataTypes.get(dataField.getFieldSubType())));
         }  else {
             String dataFieldIndex = "CREATE INDEX IF NOT EXISTS %s ON %s (%s ASC)";
             return String.format(dataFieldIndex,
-                collectionTableName + "_" + dataField.getEffectiveStorageName(),
-                collectionTableName,
-                dataField.getEffectiveStorageName()
+                validateObjectNaming(collectionTableName + "_" + dataField.getEffectiveStorageName()),
+                validateObjectNaming(collectionTableName),
+                validateObjectNaming(dataField.getEffectiveStorageName())
             );
         }
     }
@@ -196,9 +207,9 @@ class OracleVectorStoreFieldHelper {
      * @param fields list of vector record fields.
      * @return comma separated list of columns and types for CREATE TABLE statement.
      */
-    public static String getVectorColumnNamesAndTypes(List<VectorStoreRecordVectorField> fields) {
+    static String getVectorColumnNamesAndTypes(List<VectorStoreRecordVectorField> fields) {
         List<String> columns = fields.stream()
-            .map(field -> field.getEffectiveStorageName() + " " +
+            .map(field -> validateObjectNaming(field.getEffectiveStorageName()) + " " +
                 OracleVectorStoreFieldHelper.getTypeForVectorField(field)
             ).collect(Collectors.toList());
 
@@ -210,8 +221,8 @@ class OracleVectorStoreFieldHelper {
      * @param field the key field.
      * @return column name and type of the key field for CREATE TABLE statement.
      */
-    public static String getKeyColumnNameAndType(VectorStoreRecordKeyField field) {
-        return field.getEffectiveStorageName() + " " + supportedKeyTypes.get(field.getFieldType());
+    static String getKeyColumnNameAndType(VectorStoreRecordKeyField field) {
+        return validateObjectNaming(field.getEffectiveStorageName()) + " " + supportedKeyTypes.get(field.getFieldType());
     }
 
 
@@ -220,7 +231,7 @@ class OracleVectorStoreFieldHelper {
      * @param effectiveStorageName the field name.
      * @return the index name.
      */
-    private static String getIndexName(String effectiveStorageName) {
+    static String getIndexName(String effectiveStorageName) {
         return effectiveStorageName + VECTOR_INDEX_SUFFIX;
     }
 
@@ -259,6 +270,21 @@ class OracleVectorStoreFieldHelper {
             default:
                 return "string()";
         }
+    }
+
+
+    /**
+     * Validates an SQL identifier.
+     *
+     * @param identifier the identifier
+     * @return the identifier if it is valid
+     * @throws SKException if the identifier is invalid
+     */
+    static String validateObjectNaming(String identifier) {
+        if (identifier.matches(OBJECT_NAMING_REGEXP)) {
+            return identifier;
+        }
+        throw new SKException("Invalid SQL identifier: " + identifier);
     }
 
 }
