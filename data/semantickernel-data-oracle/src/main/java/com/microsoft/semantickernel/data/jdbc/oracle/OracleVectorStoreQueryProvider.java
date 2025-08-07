@@ -494,7 +494,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             int columnIndex = 1;
             // define distance column as double
             defineDataColumnType(columnIndex++, oracleStatement, Double.class);
-            // define columns for returned fiels
+            // define columns for returned fields
             for (VectorStoreRecordField field : fields) {
                 if (!(field instanceof VectorStoreRecordVectorField))
                     defineDataColumnType(columnIndex++, oracleStatement, field.getFieldType());
@@ -609,7 +609,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
      * @throws SQLException if an error occurs while defining the column type
      */
     private void defineDataColumnType(int columnIndex, OracleStatement statement, Class<?> fieldType) throws SQLException {
-        // swich between supported classes and define the column type on the statement
+        // switch between supported classes and define the column type on the statement
         switch (supportedDataTypes.get(fieldType)) {
             case OracleDataTypesMapping.STRING_CLOB:
                 statement.defineColumnType(columnIndex, OracleTypes.CLOB, Integer.MAX_VALUE);
