@@ -59,51 +59,48 @@ class OracleVectorStoreFieldHelper {
     /**
      * Maps supported key java classes to Oracle database types
      */
-    private static final HashMap<Class<?>, String> supportedKeyTypes = new HashMap() {
-        {
-            put(String.class, String.format(OracleDataTypesMapping.STRING_VARCHAR, 255));
-        }
-    };
+    private static final HashMap<Class<?>, String> supportedKeyTypes = new HashMap();
+    static {
+        supportedKeyTypes.put(String.class, String.format(OracleDataTypesMapping.STRING_VARCHAR, 255));
+    }
 
     /**
      * Maps supported vector java classes to Oracle database types
      */
-    private static final Map<Class<?>, String> supportedVectorTypes = new HashMap() {
-        {
-            put(String.class, OracleDataTypesMapping.VECTOR_FLOAT);
-            put(List.class, OracleDataTypesMapping.VECTOR_FLOAT);
-            put(Collection.class, OracleDataTypesMapping.VECTOR_FLOAT);
-            put(float[].class, OracleDataTypesMapping.VECTOR_FLOAT);
-            put(Float[].class, OracleDataTypesMapping.VECTOR_FLOAT);
-        }
-    };
+    private static final Map<Class<?>, String> supportedVectorTypes = new HashMap();
+    static {
+        supportedVectorTypes.put(String.class, OracleDataTypesMapping.VECTOR_FLOAT);
+        supportedVectorTypes.put(List.class, OracleDataTypesMapping.VECTOR_FLOAT);
+        supportedVectorTypes.put(Collection.class, OracleDataTypesMapping.VECTOR_FLOAT);
+        supportedVectorTypes.put(float[].class, OracleDataTypesMapping.VECTOR_FLOAT);
+        supportedVectorTypes.put(Float[].class, OracleDataTypesMapping.VECTOR_FLOAT);
+    }
 
     /**
      * Maps supported data java classes to Oracle database types
      */
-    private static final HashMap<Class<?>, String> supportedDataTypes = new HashMap() {
-        {
-            put(byte.class, OracleDataTypesMapping.BYTE);
-            put(Byte.class, OracleDataTypesMapping.BYTE);
-            put(short.class, OracleDataTypesMapping.SHORT);
-            put(Short.class, OracleDataTypesMapping.SHORT);
-            put(int.class, OracleDataTypesMapping.INTEGER);
-            put(Integer.class, OracleDataTypesMapping.INTEGER);
-            put(long.class, OracleDataTypesMapping.LONG);
-            put(Long.class, OracleDataTypesMapping.LONG);
-            put(Float.class, OracleDataTypesMapping.FLOAT);
-            put(float.class, OracleDataTypesMapping.FLOAT);
-            put(Double.class, OracleDataTypesMapping.DOUBLE);
-            put(double.class, OracleDataTypesMapping.DOUBLE);
-            put(BigDecimal.class, OracleDataTypesMapping.DECIMAL);
-            put(Boolean.class, OracleDataTypesMapping.BOOLEAN);
-            put(boolean.class, OracleDataTypesMapping.BOOLEAN);
-            put(OffsetDateTime.class, OracleDataTypesMapping.OFFSET_DATE_TIME);
-            put(UUID.class, OracleDataTypesMapping.UUID);
-            put(byte[].class, OracleDataTypesMapping.BYTE_ARRAY);
-            put(List.class, OracleDataTypesMapping.JSON);
-        }
-    };
+    private static final HashMap<Class<?>, String> supportedDataTypes = new HashMap();
+    static {
+        supportedDataTypes.put(byte.class, OracleDataTypesMapping.BYTE);
+        supportedDataTypes.put(Byte.class, OracleDataTypesMapping.BYTE);
+        supportedDataTypes.put(short.class, OracleDataTypesMapping.SHORT);
+        supportedDataTypes.put(Short.class, OracleDataTypesMapping.SHORT);
+        supportedDataTypes.put(int.class, OracleDataTypesMapping.INTEGER);
+        supportedDataTypes.put(Integer.class, OracleDataTypesMapping.INTEGER);
+        supportedDataTypes.put(long.class, OracleDataTypesMapping.LONG);
+        supportedDataTypes.put(Long.class, OracleDataTypesMapping.LONG);
+        supportedDataTypes.put(Float.class, OracleDataTypesMapping.FLOAT);
+        supportedDataTypes.put(float.class, OracleDataTypesMapping.FLOAT);
+        supportedDataTypes.put(Double.class, OracleDataTypesMapping.DOUBLE);
+        supportedDataTypes.put(double.class, OracleDataTypesMapping.DOUBLE);
+        supportedDataTypes.put(BigDecimal.class, OracleDataTypesMapping.DECIMAL);
+        supportedDataTypes.put(Boolean.class, OracleDataTypesMapping.BOOLEAN);
+        supportedDataTypes.put(boolean.class, OracleDataTypesMapping.BOOLEAN);
+        supportedDataTypes.put(OffsetDateTime.class, OracleDataTypesMapping.OFFSET_DATE_TIME);
+        supportedDataTypes.put(UUID.class, OracleDataTypesMapping.UUID);
+        supportedDataTypes.put(byte[].class, OracleDataTypesMapping.BYTE_ARRAY);
+        supportedDataTypes.put(List.class, OracleDataTypesMapping.JSON);
+    }
 
     /**
      * Suffix added to the effective column name to generate the index name for a vector column.
