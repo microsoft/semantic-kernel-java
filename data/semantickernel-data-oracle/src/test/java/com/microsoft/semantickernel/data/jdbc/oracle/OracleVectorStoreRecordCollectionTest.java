@@ -215,9 +215,6 @@ public class OracleVectorStoreRecordCollectionTest extends OracleCommonVectorSto
         assertNotNull(results);
         assertEquals(3, results.size());
         // The third hotel should be the most similar
-        System.out.println(results.get(0).getScore());
-        System.out.println(results.get(1).getScore());
-        System.out.println(results.get(2).getScore());
         assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
         assertEquals(expectedDistance.get(0).doubleValue(), results.get(0).getScore(), 0.0001d);
         assertEquals(hotels.get(0).getId(), results.get(1).getRecord().getId());

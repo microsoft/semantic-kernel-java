@@ -41,6 +41,7 @@ import oracle.jdbc.provider.oson.OsonModule;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.BiFunction;
 
@@ -91,7 +92,6 @@ public class OracleVectorStoreRecordMapper<Record>
         private VectorStoreRecordDefinition vectorStoreRecordDefinition;
         private Map<Class<?>, String> supportedDataTypesMapping;
         private ObjectMapper objectMapper = new ObjectMapper();
-        private Map<Class<?>, String> annotatedTypeMapping;
 
         /**
          * Sets the record class.
@@ -137,12 +137,7 @@ public class OracleVectorStoreRecordMapper<Record>
          */
         public Builder<Record> withSupportedDataTypesMapping(
             Map<Class<?>, String> supportedDataTypesMapping) {
-            this.supportedDataTypesMapping = supportedDataTypesMapping;
-            return this;
-        }
-
-        public Builder<Record> withAnnotatedTypeMapping(Map<Class<?>, String> annotatedTypeMapping) {
-            this.annotatedTypeMapping = annotatedTypeMapping;
+            this.supportedDataTypesMapping = new HashMap<>(supportedDataTypesMapping);
             return this;
         }
 

@@ -203,7 +203,6 @@ public class OracleVectorStoreExtendedTest extends OracleCommonVectorStoreRecord
         DummyRecord d1 = new DummyRecord("id1", 4, 120d,  new float[]{});
         SKException ex = assertThrows(SKException.class,
             () -> collection.upsertBatchAsync(Arrays.asList(d1), null).block());
-        System.out.println(ex.getMessage());
         assertTrue(ex.getCause().getMessage().contains("ORA-51803"));
 
         // Vector dimension mismatch
