@@ -245,6 +245,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
      * @param options the options
      */
     @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING") 
     public void upsertRecords(String collectionName,
         List<?> records,
         VectorStoreRecordDefinition recordDefinition,
@@ -422,6 +423,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
      * @param <Record> the record type
      */
     @Override
+    @SuppressFBWarnings("SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING")
     public <Record> VectorSearchResults<Record> search(String collectionName, List<Float> vector,
         VectorSearchOptions options, VectorStoreRecordDefinition recordDefinition,
         VectorStoreRecordMapper<Record, ResultSet> mapper) {
@@ -558,8 +560,6 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
             // Use JSON string to set lists
             if (List.class.equals(type)) {
                 statement.setObject(index, objectMapper.writeValueAsString(value));
-                System.out.println(
-                    "Set values: " + objectMapper.writeValueAsString(value));
                 return;
             }
             // convert UUID to string
@@ -575,7 +575,6 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     OffsetDateTime offsetDateTime = (OffsetDateTime) value;
                     ((OraclePreparedStatement) statement).setTIMESTAMPTZ(index,
                         TIMESTAMPTZ.of(offsetDateTime));
-                    System.out.println("Set values: " + offsetDateTime);
                 }
                 return;
             }
@@ -587,7 +586,6 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
                     BigDecimal bigDecimal = (BigDecimal) value;
                     ((OraclePreparedStatement) statement).setBigDecimal(index,
                         bigDecimal);
-                    System.out.println("Set values: " + bigDecimal);
                 }
                 return;
             }
@@ -825,6 +823,7 @@ public class OracleVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
          * @param objectMapper the object mapper
          * @return the builder
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public Builder withObjectMapper(
             ObjectMapper objectMapper) {
             this.objectMapper = objectMapper;
