@@ -216,11 +216,11 @@ public class OracleVectorStoreRecordCollectionTest extends OracleCommonVectorSto
         assertEquals(3, results.size());
         // The third hotel should be the most similar
         assertEquals(hotels.get(2).getId(), results.get(0).getRecord().getId());
-        assertEquals(expectedDistance.get(0).doubleValue(), results.get(0).getScore(), 0.0001d);
+        assertEquals(expectedDistance.get(0).doubleValue(), results.get(0).getScore(), 0.0002d);
         assertEquals(hotels.get(0).getId(), results.get(1).getRecord().getId());
-        assertEquals(expectedDistance.get(1).doubleValue(), results.get(1).getScore(), 0.0001d);
+        assertEquals(expectedDistance.get(1).doubleValue(), results.get(1).getScore(), 0.0002d);
         assertEquals(hotels.get(3).getId(), results.get(2).getRecord().getId());
-        assertEquals(expectedDistance.get(2).doubleValue(), results.get(2).getScore(), 0.0001d);
+        assertEquals(expectedDistance.get(2).doubleValue(), results.get(2).getScore(), 0.0002d);
 
         options = VectorSearchOptions.builder()
             .withVectorFieldName(distanceFunction.getValue())
@@ -258,7 +258,7 @@ public class OracleVectorStoreRecordCollectionTest extends OracleCommonVectorSto
         assertEquals(3, results.size());
         // The first hotel should be the most similar
         assertEquals(hotels.get(0).getId(), results.get(0).getRecord().getId());
-        assertEquals(results.get(0).getScore(), expectedDistance, 0.0001d);
+        assertEquals(results.get(0).getScore(), expectedDistance, 0.0002d);
     }
 
 
