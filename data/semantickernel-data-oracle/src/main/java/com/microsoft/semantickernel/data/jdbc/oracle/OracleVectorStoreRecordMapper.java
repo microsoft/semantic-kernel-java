@@ -156,11 +156,11 @@ public class OracleVectorStoreRecordMapper<Record>
 
             return new OracleVectorStoreRecordMapper<>(
                 (resultSet, options) -> {
-                    return MapResultSetToRecord(resultSet, options);
+                    return mapResultSetToRecord(resultSet, options);
                 });
         }
 
-        private Record MapResultSetToRecord(ResultSet resultSet, GetRecordOptions options) {
+        private Record mapResultSetToRecord(ResultSet resultSet, GetRecordOptions options) {
             try {
                 objectMapper.registerModule(new OsonModule());
                 // Create an ObjectNode to hold the values
