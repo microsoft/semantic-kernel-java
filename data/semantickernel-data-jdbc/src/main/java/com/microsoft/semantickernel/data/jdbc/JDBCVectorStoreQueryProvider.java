@@ -696,18 +696,19 @@ public class JDBCVectorStoreQueryProvider
     @Override
     public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
         String fieldName = JDBCVectorStoreQueryProvider
-                .validateSQLidentifier(filterClause.getFieldName());
+            .validateSQLidentifier(filterClause.getFieldName());
 
         return String.format("%s LIKE ?", fieldName);
     }
-    
+
     @Override
-    public <Record> VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper(Class<Record> recordClass,
-            VectorStoreRecordDefinition recordDefinition) {
+    public <Record> VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper(
+        Class<Record> recordClass,
+        VectorStoreRecordDefinition recordDefinition) {
         return JDBCVectorStoreRecordMapper.<Record>builder()
-                .withRecordClass(recordClass)
-                .withVectorStoreRecordDefinition(recordDefinition)
-                .build();
+            .withRecordClass(recordClass)
+            .withVectorStoreRecordDefinition(recordDefinition)
+            .build();
     }
 
     /**
@@ -764,6 +765,5 @@ public class JDBCVectorStoreQueryProvider
                 prefixForCollectionTables);
         }
     }
-
 
 }

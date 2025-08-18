@@ -39,20 +39,20 @@ public class VectorStoreWithOracle {
             .build();
 
         // Get a collection from the vector store
-        VectorStoreRecordCollection<String, Hotel> collection =
-            vectorStore.getCollection("skhotels",
-                JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
-                    .withRecordClass(Hotel.class)
-                    .build());
+        VectorStoreRecordCollection<String, Hotel> collection = vectorStore.getCollection(
+            "skhotels",
+            JDBCVectorStoreRecordCollectionOptions.<Hotel>builder()
+                .withRecordClass(Hotel.class)
+                .build());
 
         // Create the collection if it doesn't exist yet.
         collection.createCollectionAsync().block();
 
         collection.upsertAsync(new Hotel("1",
-                "HotelOne",
-                "Desc for HotelOne",
-                    Collections.emptyList(), Collections.emptyList()),
-                null)
+            "HotelOne",
+            "Desc for HotelOne",
+            Collections.emptyList(), Collections.emptyList()),
+            null)
             .block();
 
     }

@@ -32,7 +32,8 @@ import java.util.List;
 
 public class Book {
 
-    public Book() {}
+    public Book() {
+    }
 
     public Book(String isbn, String title, String author, int pages,
         List<String> tags, String summary, List<Float> summaryEmbedding) {
@@ -60,7 +61,7 @@ public class Book {
     @VectorStoreRecordData(isFilterable = true)
     private List<String> tags;
 
-    @VectorStoreRecordData( isFilterable = true, isFullTextSearchable = true )
+    @VectorStoreRecordData(isFilterable = true, isFullTextSearchable = true)
     private String summary;
 
     @VectorStoreRecordVector(dimensions = 2)
