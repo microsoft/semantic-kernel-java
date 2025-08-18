@@ -77,7 +77,7 @@ public class OracleDataTypesMapping {
     /**
      * Oracle database type used to map offset date time
      */
-    public static final String OFFSET_DATE_TIME = "TIMESTAMP(7) WITH TIME ZONE";
+    public static final String OFFSET_DATE_TIME = "TIMESTAMP(9) WITH TIME ZONE";
     /**
      * Oracle database type used to map UUID
      */
