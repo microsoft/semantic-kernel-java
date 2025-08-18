@@ -63,6 +63,21 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-data-mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-data-hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-data-sqlite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-data-redis</artifactId>
             <scope>test</scope>
         </dependency>

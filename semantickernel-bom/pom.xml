@@ -108,6 +108,21 @@
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-data-mysql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-data-sqlite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-data-hsqldb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-data-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
