@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v5
 
       # Sets up the specified JDK version from the matrix
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: 11
           distribution: microsoft
