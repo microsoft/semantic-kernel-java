@@ -11,27 +11,15 @@
     </parent>
 
     <groupId>com.microsoft.semantic-kernel</groupId>
-    <artifactId>semantickernel-api-textembedding-services</artifactId>
-    <name>Semantic Kernel Services API</name>
+    <artifactId>semantickernel-api-ai-services</artifactId>
+    <name>Semantic Kernel AI Services API</name>
     <description>Defines the public interface for the Semantic Kernel Services</description>
 
     <dependencies>
         <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api-ai-services</artifactId>
         </dependency>
     </dependencies>
 

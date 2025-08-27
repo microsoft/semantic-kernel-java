@@ -88,6 +88,7 @@
         <module>semantickernel-api-builders</module>
         <module>semantickernel-api-textembedding-services</module>
         <module>semantickernel-api-localization</module>
+        <module>semantickernel-api-ai-services</module>
     </modules>
 
     <dependencyManagement>
@@ -149,26 +150,31 @@
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-api-builders</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-api-data</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-api-exceptions</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-api-localization</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-api-textembedding-services</artifactId>
                 <version>${project.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
@@ -180,6 +186,13 @@
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-ai-services</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.github.spotbugs</groupId>

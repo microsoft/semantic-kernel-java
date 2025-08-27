@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-          <groupId>com.microsoft.semantic-kernel</groupId>
-          <artifactId>semantickernel-parent</artifactId>
-          <version>1.4.4-RC2-SNAPSHOT</version>
-          <relativePath>../../pom.xml</relativePath>
+        <groupId>com.microsoft.semantic-kernel</groupId>
+        <artifactId>semantickernel-parent</artifactId>
+        <version>1.4.4-RC2-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>com.microsoft.semantic-kernel</groupId>
@@ -15,7 +15,7 @@
     <name>Semantic Kernel MySQL connector</name>
     <description>Provides a MySQL connector for the Semantic Kernel</description>
 
-<dependencies>
+    <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
@@ -24,6 +24,19 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-data-jdbc</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-data</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-exceptions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-builders</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
