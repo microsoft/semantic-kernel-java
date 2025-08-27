@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+          <groupId>com.microsoft.semantic-kernel</groupId>
+          <artifactId>semantickernel-parent</artifactId>
+          <version>1.4.4-RC2-SNAPSHOT</version>
+          <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.microsoft.semantic-kernel</groupId>
+    <artifactId>semantickernel-api-localization</artifactId>
+    <name>Semantic Kernel Localization API</name>
+    <description>Defines the public interface for the Semantic Kernel Localization</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <reuseForks>false</reuseForks>
+                    <forkCount>1</forkCount>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

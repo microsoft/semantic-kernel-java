@@ -77,7 +77,18 @@
         <module>data/semantickernel-data-azureaisearch</module>
         <module>data/semantickernel-data-jdbc</module>
         <module>data/semantickernel-data-redis</module>
+        <module>data/semantickernel-data-mysql</module>
+        <module>data/semantickernel-data-hsqldb</module>
+        <module>data/semantickernel-data-postgres</module>
+        <module>data/semantickernel-data-sqlite</module>
+        <module>data/semantickernel-data-oracle</module>
         <module>agents/semantickernel-agents-core</module>
+        <module>semantickernel-api-data</module>
+        <module>semantickernel-api-exceptions</module>
+        <module>semantickernel-api-builders</module>
+        <module>semantickernel-api-textembedding-services</module>
+        <module>semantickernel-api-localization</module>
+        <module>semantickernel-api-ai-services</module>
     </modules>
 
     <dependencyManagement>
@@ -136,6 +147,36 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-builders</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-data</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-exceptions</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-localization</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-textembedding-services</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.microsoft.semantic-kernel.extensions</groupId>
                 <artifactId>semantickernel-sequentialplanner-extension</artifactId>
                 <version>${project.version}</version>
@@ -145,6 +186,13 @@
                 <artifactId>semantickernel-actionplanner-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-ai-services</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
 
             <dependency>
                 <groupId>com.github.spotbugs</groupId>
@@ -215,6 +263,7 @@
                         <source>${maven.compiler.release}</source>
                         <target>${maven.compiler.release}</target>
                         <release>8</release>
+                        <compilerArgument>-Xlint:unchecked</compilerArgument>
                     </configuration>
                 </plugin>
                 <plugin>

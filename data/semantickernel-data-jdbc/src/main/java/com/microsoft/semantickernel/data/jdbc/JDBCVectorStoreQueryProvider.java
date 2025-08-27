@@ -106,7 +106,7 @@ public class JDBCVectorStoreQueryProvider
         @SuppressFBWarnings("EI_EXPOSE_REP2") @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,
         @Nonnull String prefixForCollectionTables,
-        @Nonnull HashMap<Class<?>, String> supportedKeyTypes,
+        @Nonnull Map<Class<?>, String> supportedKeyTypes,
         @Nonnull Map<Class<?>, String> supportedDataTypes,
         @Nonnull Map<Class<?>, String> supportedVectorTypes) {
         this.dataSource = dataSource;
@@ -220,7 +220,7 @@ public class JDBCVectorStoreQueryProvider
     @Override
     public void prepareVectorStore() {
         String createCollectionsTable = formatQuery(
-            "CREATE TABLE IF NOT EXISTS %s (collectionId VARCHAR(255) PRIMARY KEY);",
+            "CREATE TABLE IF NOT EXISTS %s (collectionId VARCHAR(255) PRIMARY KEY)",
             validateSQLidentifier(collectionsTable));
 
         try (Connection connection = dataSource.getConnection();
@@ -701,6 +701,16 @@ public class JDBCVectorStoreQueryProvider
         return String.format("%s LIKE ?", fieldName);
     }
 
+    @Override
+    public <Record> VectorStoreRecordMapper<Record, ResultSet> getVectorStoreRecordMapper(
+        Class<Record> recordClass,
+        VectorStoreRecordDefinition recordDefinition) {
+        return JDBCVectorStoreRecordMapper.<Record>builder()
+            .withRecordClass(recordClass)
+            .withVectorStoreRecordDefinition(recordDefinition)
+            .build();
+    }
+
     /**
      * The builder for {@link JDBCVectorStoreQueryProvider}.
      */
@@ -755,4 +765,5 @@ public class JDBCVectorStoreQueryProvider
                 prefixForCollectionTables);
         }
     }
+
 }

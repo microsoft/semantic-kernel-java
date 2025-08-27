@@ -88,6 +88,11 @@
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-builders</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
 <!--        Redis-->
         <dependency>

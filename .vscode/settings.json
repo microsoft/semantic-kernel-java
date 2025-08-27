@@ -21,5 +21,6 @@
     },
   },
   "java.debug.settings.onBuildFailureProceed": true,
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
