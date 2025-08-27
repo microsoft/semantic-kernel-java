@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Need to use JDK 11 to build for JDK 8
       - name: Set JDK
@@ -36,7 +36,7 @@ jobs:
             echo "JDK_VERSION=$version" >> $GITHUB_OUTPUT
           fi
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: ${{ steps.set-jdk.outputs.JDK_VERSION }}
           distribution: microsoft
