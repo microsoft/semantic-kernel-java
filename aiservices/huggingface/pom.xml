@@ -32,6 +32,14 @@
             <artifactId>semantickernel-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-exceptions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-ai-services</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-core</artifactId>
         </dependency>

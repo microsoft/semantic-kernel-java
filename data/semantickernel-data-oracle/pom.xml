@@ -31,6 +31,21 @@
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-data</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-exceptions</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-builders</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-data-jdbc</artifactId>
         </dependency>
         <dependency>
