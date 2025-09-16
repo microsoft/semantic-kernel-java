@@ -146,7 +146,7 @@
             <dependency>
                 <groupId>com.azure</groupId>
                 <artifactId>azure-ai-openai</artifactId>
-                <version>1.0.0-beta.14</version>
+                <version>1.0.0-beta.16</version>
             </dependency>
             <dependency>
                 <groupId>com.azure</groupId>
@@ -236,7 +236,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-text</artifactId>
-                <version>1.12.0</version>
+                <version>1.14.0</version>
             </dependency>
 
             <dependency>
