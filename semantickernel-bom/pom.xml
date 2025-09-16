@@ -132,10 +132,14 @@
                 <artifactId>semantickernel-data-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-agents-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-data-postgres</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -258,6 +262,7 @@
                 <artifactId>reactor-core</artifactId>
                 <version>3.7.8</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 

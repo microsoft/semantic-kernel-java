@@ -134,7 +134,6 @@
                 <executions>
                     <execution>
                         <id>unpack-dependencies</id>
-                        <phase>process-resources</phase>
                         <goals>
                             <goal>unpack-dependencies</goal>
                         </goals>

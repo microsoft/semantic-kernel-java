@@ -110,6 +110,33 @@
             <artifactId>semantickernel-text-splitter-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-builders</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-exceptions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-localization</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-textembedding-services</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-ai-services</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api-data</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>

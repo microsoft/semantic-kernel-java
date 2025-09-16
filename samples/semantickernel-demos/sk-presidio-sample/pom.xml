@@ -25,14 +25,6 @@
     <dependencies>
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-aiservices-openai</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-presidio-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
