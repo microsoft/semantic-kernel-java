@@ -46,14 +46,6 @@
             <artifactId>semantickernel-data-oracle</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-data-postgres</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api-data</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <scope>runtime</scope>
