@@ -1,3 +1,10 @@
+# 1.4.4-RC2
+
+- Upgrade many dependencies to recent versions
+- Migrate from "Tool calls" to "Function calls" terminology, deprecated OpenAIFunctionToolCall
+- Refactored Data storage area to be more extensible and added Oracle Database support (Thank you to the contributors
+  from Oracle for the contribution)
+
 # 1.4.4-RC1
 
 - Add Agent framework abstractions.
@@ -25,7 +32,8 @@
 # 1.4.0
 
 - Upgrade to azure-ai-openai 1.0.0-beta.12
-- Add vector stores with vector search support for Azure AI Search, Redis, JDBC with Postgres, MySQL, SQLite and HSQLDB. Moving these features out of the experimental stage.
+- Add vector stores with vector search support for Azure AI Search, Redis, JDBC with Postgres, MySQL, SQLite and HSQLDB.
+  Moving these features out of the experimental stage.
 
 # 1.3.0
 
