@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.microsoft.semantic-kernel</groupId>
-        <artifactId>semantickernel-demos</artifactId>
-        <version>1.4.4-RC3-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
 
+    <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>sk-database-sample</artifactId>
+    <version>1.4.4-RC3-SNAPSHOT</version>
     <name>Database Sample</name>
 
     <dependencyManagement>
@@ -16,7 +12,7 @@
             <dependency>
                 <groupId>com.microsoft.semantic-kernel</groupId>
                 <artifactId>semantickernel-bom</artifactId>
-                <version>${project.version}</version>
+                <version>1.4.4-RC2</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -44,11 +40,6 @@
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <version>9.1.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.semantic-kernel</groupId>
-            <artifactId>semantickernel-api-data</artifactId>
             <scope>compile</scope>
         </dependency>
     </dependencies>
