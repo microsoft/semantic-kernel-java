@@ -78,5 +78,9 @@
             <artifactId>ojdbc11</artifactId>
             <version>23.7.0.25.01</version>
         </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
     </dependencies>
 </project>
