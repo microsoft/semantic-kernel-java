@@ -698,7 +698,7 @@ public class Example09_FunctionTypes {
          * public async Task<string>
          * TaskInjectingCancellationTokenWithStringResult(CancellationToken cancellationToken)
          * {
-         * var result = $"Cancellation resquested: {cancellationToken.IsCancellationRequested}";
+         * var result = $"Cancellation requested: {cancellationToken.IsCancellationRequested}";
          * Console.WriteLine(
          * $"Running {nameof(this.TaskInjectingCultureInfoOrIFormatProviderWithStringResult)} -> Injected Cancellation Token -> result: {result}"
          * );
