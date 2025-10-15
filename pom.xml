@@ -6,7 +6,7 @@
 
     <groupId>com.microsoft.semantic-kernel</groupId>
     <artifactId>semantickernel-parent</artifactId>
-    <version>1.4.4-RC2-SNAPSHOT</version>
+    <version>1.4.4-RC3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <url>https://www.github.com/microsoft/semantic-kernel</url>
@@ -14,7 +14,7 @@
     <description>Parent pom for the Semantic Kernel Project</description>
 
     <properties>
-        <azure-ai-openai.version>1.0.0-beta.14</azure-ai-openai.version>
+        <azure-ai-openai.version>1.0.0-beta.16</azure-ai-openai.version>
         <checkstyle.version>10.18.2</checkstyle.version>
         <com.uber.nullaway.version>0.10.21</com.uber.nullaway.version>
         <compilingJdk8>false</compilingJdk8>
@@ -43,7 +43,7 @@
         <maven.jxr-plugin.version>3.5.0</maven.jxr-plugin.version>
         <maven.license-plugin.version>2.4.0</maven.license-plugin.version>
         <!-- TODO move to 3.23.0+ in the future when moving PMD versions -->
-        <maven.pmd-plugin.version>3.21.2</maven.pmd-plugin.version>
+        <maven.pmd-plugin.version>3.27.0</maven.pmd-plugin.version>
         <maven.project-info-reports-plugin.version>3.8.0</maven.project-info-reports-plugin.version>
         <maven.rat-plugin.version>0.16.1</maven.rat-plugin.version>
         <maven.release-plugin.version>3.1.1</maven.release-plugin.version>
@@ -212,6 +212,44 @@
                 <version>5.14.2</version>
                 <scope>test</scope>
             </dependency>
+
+
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-builders</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-exceptions</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-localization</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-textembedding-services</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-ai-services</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-api-data</artifactId>
+                <scope>provided</scope>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -347,6 +385,11 @@
                             <groupId>net.sourceforge.pmd</groupId>
                             <artifactId>pmd-jsp</artifactId>
                             <version>${pmd.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-pmd-plugin</artifactId>
+                            <version>${maven.pmd-plugin.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>
