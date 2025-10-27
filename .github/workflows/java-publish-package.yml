@@ -30,7 +30,7 @@ jobs:
         run: ./mvnw -B -DskipTests -Pcompile-jdk8 -P-compile-jdk17 clean deploy --file pom.xml -DaltDeploymentRepository=local::file:///tmp/target/staging-deploy
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Artifacts
           path: /tmp/target/staging-deploy
