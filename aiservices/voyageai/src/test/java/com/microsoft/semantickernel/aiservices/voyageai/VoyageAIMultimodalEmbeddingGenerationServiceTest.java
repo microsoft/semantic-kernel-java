@@ -178,4 +178,53 @@ public class VoyageAIMultimodalEmbeddingGenerationServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
             new VoyageAIMultimodalEmbeddingGenerationService(mockClient, null, null));
     }
+
+    @Test
+    public void testVoyageMultimodal35ModelId() {
+        VoyageAIClient mockClient = Mockito.mock(VoyageAIClient.class);
+
+        VoyageAIMultimodalEmbeddingGenerationService service =
+            VoyageAIMultimodalEmbeddingGenerationService.builder()
+                .withClient(mockClient)
+                .withModelId("voyage-multimodal-3.5")
+                .withServiceId("multimodal-3.5-service")
+                .build();
+
+        assertNotNull(service);
+        assertEquals("voyage-multimodal-3.5", service.getModelId());
+        assertEquals("multimodal-3.5-service", service.getServiceId());
+    }
+
+    @Test
+    public void testVoyageMultimodal35GenerateEmbeddings() {
+        VoyageAIClient mockClient = Mockito.mock(VoyageAIClient.class);
+
+        VoyageAIModels.MultimodalEmbeddingResponse mockResponse =
+            new VoyageAIModels.MultimodalEmbeddingResponse();
+
+        VoyageAIModels.EmbeddingDataItem item = new VoyageAIModels.EmbeddingDataItem();
+        item.setEmbedding(new float[]{0.5f, 0.6f, 0.7f, 0.8f});
+        item.setIndex(0);
+
+        mockResponse.setData(Arrays.asList(item));
+
+        VoyageAIModels.EmbeddingUsage usage = new VoyageAIModels.EmbeddingUsage();
+        usage.setTotalTokens(15);
+        mockResponse.setUsage(usage);
+
+        when(mockClient.sendRequestAsync(
+            eq("multimodalembeddings"),
+            any(),
+            eq(VoyageAIModels.MultimodalEmbeddingResponse.class)))
+            .thenReturn(Mono.just(mockResponse));
+
+        VoyageAIMultimodalEmbeddingGenerationService service =
+            new VoyageAIMultimodalEmbeddingGenerationService(mockClient, "voyage-multimodal-3.5", null);
+
+        Embedding result = service.generateEmbeddingAsync("test with voyage-multimodal-3.5").block();
+
+        assertNotNull(result);
+        List<Float> expected = Arrays.asList(0.5f, 0.6f, 0.7f, 0.8f);
+        assertEquals(expected, result.getVector());
+    }
 }
