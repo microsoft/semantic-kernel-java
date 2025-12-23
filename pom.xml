@@ -74,6 +74,7 @@
         <module>aiservices/openai</module>
         <module>aiservices/google</module>
         <module>aiservices/huggingface</module>
+        <module>aiservices/voyageai</module>
         <module>data/semantickernel-data-azureaisearch</module>
         <module>data/semantickernel-data-jdbc</module>
         <module>data/semantickernel-data-redis</module>
