@@ -39,6 +39,9 @@ A BOM is provided that can be used to define the versions of all Semantic Kernel
 `semantickernel-aiservices-openai`
 : Provides a connector that can be used to interact with the OpenAI API.
 
+`semantickernel-aiservices-voyageai`
+: Provides connectors for VoyageAI's embedding and reranking services, including text embeddings, contextualized embeddings, multimodal embeddings, and document reranking.
+
 ## Example Configurations
 
 ### Example: OpenAI + SQLite
@@ -67,6 +70,37 @@ POM XML for a simple project that uses OpenAI.
         <dependency>
             <groupId>com.microsoft.semantic-kernel</groupId>
             <artifactId>semantickernel-connectors-ai-openai</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+### Example: VoyageAI Embeddings and Reranking
+
+POM XML for a project that uses VoyageAI for embeddings and reranking.
+
+```xml
+
+<project>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.microsoft.semantic-kernel</groupId>
+                <artifactId>semantickernel-bom</artifactId>
+                <version>${semantickernel.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.semantic-kernel</groupId>
+            <artifactId>semantickernel-aiservices-voyageai</artifactId>
         </dependency>
     </dependencies>
 </project>
