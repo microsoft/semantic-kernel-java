@@ -229,14 +229,9 @@ class OpenAIFunction {
     }
 
     private static String getObjectSchema(String type, String description) {
-        String schema = "{ \"type\" : \"object\" }";
-        try {
-            Class<?> clazz = Class.forName(type);
-            schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
+        Class<?> clazz = KernelPluginFactory.getTypeForName(type);
+        String schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
 
-        } catch (ClassNotFoundException | SKException ignored) {
-
-        }
         Map<String, Object> properties = BinaryData.fromString(schema).toObject(Map.class);
         if (StringUtils.isNotBlank(description)) {
             properties.put("description", description);
