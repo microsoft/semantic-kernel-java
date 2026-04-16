@@ -154,12 +154,12 @@ public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
      */
     @Override
     public String getEqualToFilter(EqualToFilterClause filterClause) {
-        String fieldName = filterClause.getFieldName();
+        String fieldName = validateFieldName(filterClause.getFieldName());
         Object value = filterClause.getValue();
         String formattedValue;
 
         if (value instanceof String) {
-            formattedValue = String.format("\"%s\"", value);
+            formattedValue = String.format("\"%s\"", escapeRedisString((String) value));
         } else if (value instanceof Number) {
             formattedValue = String.format("[%s %s]", value, value);
         } else {
@@ -178,6 +178,19 @@ public class RedisVectorStoreCollectionSearchMapping implements FilterMapping {
      */
     @Override
     public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
-        return String.format("@%s:\"%s\"", filterClause.getFieldName(), filterClause.getValue());
+        return String.format("@%s:\"%s\"",
+            validateFieldName(filterClause.getFieldName()),
+            escapeRedisString(filterClause.getValue().toString()));
+    }
+
+    private String validateFieldName(String fieldName) {
+        if (fieldName.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+            return fieldName;
+        }
+        throw new SKException("Invalid field name: " + fieldName);
+    }
+
+    private String escapeRedisString(String searchString) {
+        return searchString.replaceAll("([,.<>{}\\[\\]\"':;!@#$%^&*()\\-+=~|\\\\/?\\s])", "\\\\$1");
     }
 }

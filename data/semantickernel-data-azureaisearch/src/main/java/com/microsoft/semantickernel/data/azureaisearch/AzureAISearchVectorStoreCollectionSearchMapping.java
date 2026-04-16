@@ -57,11 +57,11 @@ class AzureAISearchVectorStoreCollectionSearchMapping
 
     @Override
     public String getEqualToFilter(EqualToFilterClause filterClause) {
-        String fieldName = filterClause.getFieldName();
+        String fieldName = validateFieldName(filterClause.getFieldName());
         Object value = filterClause.getValue();
 
         if (value instanceof String) {
-            return String.format("%s eq '%s'", fieldName, value);
+            return String.format("%s eq '%s'", fieldName, escapeSingleQuotes((String) value));
         } else if (value instanceof Boolean) {
             return String.format("%s eq %s", fieldName,
                 value.toString().toLowerCase());
@@ -86,7 +86,18 @@ class AzureAISearchVectorStoreCollectionSearchMapping
 
     @Override
     public String getAnyTagEqualToFilter(AnyTagEqualToFilterClause filterClause) {
-        return String.format("%s/any(t: t eq '%s')", filterClause.getFieldName(),
-            filterClause.getValue());
+        return String.format("%s/any(t: t eq '%s')", validateFieldName(filterClause.getFieldName()),
+            escapeSingleQuotes(filterClause.getValue().toString()));
+    }
+
+    private String validateFieldName(String fieldName) {
+        if (fieldName.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+            return fieldName;
+        }
+        throw new SKException("Invalid field name: " + fieldName);
+    }
+
+    private String escapeSingleQuotes(String value) {
+        return value.replaceAll("'", "''");
     }
 }
