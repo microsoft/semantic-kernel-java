@@ -55,6 +55,7 @@ public class Example_ChatWithResponseFormat {
                     .setResponseFormat(Pet.class)
                     .setName("Pet")
                     .build())
+            .withMaxCompletionTokensEnable(true)
             .build();
 
         FunctionResult<Pet> response = kernel

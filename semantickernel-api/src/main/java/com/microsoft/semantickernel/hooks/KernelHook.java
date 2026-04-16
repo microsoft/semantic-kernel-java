@@ -104,6 +104,7 @@ public interface KernelHook<T extends KernelHookEvent> extends Predicate<KernelH
                 .setFrequencyPenalty(options.getFrequencyPenalty())
                 .setLogitBias(options.getLogitBias())
                 .setMaxTokens(options.getMaxTokens())
+                .setMaxCompletionTokens(options.getMaxCompletionTokens())
                 .setModel(options.getModel())
                 .setStop(options.getStop())
                 .setTemperature(options.getTemperature())

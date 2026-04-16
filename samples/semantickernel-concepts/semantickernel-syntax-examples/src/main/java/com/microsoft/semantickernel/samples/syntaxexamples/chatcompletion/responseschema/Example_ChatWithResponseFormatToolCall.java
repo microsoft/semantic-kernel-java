@@ -58,6 +58,7 @@ public class Example_ChatWithResponseFormatToolCall {
 
         PromptExecutionSettings promptExecutionSettings = PromptExecutionSettings.builder()
             .withJsonSchemaResponseFormat(Pet.class)
+            .withMaxCompletionTokensEnable(true)
             .build();
 
         FunctionResult<Pet> response = kernel.invokePromptAsync("Get pet with id 1234")

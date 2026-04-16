@@ -65,8 +65,8 @@ import com.microsoft.semantickernel.orchestration.PromptExecutionSettings;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.orchestration.responseformat.JsonResponseSchema;
 import com.microsoft.semantickernel.orchestration.responseformat.JsonSchemaResponseFormat;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.services.chatcompletion.AuthorRole;
 import com.microsoft.semantickernel.services.chatcompletion.ChatCompletionService;
 import com.microsoft.semantickernel.services.chatcompletion.ChatHistory;
@@ -149,7 +149,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
                     if (invocationContext != null
                         && invocationContext
-                            .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
+                        .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
                         chatHistoryResult = new ChatHistory(
                             Collections.singletonList(
                                 CollectionUtil.getLastOrNull(chatHistoryResult.getMessages())));
@@ -183,7 +183,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
                     if (invocationContext != null
                         && invocationContext
-                            .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
+                        .returnMode() == InvocationReturnMode.LAST_MESSAGE_ONLY) {
                         result = new ChatHistory(
                             Collections.singletonList(
                                 CollectionUtil.getLastOrNull(result.getMessages())));
@@ -443,31 +443,31 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             .getOptions();
 
         return Mono.deferContextual(contextView -> {
-            ChatCompletionSpan span = ChatCompletionSpan.startChatCompletionSpan(
-                SemanticKernelTelemetry.getTelemetry(invocationContext),
-                contextView,
-                getModelId(),
-                SemanticKernelTelemetry.OPEN_AI_PROVIDER,
-                options.getMaxTokens(),
-                options.getTemperature(),
-                options.getTopP());
+                ChatCompletionSpan span = ChatCompletionSpan.startChatCompletionSpan(
+                    SemanticKernelTelemetry.getTelemetry(invocationContext),
+                    contextView,
+                    getModelId(),
+                    SemanticKernelTelemetry.OPEN_AI_PROVIDER,
+                    options.getMaxTokens(),
+                    options.getTemperature(),
+                    options.getTopP());
 
-            return getClient()
-                .getChatCompletionsWithResponse(getDeploymentName(), options,
-                    OpenAIRequestSettings.getRequestOptions())
-                .contextWrite(span.getReactorContextModifier())
-                .flatMap(completionsResult -> {
-                    if (completionsResult.getStatusCode() >= 400) {
-                        return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
-                            "Request failed: " + completionsResult.getStatusCode()));
-                    }
+                return getClient()
+                    .getChatCompletionsWithResponse(getDeploymentName(), options,
+                        OpenAIRequestSettings.getRequestOptions())
+                    .contextWrite(span.getReactorContextModifier())
+                    .flatMap(completionsResult -> {
+                        if (completionsResult.getStatusCode() >= 400) {
+                            return Mono.error(new AIException(ErrorCodes.SERVICE_ERROR,
+                                "Request failed: " + completionsResult.getStatusCode()));
+                        }
 
-                    return Mono.just(completionsResult.getValue());
-                })
-                .doOnError(span::endSpanWithError)
-                .doOnSuccess(span::endSpanWithUsage)
-                .doOnTerminate(span::close);
-        })
+                        return Mono.just(completionsResult.getValue());
+                    })
+                    .doOnError(span::endSpanWithError)
+                    .doOnSuccess(span::endSpanWithUsage)
+                    .doOnTerminate(span::close);
+            })
             .flatMap(completions -> {
                 List<ChatResponseMessage> responseMessages = completions
                     .getChoices()
@@ -920,7 +920,8 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
         }
 
         Map<String, Integer> logit = null;
-        if (promptExecutionSettings.getTokenSelectionBiases() != null) {
+        if (promptExecutionSettings.getTokenSelectionBiases() != null
+            && !promptExecutionSettings.getTokenSelectionBiases().isEmpty()) {
             logit = promptExecutionSettings
                 .getTokenSelectionBiases()
                 .entrySet()
@@ -937,12 +938,13 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             .setFrequencyPenalty(promptExecutionSettings.getFrequencyPenalty())
             .setPresencePenalty(promptExecutionSettings.getPresencePenalty())
             .setMaxTokens(promptExecutionSettings.getMaxTokens())
+            .setMaxCompletionTokens(promptExecutionSettings.getMaxCompletionTokens())
             .setN(promptExecutionSettings.getResultsPerPrompt())
             // Azure OpenAI WithData API does not allow to send empty array of stop sequences
             // Gives back "Validation error at #/stop/str: Input should be a valid string\nValidation error at #/stop/list[str]: List should have at least 1 item after validation, not 0"
             .setStop(promptExecutionSettings.getStopSequences() == null
                 || promptExecutionSettings.getStopSequences().isEmpty() ? null
-                    : promptExecutionSettings.getStopSequences())
+                : promptExecutionSettings.getStopSequences())
             .setUser(promptExecutionSettings.getUser())
             .setLogitBias(logit);
 
@@ -1147,7 +1149,7 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
             toolChoice,
             toolCallBehavior.isAutoInvokeAllowed()
                 && requestIndex < Math.min(MAXIMUM_INFLIGHT_AUTO_INVOKES,
-                    toolCallBehavior.getMaximumAutoInvokeAttempts()),
+                toolCallBehavior.getMaximumAutoInvokeAttempts()),
             null);
     }
 
@@ -1262,11 +1264,11 @@ public class OpenAIChatCompletion extends OpenAiService<OpenAIAsyncClient>
 
                         String args = arguments != null && !arguments.isEmpty()
                             ? arguments.entrySet().stream()
-                                .map(entry -> String.format("\"%s\": \"%s\"",
-                                    StringEscapeUtils.escapeJson(entry.getKey()),
-                                    StringEscapeUtils.escapeJson(
-                                        entry.getValue().toPromptString())))
-                                .collect(Collectors.joining(",", "{", "}"))
+                            .map(entry -> String.format("\"%s\": \"%s\"",
+                                StringEscapeUtils.escapeJson(entry.getKey()),
+                                StringEscapeUtils.escapeJson(
+                                    entry.getValue().toPromptString())))
+                            .collect(Collectors.joining(",", "{", "}"))
                             : "{}";
 
                         String prefix = "";
