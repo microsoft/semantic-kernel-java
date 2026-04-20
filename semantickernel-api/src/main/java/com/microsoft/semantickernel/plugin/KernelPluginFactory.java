@@ -27,10 +27,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.reactivestreams.Publisher;
@@ -66,6 +70,12 @@ public class KernelPluginFactory {
         COMMON_CLASS_NAMES.put("list", ArrayList.class);
         COMMON_CLASS_NAMES.put("map", HashMap.class);
         COMMON_CLASS_NAMES.put("set", HashSet.class);
+
+        COMMON_CLASS_NAMES.put(Integer.class.getName(), int.class);
+        COMMON_CLASS_NAMES.put(String.class.getName(), String.class);
+        COMMON_CLASS_NAMES.put(List.class.getName(), ArrayList.class);
+        COMMON_CLASS_NAMES.put(Map.class.getName(), HashMap.class);
+        COMMON_CLASS_NAMES.put(Set.class.getName(), HashSet.class);
 
         BOXED_FROM_PRIMITIVE.put(void.class, Void.class);
         BOXED_FROM_PRIMITIVE.put(int.class, Integer.class);
@@ -240,6 +250,10 @@ public class KernelPluginFactory {
             return clazz;
         }
 
+        if (!checkClassName(className)) {
+            throw new SKException("Requested type is not allowed: " + className);
+        }
+
         try {
             clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
         } catch (ClassNotFoundException e) {
@@ -247,19 +261,14 @@ public class KernelPluginFactory {
         }
 
         if (clazz == null) {
-            try {
-                // Seems that in tests specifically we need to use the class loader of the class itself
-                clazz = KernelPluginFactory.class.getClassLoader().loadClass(className);
-            } catch (ClassNotFoundException e) {
-                // ignore
-            }
-        }
-
-        if (clazz == null) {
             throw new SKException("Requested type could not be found: " + className
                 + ". This needs to be a fully qualified class name, e.g. 'java.lang.String'.");
         }
         return clazz;
+    }
+
+    public static boolean checkClassName(String className) {
+        return ClassFilter.CLASS_CHECKER.test(className);
     }
 
     /**
@@ -429,6 +438,7 @@ public class KernelPluginFactory {
 
     /**
      * Imports a plugin from a resource directory on the filesystem.
+     *
      * @param parentDirectory       The parent directory containing the plugin directories.
      * @param pluginDirectoryName   The name of the plugin directory.
      * @param functionName          The name of the function to import.
@@ -550,6 +560,109 @@ public class KernelPluginFactory {
                     pluginName);
             }
             return null;
+        }
+    }
+
+    // Filters allowed classes that can be used as types in plugins
+    public static class ClassFilter {
+
+        // Selects which filter type to use, allow list or ban list
+        public static final String CLASS_BLOCK_TYPE_PROPERTY_NAME = "semantic-kernel.class-block-type";
+        public static final String CLASS_BLOCK_LIST_PROPERTY_NAME = "semantic-kernel.class-block-list";
+        public static final String CLASS_ALLOW_LIST_PROPERTY_NAME = "semantic-kernel.class-allow-list";
+
+        // allow nothing by default (other than java primitives and collections)
+        private static final List<String> CLASS_ALLOW_LIST;
+        private static final List<String> CLASS_ALLOW_LIST_DEFAULT = Collections.emptyList();
+
+        // block Java classes by default (other than java primitives and collections)
+        private static final List<String> CLASS_BLOCK_LIST;
+        private static final List<String> CLASS_BLOCK_LIST_DEFAULT = Arrays.asList(
+            "java\\..*",
+            "com\\.sun\\..*",
+            "javax\\..*",
+            "jdk\\..*",
+            "org\\.xml\\..*",
+            "org\\.w3c\\..*"
+        );
+
+        static Predicate<String> CLASS_CHECKER;
+
+        private enum BlockType {
+            BLOCK,
+            ALLOW
+        }
+
+        static {
+            // Default to blocking type
+            String classFilterType = System.getProperty(CLASS_BLOCK_TYPE_PROPERTY_NAME,
+                BlockType.BLOCK.name());
+            CLASS_BLOCK_LIST = getList(CLASS_BLOCK_LIST_PROPERTY_NAME, CLASS_BLOCK_LIST_DEFAULT);
+            CLASS_ALLOW_LIST = getList(CLASS_ALLOW_LIST_PROPERTY_NAME, CLASS_ALLOW_LIST_DEFAULT);
+
+            BlockType type;
+
+            try {
+                type = BlockType.valueOf(classFilterType.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                type = BlockType.BLOCK;
+            }
+
+            switch (type) {
+                case ALLOW:
+                    CLASS_CHECKER = ClassFilter::evaluateAllow;
+                    break;
+                case BLOCK:
+                default:
+                    CLASS_CHECKER = ClassFilter::evaluateBlock;
+                    break;
+            }
+        }
+
+        private static List<String> getList(String propertyName, List<String> defaultList) {
+            String blockList = System.getProperty(propertyName);
+
+            if (blockList != null) {
+                return Arrays.asList(blockList.split(","));
+            } else {
+                return defaultList;
+            }
+        }
+
+        // Block classes/packages classes (other than common Java primitives and collections)
+        private static boolean evaluateBlock(String className) {
+            if (className == null || className.isEmpty()) {
+                return false;
+            }
+
+            for (String ban : CLASS_BLOCK_LIST) {
+                if (className.matches(ban)) {
+                    LOGGER.warn(
+                        "Skipping class not allowed by class block list {}, if you wish to unblock this class update the property: {}",
+                        className, CLASS_BLOCK_LIST_PROPERTY_NAME);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Only allow explicitly allowed classes/packages (other than common Java primitives and collections)
+        private static boolean evaluateAllow(String className) {
+            if (className == null || className.isEmpty()) {
+                return false;
+            }
+
+            for (String allow : CLASS_ALLOW_LIST) {
+                if (className.matches(allow)) {
+                    return true;
+                }
+            }
+
+            LOGGER.warn(
+                "Skipping class not allowed by class allow list {}, if you wish to allow this class update the property: {}",
+                className, CLASS_ALLOW_LIST_DEFAULT);
+            return false;
         }
     }
 }
