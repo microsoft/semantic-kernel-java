@@ -3,7 +3,6 @@ package com.microsoft.semantickernel.contextvariables;
 
 import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -341,7 +340,6 @@ public class ContextVariableTypeConverter<T> {
          *
          * @param clazz the class of the type
          */
-        @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
         public Builder(Class<T> clazz) {
             this.clazz = clazz;
             fromObject = x -> ContextVariableTypes.convert(x, clazz);

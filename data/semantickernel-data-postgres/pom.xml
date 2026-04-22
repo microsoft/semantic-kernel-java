@@ -4,7 +4,7 @@
     <parent>
           <groupId>com.microsoft.semantic-kernel</groupId>
           <artifactId>semantickernel-parent</artifactId>
-          <version>1.4.4-RC3-SNAPSHOT</version>
+          <version>1.4.5-SNAPSHOT</version>
          <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.7</version>
+            <version>42.7.10</version>
         </dependency>
     </dependencies>
 </project>

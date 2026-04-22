@@ -82,6 +82,7 @@ public class PromptExecutionSettings {
     private static final String PRESENCE_PENALTY = "presence_penalty";
     private static final String FREQUENCY_PENALTY = "frequency_penalty";
     private static final String MAX_TOKENS = "max_tokens";
+    private static final String MAX_COMPLETION_TOKENS = "max_completion_tokens";
     private static final String BEST_OF = "best_of";
     private static final String USER = "user";
     private static final String STOP_SEQUENCES = "stop_sequences";
@@ -89,13 +90,19 @@ public class PromptExecutionSettings {
     private static final String TOKEN_SELECTION_BIASES = "token_selection_biases";
     private static final String RESPONSE_FORMAT = "response_format";
 
+    private static final String MAX_COMPLETION_TOKENS_ENABLE = "MAX_COMPLETION_TOKENS_ENABLE";
+    private static final String DEFAULT_MAX_COMPLETION_TOKENS_ENABLE = System.getenv(
+        MAX_COMPLETION_TOKENS_ENABLE);
+
     private final String serviceId;
     private final String modelId;
     private final double temperature;
     private final double topP;
     private final double presencePenalty;
     private final double frequencyPenalty;
-    private final int maxTokens;
+    private final boolean maxCompletionTokensEnable;
+    private final Integer maxCompletionTokens;
+    private final Integer maxTokens;
     private final int bestOf;
     private final int resultsPerPrompt;
     private final String user;
@@ -135,14 +142,24 @@ public class PromptExecutionSettings {
         @JsonProperty(USER) String user,
         @Nullable @JsonProperty(STOP_SEQUENCES) List<String> stopSequences,
         @Nullable @JsonProperty(TOKEN_SELECTION_BIASES) Map<Integer, Integer> tokenSelectionBiases,
-        @Nullable @JsonProperty(RESPONSE_FORMAT) ResponseFormat responseFormat) {
+        @Nullable @JsonProperty(RESPONSE_FORMAT) ResponseFormat responseFormat,
+        @JsonProperty(value = MAX_COMPLETION_TOKENS_ENABLE, defaultValue = "false") String maxCompletionTokensEnable) {
         this.serviceId = serviceId != null ? serviceId : DEFAULT_SERVICE_ID;
         this.modelId = modelId != null ? modelId : "";
         this.temperature = clamp(temperature, 0d, 2d, DEFAULT_TEMPERATURE);
         this.topP = clamp(topP, 0d, 1d, DEFAULT_TOP_P);
         this.presencePenalty = clamp(presencePenalty, -2d, 2d, DEFAULT_PRESENCE_PENALTY);
         this.frequencyPenalty = clamp(frequencyPenalty, -2d, 2d, DEFAULT_FREQUENCY_PENALTY);
-        this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE, DEFAULT_MAX_TOKENS);
+
+        this.maxCompletionTokensEnable = isMaxCompletionTokensEnable(maxCompletionTokensEnable);
+
+        if (this.maxCompletionTokensEnable) {
+            this.maxCompletionTokens = clamp(maxTokens, 1, Integer.MAX_VALUE, DEFAULT_MAX_TOKENS);
+            this.maxTokens = null;
+        } else {
+            this.maxTokens = clamp(maxTokens, 1, Integer.MAX_VALUE, DEFAULT_MAX_TOKENS);
+            this.maxCompletionTokens = null;
+        }
         this.resultsPerPrompt = clamp(resultsPerPrompt, 1, Integer.MAX_VALUE,
             DEFAULT_RESULTS_PER_PROMPT);
         this.bestOf = clamp(bestOf, 1, Integer.MAX_VALUE, DEFAULT_BEST_OF);
@@ -159,6 +176,22 @@ public class PromptExecutionSettings {
         } else {
             this.responseFormat = responseFormat;
         }
+    }
+
+    private boolean isMaxCompletionTokensEnable(String maxCompletionTokensEnable) {
+        final boolean maxCompletionTokensEnabled;
+        if (maxCompletionTokensEnable != null && !maxCompletionTokensEnable.isEmpty()) {
+            maxCompletionTokensEnabled = Boolean.parseBoolean(maxCompletionTokensEnable);
+        } else {
+            if (DEFAULT_MAX_COMPLETION_TOKENS_ENABLE != null
+                && DEFAULT_MAX_COMPLETION_TOKENS_ENABLE.isEmpty()) {
+                maxCompletionTokensEnabled = Boolean.parseBoolean(
+                    DEFAULT_MAX_COMPLETION_TOKENS_ENABLE);
+            } else {
+                maxCompletionTokensEnabled = false;
+            }
+        }
+        return maxCompletionTokensEnabled;
     }
 
     /**
@@ -257,7 +290,7 @@ public class PromptExecutionSettings {
      * @return The maximum number of tokens to generate in the output.
      */
     @JsonProperty(MAX_TOKENS)
-    public int getMaxTokens() {
+    public Integer getMaxTokens() {
         return maxTokens;
     }
 
@@ -351,7 +384,10 @@ public class PromptExecutionSettings {
         if (Double.compare(frequencyPenalty, other.frequencyPenalty) != 0) {
             return false;
         }
-        if (maxTokens != other.maxTokens) {
+        if (!Objects.equals(maxTokens, other.maxTokens)) {
+            return false;
+        }
+        if (!Objects.equals(maxCompletionTokens, other.maxCompletionTokens)) {
             return false;
         }
         if (bestOf != other.bestOf) {
@@ -381,6 +417,12 @@ public class PromptExecutionSettings {
     @JsonProperty(RESPONSE_FORMAT)
     public ResponseFormat getResponseFormat() {
         return responseFormat;
+    }
+
+
+    @JsonProperty(MAX_COMPLETION_TOKENS)
+    public Integer getMaxCompletionTokens() {
+        return maxCompletionTokens;
     }
 
     /**
@@ -477,6 +519,18 @@ public class PromptExecutionSettings {
          */
         public Builder withMaxTokens(int maxTokens) {
             settings.put(MAX_TOKENS, maxTokens);
+            return this;
+        }
+
+        /**
+         * Enables the use of max_completion_tokens config parameter rather than the older
+         * max_completion
+         *
+         * @param enable Whether to enable
+         * @return This builder
+         */
+        public Builder withMaxCompletionTokensEnable(boolean enable) {
+            settings.put(MAX_COMPLETION_TOKENS_ENABLE, Boolean.toString(enable));
             return this;
         }
 
@@ -620,7 +674,9 @@ public class PromptExecutionSettings {
                 (List<String>) settings.getOrDefault(STOP_SEQUENCES, Collections.emptyList()),
                 (Map<Integer, Integer>) settings.getOrDefault(TOKEN_SELECTION_BIASES,
                     Collections.emptyMap()),
-                (ResponseFormat) settings.getOrDefault(RESPONSE_FORMAT, new TextResponseFormat()));
+                (ResponseFormat) settings.getOrDefault(RESPONSE_FORMAT, new TextResponseFormat()),
+                (String) settings.getOrDefault(MAX_COMPLETION_TOKENS_ENABLE,
+                    DEFAULT_MAX_COMPLETION_TOKENS_ENABLE));
         }
     }
 }

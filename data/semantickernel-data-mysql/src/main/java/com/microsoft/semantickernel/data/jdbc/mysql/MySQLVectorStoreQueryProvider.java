@@ -13,14 +13,13 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 
 /**
  * The MySQL vector store query provider.
@@ -32,7 +31,6 @@ public class MySQLVectorStoreQueryProvider extends
 
     private final ObjectMapper objectMapper;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     private MySQLVectorStoreQueryProvider(
         @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,

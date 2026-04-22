@@ -7,22 +7,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.responseformat.ResponseSchemaGenerator;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.semanticfunctions.InputVariable;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunctionMetadata;
-import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
 class OpenAIFunction {
 
@@ -229,14 +227,9 @@ class OpenAIFunction {
     }
 
     private static String getObjectSchema(String type, String description) {
-        String schema = "{ \"type\" : \"object\" }";
-        try {
-            Class<?> clazz = Class.forName(type);
-            schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
+        Class<?> clazz = KernelPluginFactory.getTypeForName(type);
+        String schema = ResponseSchemaGenerator.jacksonGenerator().generateSchema(clazz);
 
-        } catch (ClassNotFoundException | SKException ignored) {
-
-        }
         Map<String, Object> properties = BinaryData.fromString(schema).toObject(Map.class);
         if (StringUtils.isNotBlank(description)) {
             properties.put("description", description);

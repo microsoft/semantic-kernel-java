@@ -39,7 +39,7 @@ public class Example59_OpenAIFunctionCalling {
     // Only required if AZURE_CLIENT_KEY is set
     private static final String CLIENT_ENDPOINT = System.getenv("CLIENT_ENDPOINT");
     private static final String MODEL_ID = System.getenv()
-        .getOrDefault("MODEL_ID", "gpt-4o");
+        .getOrDefault("MODEL_ID", "gpt-35-turbo");
 
     // Define functions that can be called by the model
     public static class HelperFunctions {

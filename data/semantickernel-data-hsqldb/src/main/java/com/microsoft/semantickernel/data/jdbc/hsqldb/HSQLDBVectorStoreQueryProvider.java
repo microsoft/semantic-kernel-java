@@ -12,7 +12,6 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,7 +31,6 @@ public class HSQLDBVectorStoreQueryProvider extends JDBCVectorStoreQueryProvider
 
     private final ObjectMapper objectMapper;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     private HSQLDBVectorStoreQueryProvider(
         DataSource dataSource,
         String collectionsTable,

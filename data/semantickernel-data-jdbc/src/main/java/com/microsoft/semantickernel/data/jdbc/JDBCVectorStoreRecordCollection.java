@@ -46,7 +46,6 @@ public class JDBCVectorStoreRecordCollection<Record>
      * @param collectionName the name of the collection
      * @param options        the options
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
     public JDBCVectorStoreRecordCollection(
         @Nonnull DataSource dataSource,
         @Nonnull String collectionName,

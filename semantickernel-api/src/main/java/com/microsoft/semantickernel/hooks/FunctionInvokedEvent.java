@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.orchestration.FunctionResult;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -60,7 +60,6 @@ public class FunctionInvokedEvent<T> implements KernelHookEvent {
      *
      * @return the result
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public FunctionResult<T> getResult() {
         return result;
     }
