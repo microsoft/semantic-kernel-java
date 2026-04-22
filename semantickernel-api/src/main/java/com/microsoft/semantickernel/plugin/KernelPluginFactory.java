@@ -60,7 +60,7 @@ public class KernelPluginFactory {
 
     static {
         CLASS_FILTER_ENABLE = Boolean.parseBoolean(
-            System.getProperty(CLASS_FILTER_ENABLE_PROPERTY, "true"));
+            System.getProperty(CLASS_FILTER_ENABLE_PROPERTY, "false"));
 
         PRIMITIVE_CLASS_NAMES.put("void", void.class);
         PRIMITIVE_CLASS_NAMES.put("int", int.class);
