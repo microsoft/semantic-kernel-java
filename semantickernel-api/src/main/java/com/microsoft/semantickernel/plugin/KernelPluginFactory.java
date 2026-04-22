@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +55,13 @@ public class KernelPluginFactory {
     private static final CaseInsensitiveMap<Class<?>> COMMON_CLASS_NAMES = new CaseInsensitiveMap<>();
     private static final Map<Class<?>, Class<?>> BOXED_FROM_PRIMITIVE = new HashMap<>();
 
+    public static final String CLASS_FILTER_ENABLE_PROPERTY = "semantic-kernel.class-filter-enable";
+    private static Boolean CLASS_FILTER_ENABLE;
+
     static {
+        CLASS_FILTER_ENABLE = Boolean.parseBoolean(
+            System.getProperty(CLASS_FILTER_ENABLE_PROPERTY, "true"));
+
         PRIMITIVE_CLASS_NAMES.put("void", void.class);
         PRIMITIVE_CLASS_NAMES.put("int", int.class);
         PRIMITIVE_CLASS_NAMES.put("double", double.class);
@@ -76,6 +83,9 @@ public class KernelPluginFactory {
         COMMON_CLASS_NAMES.put(List.class.getName(), ArrayList.class);
         COMMON_CLASS_NAMES.put(Map.class.getName(), HashMap.class);
         COMMON_CLASS_NAMES.put(Set.class.getName(), HashSet.class);
+        COMMON_CLASS_NAMES.put(Temporal.class.getName(), Temporal.class);
+        COMMON_CLASS_NAMES.put(java.time.OffsetDateTime.class.getName(), java.time.OffsetDateTime.class);
+        COMMON_CLASS_NAMES.put(java.time.ZonedDateTime.class.getName(), java.time.ZonedDateTime.class);
 
         BOXED_FROM_PRIMITIVE.put(void.class, Void.class);
         BOXED_FROM_PRIMITIVE.put(int.class, Integer.class);
@@ -87,6 +97,10 @@ public class KernelPluginFactory {
         BOXED_FROM_PRIMITIVE.put(byte.class, Byte.class);
         BOXED_FROM_PRIMITIVE.put(char.class, Character.class);
 
+    }
+
+    public static void setTypeFilterEnable(boolean enable) {
+        KernelPluginFactory.CLASS_FILTER_ENABLE = enable;
     }
 
     /**
@@ -268,6 +282,9 @@ public class KernelPluginFactory {
     }
 
     public static boolean checkClassName(String className) {
+        if (CLASS_FILTER_ENABLE == false) {
+            return true;
+        }
         return ClassFilter.CLASS_CHECKER.test(className);
     }
 
@@ -638,8 +655,8 @@ public class KernelPluginFactory {
             for (String ban : CLASS_BLOCK_LIST) {
                 if (className.matches(ban)) {
                     LOGGER.warn(
-                        "Skipping class not allowed by class block list {}, if you wish to unblock this class update the property: {}",
-                        className, CLASS_BLOCK_LIST_PROPERTY_NAME);
+                        "Skipping class not allowed by class block list {}, if you wish to unblock this class update the property: {}. Filtering can also be controlled with {} and KernelPluginFactory.setTypeFilterEnable",
+                        className, CLASS_BLOCK_LIST_PROPERTY_NAME, CLASS_FILTER_ENABLE_PROPERTY);
                     return false;
                 }
             }
@@ -660,8 +677,8 @@ public class KernelPluginFactory {
             }
 
             LOGGER.warn(
-                "Skipping class not allowed by class allow list {}, if you wish to allow this class update the property: {}",
-                className, CLASS_ALLOW_LIST_DEFAULT);
+                "Skipping class not allowed by class allow list {}, if you wish to allow this class update the property: {}. Filtering can also be controlled with {} and KernelPluginFactory.setTypeFilterEnable",
+                className, CLASS_ALLOW_LIST_DEFAULT, CLASS_FILTER_ENABLE_PROPERTY);
             return false;
         }
     }

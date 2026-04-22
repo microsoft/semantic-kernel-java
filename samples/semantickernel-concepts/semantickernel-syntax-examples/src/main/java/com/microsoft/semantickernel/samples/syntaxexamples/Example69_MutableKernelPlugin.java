@@ -3,6 +3,7 @@ package com.microsoft.semantickernel.samples.syntaxexamples;
 
 import com.microsoft.semantickernel.Kernel;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
+import com.microsoft.semantickernel.plugin.KernelPluginFactory;
 import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.annotations.DefineKernelFunction;
 
@@ -16,6 +17,7 @@ public class Example69_MutableKernelPlugin {
      */
     public static void main(String[] args) throws NoSuchMethodException {
         System.out.println("======== Example69_MutableKernelPlugin ========");
+        KernelPluginFactory.setTypeFilterEnable(false);
 
         KernelPlugin plugin = new KernelPlugin("Plugin", "Mutable plugin", null);
         plugin.addFunction(KernelFunction.createFromMethod(
