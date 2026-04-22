@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -31,6 +32,29 @@ import org.slf4j.LoggerFactory;
 public class ChatXMLPromptParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatXMLPromptParser.class);
+
+    private static XMLInputFactory createXMLInputFactory() {
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+
+        trySetProperty(factory, XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        trySetProperty(factory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        trySetProperty(factory, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        factory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, false);
+
+        return factory;
+    }
+
+    private static void trySetProperty(XMLInputFactory factory, String property, Object value) {
+        try {
+            factory.setProperty(property, value);
+        } catch (IllegalArgumentException e) {
+            // Property not supported by this XMLInputFactory implementation
+            LOGGER.trace("XMLInputFactory property '{}' not supported", property);
+        }
+    }
 
     public static <T> ChatPromptParseVisitor<T> parse(
         String rawPrompt,
@@ -64,7 +88,7 @@ public class ChatXMLPromptParser {
         // In this way, we can avoid parsing the whole prompt twice and easily extend the parsing logic.
 
         try (InputStream is = new ByteArrayInputStream(prompt.getBytes(StandardCharsets.UTF_8))) {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLInputFactory factory = createXMLInputFactory();
             XMLEventReader reader = factory.createXMLEventReader(is);
             while (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
@@ -109,7 +133,7 @@ public class ChatXMLPromptParser {
         // </function>
 
         try (InputStream is = new ByteArrayInputStream(prompt.getBytes(StandardCharsets.UTF_8))) {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLInputFactory factory = createXMLInputFactory();
             XMLEventReader reader = factory.createXMLEventReader(is);
             FunctionDefinition functionDefinition = null;
             Map<String, String> parameters = new HashMap<>();
