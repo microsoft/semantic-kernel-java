@@ -29,8 +29,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -59,7 +57,6 @@ public class JDBCVectorStoreQueryProvider
 
     private final Object dbCreationLock = new Object();
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2") // DataSource is not exposed
     protected JDBCVectorStoreQueryProvider(
         @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,
@@ -102,8 +99,9 @@ public class JDBCVectorStoreQueryProvider
      * @param supportedDataTypes        the supported data types
      * @param supportedVectorTypes      the supported vector types
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public JDBCVectorStoreQueryProvider(
-        @SuppressFBWarnings("EI_EXPOSE_REP2") @Nonnull DataSource dataSource,
+        @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,
         @Nonnull String prefixForCollectionTables,
         @Nonnull Map<Class<?>, String> supportedKeyTypes,

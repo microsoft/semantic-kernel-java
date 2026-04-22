@@ -4,10 +4,10 @@ package com.microsoft.semantickernel.data.jdbc.postgres;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreQueryProvider;
-import com.microsoft.semantickernel.data.jdbc.SQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.filter.AnyTagEqualToFilterClause;
 import com.microsoft.semantickernel.data.filter.EqualToFilterClause;
+import com.microsoft.semantickernel.data.jdbc.JDBCVectorStoreQueryProvider;
+import com.microsoft.semantickernel.data.jdbc.SQLVectorStoreQueryProvider;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchFilter;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResult;
 import com.microsoft.semantickernel.data.vectorsearch.VectorSearchResults;
@@ -22,9 +22,6 @@ import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptio
 import com.microsoft.semantickernel.data.vectorstorage.options.VectorSearchOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 
 /**
  * The MySQL vector store query provider.
@@ -50,7 +49,6 @@ public class PostgreSQLVectorStoreQueryProvider extends
     private final String prefixForCollectionTables;
     private final ObjectMapper objectMapper;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     private PostgreSQLVectorStoreQueryProvider(
         @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,

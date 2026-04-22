@@ -103,10 +103,11 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
         @Nullable Boolean logProbs,
         @Nullable Integer topLogProbs,
         @Nullable Long seed,
-        @Nullable Boolean maxCompletionTokens) {
+        @Nullable Boolean maxCompletionTokensEnable) {
         super(
             serviceId, modelId, temperature, topP, presencePenalty, frequencyPenalty, maxTokens,
-            resultsPerPrompt, bestOf, user, stopSequences, tokenSelectionBiases, responseFormat, Boolean.toString(maxCompletionTokens));
+            resultsPerPrompt, bestOf, user, stopSequences, tokenSelectionBiases, responseFormat,
+            Boolean.toString(Boolean.TRUE.equals(maxCompletionTokensEnable)));
 
         this.topK = topK;
         this.repetitionPenalty = repetitionPenalty;

@@ -13,13 +13,12 @@ import com.microsoft.semantickernel.data.vectorstorage.definition.VectorStoreRec
 import com.microsoft.semantickernel.data.vectorstorage.options.UpsertRecordOptions;
 import com.microsoft.semantickernel.exceptions.SKException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.annotation.Nonnull;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 
 /**
  * A query provider for a vector store in SQLite.
@@ -30,7 +29,6 @@ public class SQLiteVectorStoreQueryProvider extends
     private final DataSource dataSource;
     private final ObjectMapper objectMapper;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     private SQLiteVectorStoreQueryProvider(
         @Nonnull DataSource dataSource,
         @Nonnull String collectionsTable,

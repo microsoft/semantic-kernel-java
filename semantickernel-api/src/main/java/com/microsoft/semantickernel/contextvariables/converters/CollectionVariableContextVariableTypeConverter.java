@@ -7,7 +7,6 @@ import com.microsoft.semantickernel.contextvariables.ContextVariable;
 import com.microsoft.semantickernel.contextvariables.ContextVariableType;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypeConverter;
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -24,7 +23,6 @@ public class CollectionVariableContextVariableTypeConverter extends
      * Creates a new instance of the {@link CollectionVariableContextVariableTypeConverter} class.
      * @param delimiter The delimiter to use joining elements of the collection.
      */
-    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public CollectionVariableContextVariableTypeConverter(String delimiter) {
         super(
             Collection.class,
@@ -38,7 +36,6 @@ public class CollectionVariableContextVariableTypeConverter extends
     /**
      * Creates a new instance of the {@link CollectionVariableContextVariableTypeConverter} class.
      */
-    @SuppressFBWarnings("CT_CONSTRUCTOR_THROW")
     public CollectionVariableContextVariableTypeConverter() {
         this(",");
     }
