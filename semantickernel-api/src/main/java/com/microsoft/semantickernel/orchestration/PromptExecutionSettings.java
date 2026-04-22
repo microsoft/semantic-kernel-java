@@ -384,7 +384,10 @@ public class PromptExecutionSettings {
         if (Double.compare(frequencyPenalty, other.frequencyPenalty) != 0) {
             return false;
         }
-        if (maxTokens != other.maxTokens) {
+        if (!Objects.equals(maxTokens, other.maxTokens)) {
+            return false;
+        }
+        if (!Objects.equals(maxCompletionTokens, other.maxCompletionTokens)) {
             return false;
         }
         if (bestOf != other.bestOf) {
