@@ -13,7 +13,7 @@
     <url>https://www.github.com/microsoft/semantic-kernel</url>
 
     <properties>
-        <com.fasterxml.jackson.core.version>2.21.2</com.fasterxml.jackson.core.version>
+        <com.fasterxml.jackson.core.version>2.22.0</com.fasterxml.jackson.core.version>
         <!-- Pinned to latest version built with Java 8 -->
         <handlebars.version>4.3.1</handlebars.version>
     </properties>
