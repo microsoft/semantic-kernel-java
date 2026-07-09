@@ -119,6 +119,13 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipTests.oracle}</skipTests>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

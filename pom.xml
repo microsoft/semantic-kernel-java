@@ -838,6 +838,15 @@
             </modules>
         </profile>
         <profile>
+            <id>skip-container-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <skipTests.oracle>true</skipTests.oracle>
+            </properties>
+        </profile>
+        <profile>
             <id>release</id>
             <properties>
                 <maven.compiler.source>1.8</maven.compiler.source>
