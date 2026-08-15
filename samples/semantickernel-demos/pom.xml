@@ -39,5 +39,6 @@
         <module>booking-agent-m365</module>
         <module>semantickernel-spring-starter</module>
         <module>sk-presidio-sample</module>
+        <module>sk-database-sample</module>
     </modules>
 </project>
