@@ -4,6 +4,7 @@ package com.microsoft.semantickernel.aiservices.voyageai.core;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.List;
 
 /**
@@ -35,10 +36,12 @@ public class VoyageAIModels {
         @JsonProperty("output_dtype")
         private String outputDtype;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<String> getInput() {
             return input;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setInput(List<String> input) {
             this.input = input;
         }
@@ -95,18 +98,22 @@ public class VoyageAIModels {
         @JsonProperty("usage")
         private EmbeddingUsage usage;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<EmbeddingDataItem> getData() {
             return data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setData(List<EmbeddingDataItem> data) {
             this.data = data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public EmbeddingUsage getUsage() {
             return usage;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setUsage(EmbeddingUsage usage) {
             this.usage = usage;
         }
@@ -133,10 +140,12 @@ public class VoyageAIModels {
             this.object = object;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public float[] getEmbedding() {
             return embedding;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setEmbedding(float[] embedding) {
             this.embedding = embedding;
         }
@@ -196,10 +205,12 @@ public class VoyageAIModels {
             this.query = query;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<String> getDocuments() {
             return documents;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setDocuments(List<String> documents) {
             this.documents = documents;
         }
@@ -240,18 +251,22 @@ public class VoyageAIModels {
         @JsonProperty("usage")
         private EmbeddingUsage usage;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<RerankDataItem> getData() {
             return data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setData(List<RerankDataItem> data) {
             this.data = data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public EmbeddingUsage getUsage() {
             return usage;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setUsage(EmbeddingUsage usage) {
             this.usage = usage;
         }
@@ -309,10 +324,12 @@ public class VoyageAIModels {
         @JsonProperty("output_dtype")
         private String outputDtype;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<List<String>> getInputs() {
             return inputs;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setInputs(List<List<String>> inputs) {
             this.inputs = inputs;
         }
@@ -367,10 +384,12 @@ public class VoyageAIModels {
         @JsonProperty("data")
         private List<ContextualizedEmbeddingDataList> data;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<ContextualizedEmbeddingDataList> getData() {
             return data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setData(List<ContextualizedEmbeddingDataList> data) {
             this.data = data;
         }
@@ -384,10 +403,12 @@ public class VoyageAIModels {
         @JsonProperty("data")
         private List<EmbeddingDataItem> data;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<EmbeddingDataItem> getData() {
             return data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setData(List<EmbeddingDataItem> data) {
             this.data = data;
         }
@@ -400,10 +421,12 @@ public class VoyageAIModels {
         @JsonProperty("embeddings")
         private List<EmbeddingItem> embeddings;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<EmbeddingItem> getEmbeddings() {
             return embeddings;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setEmbeddings(List<EmbeddingItem> embeddings) {
             this.embeddings = embeddings;
         }
@@ -422,10 +445,12 @@ public class VoyageAIModels {
         @JsonProperty("index")
         private int index;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public float[] getEmbedding() {
             return embedding;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setEmbedding(float[] embedding) {
             this.embedding = embedding;
         }
@@ -455,7 +480,7 @@ public class VoyageAIModels {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class MultimodalContentItem {
         @JsonProperty("type")
-        private String type;  // "text" or "image_url"
+        private String type; // "text" or "image_url"
 
         @JsonProperty("text")
         private String text;
@@ -513,14 +538,17 @@ public class VoyageAIModels {
             // Default constructor for Jackson
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public MultimodalInput(List<MultimodalContentItem> content) {
             this.content = content;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<MultimodalContentItem> getContent() {
             return content;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setContent(List<MultimodalContentItem> content) {
             this.content = content;
         }
@@ -543,10 +571,12 @@ public class VoyageAIModels {
         @JsonProperty("truncation")
         private Boolean truncation;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<MultimodalInput> getInputs() {
             return inputs;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setInputs(List<MultimodalInput> inputs) {
             this.inputs = inputs;
         }
@@ -587,18 +617,22 @@ public class VoyageAIModels {
         @JsonProperty("usage")
         private EmbeddingUsage usage;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public List<EmbeddingDataItem> getData() {
             return data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setData(List<EmbeddingDataItem> data) {
             this.data = data;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         public EmbeddingUsage getUsage() {
             return usage;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public void setUsage(EmbeddingUsage usage) {
             this.usage = usage;
         }
