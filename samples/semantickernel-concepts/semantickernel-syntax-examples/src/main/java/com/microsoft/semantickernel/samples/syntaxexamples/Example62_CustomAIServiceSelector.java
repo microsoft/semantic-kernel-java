@@ -50,7 +50,7 @@ public class Example62_CustomAIServiceSelector {
         var openAIChatCompletion = OpenAIChatCompletion.builder()
             .withOpenAIAsyncClient(client)
             .withServiceId("AzureOpenAIChat")
-            .withModelId("gpt-35-turbo-2")
+            .withModelId("gpt-35-turbo")
             .build();
 
         var textGenerationService = TextGenerationService.builder()

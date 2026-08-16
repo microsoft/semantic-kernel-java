@@ -18,13 +18,12 @@ import com.microsoft.semantickernel.exceptions.SKException;
 import com.microsoft.semantickernel.orchestration.InvocationContext;
 import com.microsoft.semantickernel.orchestration.ToolCallBehavior;
 import com.microsoft.semantickernel.plugin.KernelPlugin;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplate;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateConfig;
 import com.microsoft.semantickernel.semanticfunctions.PromptTemplateOption;
 import com.microsoft.semantickernel.services.chatcompletion.ChatMessageContent;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -192,7 +191,6 @@ public class HandlebarsPromptTemplate implements PromptTemplate {
         private final String template;
         private final Handlebars handlebars;
 
-        @SuppressFBWarnings("CT_CONSTRUCTOR_THROW") // Think this is a false positive
         public HandleBarsPromptTemplateHandler(
             Kernel kernel,
             String template,

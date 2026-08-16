@@ -18,11 +18,11 @@ public class Hotel {
     @VectorStoreRecordData(isFilterable = true)
     private final String name;
 
-    @VectorStoreRecordData
+    @VectorStoreRecordData(isFilterable = true)
     private final int code;
 
     @JsonProperty("summary")
-    @VectorStoreRecordData()
+    @VectorStoreRecordData(isFilterable = true)
     private final String description;
 
     @JsonProperty("summaryEmbedding1")

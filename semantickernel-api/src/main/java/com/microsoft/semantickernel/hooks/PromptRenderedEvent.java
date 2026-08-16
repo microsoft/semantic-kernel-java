@@ -55,7 +55,6 @@ public class PromptRenderedEvent implements KernelHookEvent {
      *
      * @return the prompt
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public String getPrompt() {
         return prompt;
     }

@@ -2,8 +2,8 @@
 package com.microsoft.semantickernel.hooks;
 
 import com.microsoft.semantickernel.contextvariables.ContextVariableTypes;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import javax.annotation.Nullable;
 
@@ -52,7 +52,6 @@ public class PreToolCallEvent implements KernelHookEvent {
      * Get the tool call function.
      * @return The tool call function.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public KernelFunction<?> getFunction() {
         return function;
     }

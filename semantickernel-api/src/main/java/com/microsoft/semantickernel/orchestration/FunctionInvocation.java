@@ -14,9 +14,8 @@ import com.microsoft.semantickernel.hooks.KernelHooks;
 import com.microsoft.semantickernel.hooks.KernelHooks.UnmodifiableKernelHooks;
 import com.microsoft.semantickernel.implementation.telemetry.SemanticKernelTelemetry;
 import com.microsoft.semantickernel.localization.SemanticKernelResources;
-import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import com.microsoft.semantickernel.semanticfunctions.KernelArguments;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import com.microsoft.semantickernel.semanticfunctions.KernelFunction;
 import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -63,7 +62,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @param kernel   The kernel to invoke the function on.
      * @param function The function to invoke.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<T> function) {
@@ -80,7 +78,6 @@ public class FunctionInvocation<T> extends Mono<FunctionResult<T>> {
      * @param function   The function to invoke.
      * @param resultType The type of the result of the function invocation.
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public FunctionInvocation(
         Kernel kernel,
         KernelFunction<?> function,

@@ -8,11 +8,7 @@ import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRe
 import com.microsoft.semantickernel.data.vectorstorage.annotations.VectorStoreRecordVector;
 import com.microsoft.semantickernel.data.vectorstorage.definition.DistanceFunction;
 import com.microsoft.semantickernel.data.vectorstorage.definition.IndexKind;
-
 import java.util.List;
-
-import static com.fasterxml.jackson.annotation.JsonCreator.Mode.DELEGATING;
-import static com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES;
 
 public class Hotel {
     @VectorStoreRecordKey
@@ -52,13 +48,8 @@ public class Hotel {
     @VectorStoreRecordData
     private double rating;
 
-    @JsonCreator(mode = DELEGATING)
-    public Hotel() {
-        this(null, null, 0, 0d, null, null, null, null, null, null, 0.0);
-    }
-
-    @JsonCreator(mode = PROPERTIES)
-    protected Hotel(
+    @JsonCreator
+    public Hotel(
         @JsonProperty("id") String id,
         @JsonProperty("name") String name,
         @JsonProperty("code") int code,

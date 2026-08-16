@@ -47,7 +47,8 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             copy.getUser(),
             copy.getStopSequences(),
             copy.getTokenSelectionBiases(),
-            copy.getResponseFormat() == null ? null : copy.getResponseFormat());
+            copy.getResponseFormat() == null ? null : copy.getResponseFormat(),
+            copy.getMaxCompletionTokens() == null ? null : copy.getMaxCompletionTokens().toString());
         this.topK = null;
         this.repetitionPenalty = null;
         this.maxTime = null;
@@ -101,10 +102,12 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
         @Nullable Boolean details,
         @Nullable Boolean logProbs,
         @Nullable Integer topLogProbs,
-        @Nullable Long seed) {
+        @Nullable Long seed,
+        @Nullable Boolean maxCompletionTokensEnable) {
         super(
             serviceId, modelId, temperature, topP, presencePenalty, frequencyPenalty, maxTokens,
-            resultsPerPrompt, bestOf, user, stopSequences, tokenSelectionBiases, responseFormat);
+            resultsPerPrompt, bestOf, user, stopSequences, tokenSelectionBiases, responseFormat,
+            Boolean.toString(Boolean.TRUE.equals(maxCompletionTokensEnable)));
 
         this.topK = topK;
         this.repetitionPenalty = repetitionPenalty;
@@ -145,6 +148,7 @@ public class HuggingFacePromptExecutionSettings extends PromptExecutionSettings 
             promptExecutionSettings.getResponseFormat() != null
                 ? promptExecutionSettings.getResponseFormat()
                 : null,
+            null,
             null,
             null,
             null,
