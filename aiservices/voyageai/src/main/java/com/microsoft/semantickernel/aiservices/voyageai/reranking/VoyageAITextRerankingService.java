@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * VoyageAI implementation of {@link TextRerankingService}.
  * Supports models like rerank-2, rerank-2-lite.
  */
-public class VoyageAITextRerankingService implements TextRerankingService {
+public final class VoyageAITextRerankingService implements TextRerankingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VoyageAITextRerankingService.class);
 

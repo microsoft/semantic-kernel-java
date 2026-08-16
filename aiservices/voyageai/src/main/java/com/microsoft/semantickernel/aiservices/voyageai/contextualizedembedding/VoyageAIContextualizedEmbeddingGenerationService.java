@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Generates embeddings that capture both local chunk details and global document-level metadata.
  * Supports models like voyage-3.
  */
-public class VoyageAIContextualizedEmbeddingGenerationService implements TextEmbeddingGenerationService {
+public final class VoyageAIContextualizedEmbeddingGenerationService implements TextEmbeddingGenerationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VoyageAIContextualizedEmbeddingGenerationService.class);
 

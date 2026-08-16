@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * - Total tokens per input: ≤32,000 (560 pixels = 1 token)
  * - Aggregate tokens across inputs: ≤320,000
  */
-public class VoyageAIMultimodalEmbeddingGenerationService implements TextEmbeddingGenerationService {
+public final class VoyageAIMultimodalEmbeddingGenerationService implements TextEmbeddingGenerationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VoyageAIMultimodalEmbeddingGenerationService.class);
 

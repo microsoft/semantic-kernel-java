@@ -4,7 +4,7 @@ package com.microsoft.semantickernel.services.reranking;
 /**
  * Represents a single reranking result containing a document and its relevance score.
  */
-public class RerankResult {
+public final class RerankResult {
     private final int index;
     private final String text;
     private final double relevanceScore;

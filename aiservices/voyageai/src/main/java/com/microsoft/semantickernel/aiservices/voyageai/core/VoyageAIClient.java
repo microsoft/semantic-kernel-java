@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * HTTP client for VoyageAI API.
  */
-public class VoyageAIClient {
+public final class VoyageAIClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(VoyageAIClient.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String DEFAULT_ENDPOINT = "https://api.voyageai.com/v1";

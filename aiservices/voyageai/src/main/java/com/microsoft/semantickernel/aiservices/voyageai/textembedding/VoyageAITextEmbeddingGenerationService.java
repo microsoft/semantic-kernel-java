@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * VoyageAI implementation of {@link TextEmbeddingGenerationService}.
  * Supports models like voyage-3-large, voyage-3.5, voyage-code-3, voyage-finance-2, voyage-law-2.
  */
-public class VoyageAITextEmbeddingGenerationService implements TextEmbeddingGenerationService {
+public final class VoyageAITextEmbeddingGenerationService implements TextEmbeddingGenerationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VoyageAITextEmbeddingGenerationService.class);
 
