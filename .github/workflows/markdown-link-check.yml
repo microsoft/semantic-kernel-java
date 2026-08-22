@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     # check out the latest version of the code
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Checks the status of hyperlinks in .md files in verbose mode
       - name: Check links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        uses: gaurav-nelson/github-action-markdown-link-check@5c5dfc0ac2e225883c0e5f03a85311ec2830d368 # v1
         with:
           use-verbose-mode: "yes"
           config-file: ".github/workflows/markdown-link-check-config.json"
