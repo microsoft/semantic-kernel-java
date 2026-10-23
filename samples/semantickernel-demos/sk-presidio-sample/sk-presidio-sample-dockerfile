@@ -1,6 +1,6 @@
 ######################################################
 ## Build Deployment
-FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu as presidio-sk-sample-app
+FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu AS presidio-sk-sample-app
 
 COPY --chown=app:app scripts/run.sh /home/app/
 
