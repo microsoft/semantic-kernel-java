@@ -1,0 +1,27 @@
+version: '3.6'
+services:
+  mysql:
+    hostname: mysql
+    image: mysql:8.4
+    command: --mysql-native-password=ON
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      - MYSQL_USER=a-user
+      - MYSQL_PASSWORD=a-password
+      - MYSQL_DATABASE=testdb
+  sk-database-sample:
+    image: "sk-database-sample"
+    depends_on:
+      - mysql
+    build:
+      context: .
+      dockerfile: ./sk-database-sample-dockerfile
+    secrets:
+      - ai-config
+secrets:
+  ai-config:
+    file: ./.env
+
